@@ -1,0 +1,8 @@
+{
+  "name": "Brightness control using ddcutil",
+  "description": "Brightness slider for all the monitors detected by ddcutil",
+  "uuid": "display-brightness-ddcutil@themightydeity.github.com",
+  "shell-version": [
+    "3.34"
+  ]
+}
