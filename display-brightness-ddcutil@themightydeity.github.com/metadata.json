@@ -1,8 +1,10 @@
 {
   "name": "Brightness control using ddcutil",
-  "description": "Brightness slider for all the monitors detected by ddcutil",
+  "description": "Brightness slider for all the monitors detected by ddcutil\n\nThis tool uses ddcutil as backend for communication with your display, so first you have to make sure that your user can use use following shell commands.\n\t`ddcutil getvcp 10` to check the brightness of a display and\n\t`ddcutil setvcp 10 100` to set the brightness to 100\n It automatically supports multiple displays detected by `ddcutil detect`",
   "uuid": "display-brightness-ddcutil@themightydeity.github.com",
+  "url": "https://github.com/themightydeity/gnome-display-brightness-ddcutil",
+  "version": 2,
   "shell-version": [
-    "3.34"
+    "3.36"
   ]
 }

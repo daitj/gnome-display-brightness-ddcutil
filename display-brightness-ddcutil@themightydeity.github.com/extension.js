@@ -18,12 +18,12 @@
 
 const Main = imports.ui.main;
 const ByteArray = imports.byteArray;
+const { Clutter, GObject, St } = imports.gi;
 
 // for shell command 
 const GLib = imports.gi.GLib;
 
 // icons and labels
-const St = imports.gi.St;
 const Lang = imports.lang;
 
 // menu items
@@ -34,6 +34,12 @@ const Slider = imports.ui.slider;
 
 let panelmenu, icon;
 let brightnessIcon = 'display-brightness-symbolic';
+
+/* lowest possible value for brightness */
+const minBrightness = 1;
+
+/* when should min brightness value should be used */
+const minBrightnessThreshold = 5;
 
 /* exported init */
 
@@ -62,58 +68,83 @@ function spawnCommandAndRead(command_line) {
         return null;
     }
 }
+const SliderMenuItem = GObject.registerClass(
+    {
+        GType: 'SliderMenuItem'
+    }, class SliderMenuItem extends PopupMenu.PopupMenuItem {
+    _init(slider) {
+        super._init("");
+        this.add_child(slider);
+    }
+});
 
+const SliderPanelMenuButton = GObject.registerClass(
+    {
+        GType: 'SliderPanelMenuButton'
+    }, class SliderPanelMenuButton extends PanelMenu.Button {
+        _init() {
+            super._init(0.0);
+            icon = new St.Icon({ icon_name: brightnessIcon, style_class: 'system-status-icon' });
+            this.add_actor(icon);
+        }
+        removeAllMenu(){
+            this.menu.removeAll();
+        }
+        addMenuItem(item){
+            this.menu.addMenuItem(item);
+        }
+});
 
 class SliderItem extends PopupMenu.PopupMenuSection {
     constructor(displayName, currentValue, onSliderChange) {
         super();
-
         this._displayName = displayName;
         this._currentValue = currentValue;
         this._onSliderChange = onSliderChange;
         this._init();
     }
-    _init(){
-        this.NameContainer = new PopupMenu.PopupMenuItem(this._displayName, { hover:false, reactive:false, can_focus:false});
+    _init() {
+        this.NameContainer = new PopupMenu.PopupMenuItem(this._displayName, { hover: false, reactive: false, can_focus: false });
 
-        this.SliderContainer = new PopupMenu.PopupMenuItem("");
         this.ValueSlider = new Slider.Slider(this._currentValue);
         this.ValueSlider.connect('notify::value', Lang.bind(this, this._SliderChange));
-        this.SliderContainer.actor.add(this.ValueSlider, { expand: true });
+
+        this.SliderContainer = new SliderMenuItem(this.ValueSlider);
 
         // add Slider to it
         this.addMenuItem(this.NameContainer);
         this.addMenuItem(this.SliderContainer);
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
     }
-	_SliderChange(){
+    _SliderChange() {
         let sliderval = Math.floor(this.ValueSlider.value * 100);
-		this._onSliderChange(sliderval);
-	}
+        this._onSliderChange(sliderval);
+    }
 }
-function getDisplays(){
+
+function getDisplays() {
     let displays = [];
     let ddc_output = spawnCommandAndRead("ddcutil detect --brief");
-    if (ddc_output && ddc_output !== ""){
+    if (ddc_output && ddc_output !== "") {
         let ddc_lines = ddc_output.split('\n');
         let display = {};
-        for(i=0; i<ddc_lines.length; i++){
+        for (let i = 0; i < ddc_lines.length; i++) {
             let ddc_line = ddc_lines[i];
-            if (ddc_line.indexOf("/dev/i2c-") !== -1){
+            if (ddc_line.indexOf("/dev/i2c-") !== -1) {
                 /* I2C bus comes first, so when that is detect start a new display object */
                 let display_bus = ddc_line.split("/dev/i2c-")[1].trim();
 
                 /* read the current and max brightness using getvcp 10 */
-                let vcpInfos = spawnCommandAndRead("ddcutil getvcp --nodetect --brief 10 --bus "+display_bus);
+                let vcpInfos = spawnCommandAndRead("ddcutil getvcp --nodetect --brief 10 --bus " + display_bus);
                 let vcpInfosArray = vcpInfos.trim().split(" ");
                 let maxBrightness = vcpInfosArray[4];
                 /* we need current brightness in the scale of 0 to 1 for slider*/
                 let currentBrightness = vcpInfosArray[3] / vcpInfosArray[4];
-                
+
                 /* make display object */
-                display = {"bus": display_bus, "max": maxBrightness, "current": currentBrightness };
+                display = { "bus": display_bus, "max": maxBrightness, "current": currentBrightness };
             }
-            if (ddc_line.indexOf("Monitor:") !== -1){
+            if (ddc_line.indexOf("Monitor:") !== -1) {
                 /* Monitor name comes second, so when that is detected fill the object and push it to list */
                 display["name"] = ddc_line.split("Monitor:")[1].trim().split(":")[1].trim()
                 displays.push(display)
@@ -122,34 +153,37 @@ function getDisplays(){
     }
     return displays;
 }
-function setBrightness(display, newValue){
-    let newBrightness = parseInt( (newValue / 100 )*  display.max);
+function setBrightness(display, newValue) {
+    let newBrightness = parseInt((newValue / 100) * display.max);
+    if (newBrightness <= minBrightnessThreshold) {
+        newBrightness = minBrightness;
+    }
     global.log(display.name, newValue, newBrightness)
-    GLib.spawn_command_line_async("ddcutil setvcp 10 "+newBrightness+" --nodetect --bus "+display.bus)
+    GLib.spawn_command_line_async("ddcutil setvcp 10 " + newBrightness + " --nodetect --bus " + display.bus)
 }
-function SliderPanelMenu(set){
-    if(set=="enable"){
-        panelmenu = new PanelMenu.Button(0.0);
-        icon = new St.Icon({icon_name: brightnessIcon, style_class: 'system-status-icon'});
-        panelmenu.actor.add_actor(icon); 
+
+
+function SliderPanelMenu(set) {
+    if (set == "enable") {
+        panelmenu = new SliderPanelMenuButton()
         Main.panel.addToStatusArea("BrightnessSlider", panelmenu, 0, "right");
-        panelmenu.menu.removeAll();
+        panelmenu.removeAllMenu();
         let displays = getDisplays();
-        if(displays.length > 0){
-            displays.forEach(function(display){
-                let onSliderChange = function(newValue){
+        if (displays.length > 0) {
+            displays.forEach(function (display) {
+                let onSliderChange = function (newValue) {
                     setBrightness(display, newValue)
                 };
                 let displaySlider = new SliderItem(display.name, display.current, onSliderChange)
-                panelmenu.menu.addMenuItem(displaySlider);
+                panelmenu.addMenuItem(displaySlider);
             });
-        }else{
+        } else {
             global.error("ddcutil didn't find any display.")
         }
 
-    }else if(set=="disable"){
+    } else if (set == "disable") {
         panelmenu.destroy();
         panelmenu = null;
-        icon=null;
+        icon = null;
     }
 }
