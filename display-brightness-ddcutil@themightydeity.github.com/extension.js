@@ -41,7 +41,34 @@ const minBrightness = 1;
 /* when should min brightness value should be used */
 const minBrightnessThreshold = 5;
 
+
 /* exported init */
+
+
+//timer
+/**
+ * Taken from: https://github.com/optimisme/gjs-examples/blob/master/assets/timers.js
+ */
+const Mainloop = imports.mainloop;
+const setTimeout = function(func, millis /* , ... args */) {
+
+    let args = [];
+    if (arguments.length > 2) {
+        args = args.slice.call(arguments, 2);
+    }
+ 
+    let id = Mainloop.timeout_add(millis, () => {
+        func.apply(null, args);
+        return false; // Stop repeating
+    }, null);
+
+    return id;
+};
+
+const clearTimeout = function(id) {
+
+    Mainloop.source_remove(id);
+};
 
 class Extension {
     constructor() {
@@ -82,25 +109,26 @@ const SliderPanelMenuButton = GObject.registerClass(
     {
         GType: 'SliderPanelMenuButton'
     }, class SliderPanelMenuButton extends PanelMenu.Button {
-        _init() {
-            super._init(0.0);
-            icon = new St.Icon({ icon_name: brightnessIcon, style_class: 'system-status-icon' });
-            this.add_actor(icon);
-        }
-        removeAllMenu(){
-            this.menu.removeAll();
-        }
-        addMenuItem(item){
-            this.menu.addMenuItem(item);
-        }
+    _init() {
+        super._init(0.0);
+        icon = new St.Icon({ icon_name: brightnessIcon, style_class: 'system-status-icon' });
+        this.add_actor(icon);
+    }
+    removeAllMenu() {
+        this.menu.removeAll();
+    }
+    addMenuItem(item) {
+        this.menu.addMenuItem(item);
+    }
 });
 
 class SliderItem extends PopupMenu.PopupMenuSection {
     constructor(displayName, currentValue, onSliderChange) {
         super();
-        this._displayName = displayName;
-        this._currentValue = currentValue;
-        this._onSliderChange = onSliderChange;
+        this._timer = null
+        this._displayName = displayName
+        this._currentValue = currentValue
+        this._onSliderChange = onSliderChange
         this._init();
     }
     _init() {
@@ -117,8 +145,14 @@ class SliderItem extends PopupMenu.PopupMenuSection {
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
     }
     _SliderChange() {
-        let sliderval = Math.floor(this.ValueSlider.value * 100);
-        this._onSliderChange(sliderval);
+        let sliderItem = this
+        if (sliderItem.timer) {
+            clearTimeout(sliderItem.timer);
+        }
+        sliderItem.timer = setTimeout(() => {
+            let sliderval = Math.floor(sliderItem.ValueSlider.value * 100);
+            sliderItem._onSliderChange(sliderval)
+        }, 500)
     }
 }
 
@@ -166,7 +200,7 @@ function setBrightness(display, newValue) {
 function SliderPanelMenu(set) {
     if (set == "enable") {
         panelmenu = new SliderPanelMenuButton()
-        Main.panel.addToStatusArea("BrightnessSlider", panelmenu, 0, "right");
+        Main.panel.addToStatusArea("DDCUtilBrightnessSlider", panelmenu, 0, "right");
         panelmenu.removeAllMenu();
         let displays = getDisplays();
         if (displays.length > 0) {
