@@ -161,6 +161,7 @@ function getDisplays() {
     let ddc_output = spawnCommandAndRead("ddcutil detect --brief");
     if (ddc_output && ddc_output !== "") {
         let ddc_lines = ddc_output.split('\n');
+        let ddc_supported = null;
         let display = {};
         for (let i = 0; i < ddc_lines.length; i++) {
             let ddc_line = ddc_lines[i];
@@ -170,6 +171,12 @@ function getDisplays() {
 
                 /* read the current and max brightness using getvcp 10 */
                 let vcpInfos = spawnCommandAndRead("ddcutil getvcp --nodetect --brief 10 --bus " + display_bus);
+                if (vcpInfos.indexOf("DDC communication failed") !== -1) {
+                    ddc_supported = false;
+                    continue;
+                } else {
+                    ddc_supported = true;
+                }
                 let vcpInfosArray = vcpInfos.trim().split(" ");
                 let maxBrightness = vcpInfosArray[4];
                 /* we need current brightness in the scale of 0 to 1 for slider*/
@@ -178,7 +185,7 @@ function getDisplays() {
                 /* make display object */
                 display = { "bus": display_bus, "max": maxBrightness, "current": currentBrightness };
             }
-            if (ddc_line.indexOf("Monitor:") !== -1) {
+            if (ddc_line.indexOf("Monitor:") !== -1 && ddc_supported) {
                 /* Monitor name comes second, so when that is detected fill the object and push it to list */
                 display["name"] = ddc_line.split("Monitor:")[1].trim().split(":")[1].trim()
                 displays.push(display)
@@ -212,7 +219,10 @@ function SliderPanelMenu(set) {
                 panelmenu.addMenuItem(displaySlider);
             });
         } else {
-            global.error("ddcutil didn't find any display.")
+            let noDisplayFound = new PopupMenu.PopupMenuItem("ddcutil didn't find any display\nwith DDC/CI support.", {
+                reactive: false
+            });
+            panelmenu.addMenuItem(noDisplayFound);
         }
 
     } else if (set == "disable") {
