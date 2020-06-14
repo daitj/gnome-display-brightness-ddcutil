@@ -42,21 +42,19 @@ const minBrightness = 1;
 const minBrightnessThreshold = 5;
 
 
-/* exported init */
-
 
 //timer
 /**
  * Taken from: https://github.com/optimisme/gjs-examples/blob/master/assets/timers.js
  */
 const Mainloop = imports.mainloop;
-const setTimeout = function(func, millis /* , ... args */) {
+const setTimeout = function(func, millis /* , ... args */ ) {
 
     let args = [];
     if (arguments.length > 2) {
         args = args.slice.call(arguments, 2);
     }
- 
+
     let id = Mainloop.timeout_add(millis, () => {
         func.apply(null, args);
         return false; // Stop repeating
@@ -71,8 +69,7 @@ const clearTimeout = function(id) {
 };
 
 class Extension {
-    constructor() {
-    }
+    constructor() {}
 
     enable() {
         SliderPanelMenu("enable")
@@ -95,20 +92,18 @@ function spawnCommandAndRead(command_line) {
         return null;
     }
 }
-const SliderMenuItem = GObject.registerClass(
-    {
-        GType: 'SliderMenuItem'
-    }, class SliderMenuItem extends PopupMenu.PopupMenuItem {
+const SliderMenuItem = GObject.registerClass({
+    GType: 'SliderMenuItem'
+}, class SliderMenuItem extends PopupMenu.PopupMenuItem {
     _init(slider) {
         super._init("");
         this.add_child(slider);
     }
 });
 
-const SliderPanelMenuButton = GObject.registerClass(
-    {
-        GType: 'SliderPanelMenuButton'
-    }, class SliderPanelMenuButton extends PanelMenu.Button {
+const SliderPanelMenuButton = GObject.registerClass({
+    GType: 'SliderPanelMenuButton'
+}, class SliderPanelMenuButton extends PanelMenu.Button {
     _init() {
         super._init(0.0);
         icon = new St.Icon({ icon_name: brightnessIcon, style_class: 'system-status-icon' });
@@ -156,44 +151,48 @@ class SliderItem extends PopupMenu.PopupMenuSection {
     }
 }
 
+
 function getDisplays() {
-    let displays = [];
-    let ddc_output = spawnCommandAndRead("ddcutil detect --brief");
-    if (ddc_output && ddc_output !== "") {
-        let ddc_lines = ddc_output.split('\n');
-        let ddc_supported = null;
-        let display = {};
-        for (let i = 0; i < ddc_lines.length; i++) {
-            let ddc_line = ddc_lines[i];
-            if (ddc_line.indexOf("/dev/i2c-") !== -1) {
-                /* I2C bus comes first, so when that is detect start a new display object */
-                let display_bus = ddc_line.split("/dev/i2c-")[1].trim();
+    return new Promise((resolve, reject) => {
+        let displays = [];
+        let ddc_output = spawnCommandAndRead("ddcutil detect --brief");
+        if (ddc_output && ddc_output !== "") {
+            let ddc_lines = ddc_output.split('\n');
+            let ddc_supported = null;
+            let display = {};
+            for (let i = 0; i < ddc_lines.length; i++) {
+                let ddc_line = ddc_lines[i];
+                if (ddc_line.indexOf("/dev/i2c-") !== -1) {
+                    /* I2C bus comes first, so when that is detect start a new display object */
+                    let display_bus = ddc_line.split("/dev/i2c-")[1].trim();
 
-                /* read the current and max brightness using getvcp 10 */
-                let vcpInfos = spawnCommandAndRead("ddcutil getvcp --nodetect --brief 10 --bus " + display_bus);
-                if (vcpInfos.indexOf("DDC communication failed") !== -1) {
-                    ddc_supported = false;
-                    continue;
-                } else {
-                    ddc_supported = true;
+                    /* read the current and max brightness using getvcp 10 */
+                    let vcpInfos = spawnCommandAndRead("ddcutil getvcp --nodetect --brief 10 --bus " + display_bus);
+                    if (vcpInfos.indexOf("DDC communication failed") !== -1) {
+                        ddc_supported = false;
+                        continue;
+                    } else {
+                        ddc_supported = true;
+                    }
+                    let vcpInfosArray = vcpInfos.trim().split(" ");
+                    let maxBrightness = vcpInfosArray[4];
+                    /* we need current brightness in the scale of 0 to 1 for slider*/
+                    let currentBrightness = vcpInfosArray[3] / vcpInfosArray[4];
+
+                    /* make display object */
+                    display = { "bus": display_bus, "max": maxBrightness, "current": currentBrightness };
                 }
-                let vcpInfosArray = vcpInfos.trim().split(" ");
-                let maxBrightness = vcpInfosArray[4];
-                /* we need current brightness in the scale of 0 to 1 for slider*/
-                let currentBrightness = vcpInfosArray[3] / vcpInfosArray[4];
-
-                /* make display object */
-                display = { "bus": display_bus, "max": maxBrightness, "current": currentBrightness };
-            }
-            if (ddc_line.indexOf("Monitor:") !== -1 && ddc_supported) {
-                /* Monitor name comes second, so when that is detected fill the object and push it to list */
-                display["name"] = ddc_line.split("Monitor:")[1].trim().split(":")[1].trim()
-                displays.push(display)
+                if (ddc_line.indexOf("Monitor:") !== -1 && ddc_supported) {
+                    /* Monitor name comes second, so when that is detected fill the object and push it to list */
+                    display["name"] = ddc_line.split("Monitor:")[1].trim().split(":")[1].trim()
+                    displays.push(display)
+                }
             }
         }
-    }
-    return displays;
+        resolve(displays)
+    });
 }
+
 function setBrightness(display, newValue) {
     let newBrightness = parseInt((newValue / 100) * display.max);
     if (newBrightness <= minBrightnessThreshold) {
@@ -203,28 +202,30 @@ function setBrightness(display, newValue) {
     GLib.spawn_command_line_async("ddcutil setvcp 10 " + newBrightness + " --nodetect --bus " + display.bus)
 }
 
+async function getAndPaintDisplays(panelmenu) {
+    let displays = await getDisplays();
+    if (displays.length > 0) {
+        displays.forEach(function(display) {
+            let onSliderChange = function(newValue) {
+                setBrightness(display, newValue)
+            };
+            let displaySlider = new SliderItem(display.name, display.current, onSliderChange)
+            panelmenu.addMenuItem(displaySlider);
+        });
+    } else {
+        let noDisplayFound = new PopupMenu.PopupMenuItem("ddcutil didn't find any display\nwith DDC/CI support.", {
+            reactive: false
+        });
+        panelmenu.addMenuItem(noDisplayFound);
+    }
+}
 
 function SliderPanelMenu(set) {
     if (set == "enable") {
         panelmenu = new SliderPanelMenuButton()
         Main.panel.addToStatusArea("DDCUtilBrightnessSlider", panelmenu, 0, "right");
         panelmenu.removeAllMenu();
-        let displays = getDisplays();
-        if (displays.length > 0) {
-            displays.forEach(function (display) {
-                let onSliderChange = function (newValue) {
-                    setBrightness(display, newValue)
-                };
-                let displaySlider = new SliderItem(display.name, display.current, onSliderChange)
-                panelmenu.addMenuItem(displaySlider);
-            });
-        } else {
-            let noDisplayFound = new PopupMenu.PopupMenuItem("ddcutil didn't find any display\nwith DDC/CI support.", {
-                reactive: false
-            });
-            panelmenu.addMenuItem(noDisplayFound);
-        }
-
+        getAndPaintDisplays(panelmenu);
     } else if (set == "disable") {
         panelmenu.destroy();
         panelmenu = null;
