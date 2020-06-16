@@ -48,9 +48,10 @@ const minBrightnessThreshold = 5;
     as it is unlikely that bus number changes, we can read
     cache file instead.
     one can make this file by running following shell command:
-    ddcutil --brief detect > ~/.cache/ddcutil_detect
+    ddcutil --brief detect > $XDG_CACHE_HOME/ddcutil_detect
 */
-const ddcutil_detect_cache_file = "~/.cache/ddcutil_detect";
+const cache_dir = GLib.get_user_cache_dir()
+const ddcutil_detect_cache_file = `${cache_dir}/ddcutil_detect`;
 
 const ddcutil_path = "/usr/bin/ddcutil";
 
@@ -276,15 +277,13 @@ function getDisplaysInfoAsync(panel) {
     });
 }
 
-
 function getCachedDisplayInfoAsync(panel) {
     let file = Gio.File.new_for_path(ddcutil_detect_cache_file)
     let cancellable = new Gio.Cancellable();
     file.load_contents_async(cancellable, (source, result) => {
         try {
-            result = source.load_contents_finish(result);
-            let [ok, contents, etag_out] = result;
-            parseDisplaysInfoAndAddToPanel(contents, panel)
+            let [ok, contents, etag_out] = source.load_contents_finish(result);
+            parseDisplaysInfoAndAddToPanel(ByteArray.toString(contents), panel)
         } catch (e) {
             global.log(`${ddcutil_detect_cache_file} cache file reading error`)
         }
@@ -304,7 +303,7 @@ function SliderPanelMenu(set) {
             if (panelmenu) {
                 addTextItemToPanel("Initializing", panelmenu);
                 try {
-                    if (GLib.file_test(ddcutil_detect_cache_file, GLib.FileTest.IS_REGULAR)) {
+                    if (GLib.file_test(ddcutil_detect_cache_file, (GLib.FileTest.IS_REGULAR))) {
                         getCachedDisplayInfoAsync(panelmenu);
                     } else {
                         getDisplaysInfoAsync(panelmenu);
