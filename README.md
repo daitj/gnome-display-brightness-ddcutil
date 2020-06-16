@@ -14,3 +14,11 @@ It automatically supports multiple displays detected by
 
 `ddcutil detect`
 
+## Issues
+
+### Screen hangs/locks on first startup
+In my hardware for some reason when `ddcutil detect` is ran for the first time after a cold boot and then, when it checks for i2c busno=1, whole system locks for couple of seconds.
+As a workaround I changed this extension to read cached info from a file, when it exists.
+```
+ddcutil --brief detect > ~/.cache/ddcutil_detect
+```
