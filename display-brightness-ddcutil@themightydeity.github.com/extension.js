@@ -208,7 +208,7 @@ function setBrightness(display, newValue) {
     if (newBrightness <= minBrightnessThreshold) {
         newBrightness = minBrightness;
     }
-    global.log(display.name, newValue, newBrightness)
+    //global.log(display.name, newValue, newBrightness)
     GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --nodetect --bus ${display.bus}`)
 }
 
