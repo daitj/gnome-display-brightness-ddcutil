@@ -23,6 +23,9 @@ const { Clutter, GObject, St } = imports.gi;
 // for shell command 
 const GLib = imports.gi.GLib;
 
+//io
+const Gio = imports.gi.Gio;
+
 // icons and labels
 const Lang = imports.lang;
 
@@ -42,21 +45,19 @@ const minBrightness = 1;
 const minBrightnessThreshold = 5;
 
 
-/* exported init */
-
 
 //timer
 /**
  * Taken from: https://github.com/optimisme/gjs-examples/blob/master/assets/timers.js
  */
 const Mainloop = imports.mainloop;
-const setTimeout = function(func, millis /* , ... args */) {
+const setTimeout = function(func, millis /* , ... args */ ) {
 
     let args = [];
     if (arguments.length > 2) {
         args = args.slice.call(arguments, 2);
     }
- 
+
     let id = Mainloop.timeout_add(millis, () => {
         func.apply(null, args);
         return false; // Stop repeating
@@ -71,8 +72,7 @@ const clearTimeout = function(id) {
 };
 
 class Extension {
-    constructor() {
-    }
+    constructor() {}
 
     enable() {
         SliderPanelMenu("enable")
@@ -95,20 +95,20 @@ function spawnCommandAndRead(command_line) {
         return null;
     }
 }
-const SliderMenuItem = GObject.registerClass(
-    {
-        GType: 'SliderMenuItem'
-    }, class SliderMenuItem extends PopupMenu.PopupMenuItem {
+
+
+const SliderMenuItem = GObject.registerClass({
+    GType: 'SliderMenuItem'
+}, class SliderMenuItem extends PopupMenu.PopupMenuItem {
     _init(slider) {
         super._init("");
         this.add_child(slider);
     }
 });
 
-const SliderPanelMenuButton = GObject.registerClass(
-    {
-        GType: 'SliderPanelMenuButton'
-    }, class SliderPanelMenuButton extends PanelMenu.Button {
+const SliderPanelMenuButton = GObject.registerClass({
+    GType: 'SliderPanelMenuButton'
+}, class SliderPanelMenuButton extends PanelMenu.Button {
     _init() {
         super._init(0.0);
         icon = new St.Icon({ icon_name: brightnessIcon, style_class: 'system-status-icon' });
@@ -156,24 +156,46 @@ class SliderItem extends PopupMenu.PopupMenuSection {
     }
 }
 
-function getDisplays() {
-    let displays = [];
-    let ddc_output = spawnCommandAndRead("ddcutil detect --brief");
-    if (ddc_output && ddc_output !== "") {
-        let ddc_lines = ddc_output.split('\n');
-        let ddc_supported = null;
-        let display = {};
-        for (let i = 0; i < ddc_lines.length; i++) {
-            let ddc_line = ddc_lines[i];
+function setBrightness(display, newValue) {
+    let newBrightness = parseInt((newValue / 100) * display.max);
+    if (newBrightness <= minBrightnessThreshold) {
+        newBrightness = minBrightness;
+    }
+    global.log(display.name, newValue, newBrightness)
+    GLib.spawn_command_line_async("ddcutil setvcp 10 " + newBrightness + " --nodetect --bus " + display.bus)
+}
+
+function addDisplayToPanel(display, panel) {
+    let onSliderChange = function(newValue) {
+        setBrightness(display, newValue)
+    };
+    let displaySlider = new SliderItem(display.name, display.current, onSliderChange)
+    panel.addMenuItem(displaySlider);
+}
+
+function noDisplayFound(panel) {
+    let noDisplayFound = new PopupMenu.PopupMenuItem("ddcutil didn't find any display\nwith DDC/CI support.", {
+        reactive: false
+    });
+    panel.addMenuItem(noDisplayFound);
+}
+
+function onDisplayBriefInfo(args, stdout, result) {
+    let [panel, first, display, ddc_supported] = args
+    try {
+        let ddc_line = stdout.read_line_finish(result)[0];
+        // %null generally means end of stream
+        if (ddc_line !== null) {
+            ddc_line = ddc_line.toString()
             if (ddc_line.indexOf("/dev/i2c-") !== -1) {
                 /* I2C bus comes first, so when that is detect start a new display object */
                 let display_bus = ddc_line.split("/dev/i2c-")[1].trim();
-
                 /* read the current and max brightness using getvcp 10 */
                 let vcpInfos = spawnCommandAndRead("ddcutil getvcp --nodetect --brief 10 --bus " + display_bus);
                 if (vcpInfos.indexOf("DDC communication failed") !== -1) {
                     ddc_supported = false;
-                    continue;
+                    //reset display object, as old one will be skipped
+                    display = {};
                 } else {
                     ddc_supported = true;
                 }
@@ -186,45 +208,73 @@ function getDisplays() {
                 display = { "bus": display_bus, "max": maxBrightness, "current": currentBrightness };
             }
             if (ddc_line.indexOf("Monitor:") !== -1 && ddc_supported) {
-                /* Monitor name comes second, so when that is detected fill the object and push it to list */
-                display["name"] = ddc_line.split("Monitor:")[1].trim().split(":")[1].trim()
-                displays.push(display)
+                /* Monitor name comes second in the output,
+                 so when that is detected fill the object and push it to list */
+                if (display["bus"] !== "") {
+                    display["name"] = ddc_line.split("Monitor:")[1].trim().split(":")[1].trim()
+                }
+                if (first) {
+                    // clear anything there is already
+                    panel.removeAllMenu()
+                    first = false;
+                }
+                // add newly made display object to panel
+                addDisplayToPanel(display, panel);
+                //prep for new display
+                display = {};
+                ddc_supported = false;
+            }
+            // Now you can request the next line
+            stdout.read_line_async(GLib.PRIORITY_DEFAULT, null, onDisplayBriefInfo.bind(this, [panel, first, display, ddc_supported]));
+        } else {
+            if (first) {
+                panel.removeAllMenu();
+                //is first and still no display has been added yet
+                noDisplayFound(panel);
             }
         }
+    } catch (e) {
+        global.log("Error " + e);
     }
-    return displays;
-}
-function setBrightness(display, newValue) {
-    let newBrightness = parseInt((newValue / 100) * display.max);
-    if (newBrightness <= minBrightnessThreshold) {
-        newBrightness = minBrightness;
-    }
-    global.log(display.name, newValue, newBrightness)
-    GLib.spawn_command_line_async("ddcutil setvcp 10 " + newBrightness + " --nodetect --bus " + display.bus)
 }
 
+async function getDisplayBriefInfo(panel) {
+    let [success, argv] = GLib.shell_parse_argv("sh -c '" + "ddcutil detect --brief" + "'");
+    if (success) {
+        let [exit, pid, fd_stdin, fd_stdout, stderr] =
+        GLib.spawn_async_with_pipes(
+            null,
+            argv,
+            null,
+            GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+            null
+        );
+        let out_reader = new Gio.DataInputStream({
+            base_stream: new Gio.UnixInputStream({ fd: fd_stdout })
+        });
+        out_reader.read_line_async(GLib.PRIORITY_DEFAULT, null, onDisplayBriefInfo.bind(this, [panel, true, {}, false]));
+    } else {
+        throw new Error("Invalid command passed");
+    }
+}
+
+async function getAndPaintDisplays(panel) {
+    let readingDisplays = new PopupMenu.PopupMenuItem("Reading...", {
+        reactive: false
+    });
+    panel.addMenuItem(readingDisplays);
+    try {
+        getDisplayBriefInfo(panel);
+    } catch (error) {
+        global.log(error)
+    }
+}
 
 function SliderPanelMenu(set) {
     if (set == "enable") {
         panelmenu = new SliderPanelMenuButton()
         Main.panel.addToStatusArea("DDCUtilBrightnessSlider", panelmenu, 0, "right");
-        panelmenu.removeAllMenu();
-        let displays = getDisplays();
-        if (displays.length > 0) {
-            displays.forEach(function (display) {
-                let onSliderChange = function (newValue) {
-                    setBrightness(display, newValue)
-                };
-                let displaySlider = new SliderItem(display.name, display.current, onSliderChange)
-                panelmenu.addMenuItem(displaySlider);
-            });
-        } else {
-            let noDisplayFound = new PopupMenu.PopupMenuItem("ddcutil didn't find any display\nwith DDC/CI support.", {
-                reactive: false
-            });
-            panelmenu.addMenuItem(noDisplayFound);
-        }
-
+        getAndPaintDisplays(panelmenu);
     } else if (set == "disable") {
         panelmenu.destroy();
         panelmenu = null;
