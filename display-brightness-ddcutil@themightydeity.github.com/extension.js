@@ -52,12 +52,12 @@ const minBrightnessThreshold = 5;
 */
 const ddcutil_detect_cache_file = "~/.cache/ddcutil_detect";
 
-const ddcutil_path = "/usr/bin/ddcutil";
 
 //timer
 /**
  * Taken from: https://github.com/optimisme/gjs-examples/blob/master/assets/timers.js
  */
+const Mainloop = imports.mainloop;
 const setTimeout = function(func, millis /* , ... args */ ) {
 
     let args = [];
@@ -65,7 +65,7 @@ const setTimeout = function(func, millis /* , ... args */ ) {
         args = args.slice.call(arguments, 2);
     }
 
-    let id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, millis, () => {
+    let id = Mainloop.timeout_add(millis, () => {
         func.apply(null, args);
         return GLib.SOURCE_REMOVE;; // Stop repeating
     }, null);
@@ -101,49 +101,6 @@ function spawnCommandAndRead(command_line) {
         return null;
     }
 }
-
-function spawnWithCallback(argv, callback) {
-    let env = GLib.get_environ();
-    let [success, pid, stdinFile, stdoutFile, stderrFile] = GLib.spawn_async_with_pipes(
-        null, argv, env, 0, null);
-
-    if (!success)
-        return;
-
-    GLib.close(stdinFile);
-    GLib.close(stderrFile);
-
-    let standardOutput = "";
-
-    let stdoutStream = new Gio.DataInputStream({
-        base_stream: new Gio.UnixInputStream({
-            fd: stdoutFile
-        })
-    });
-
-    readStream(stdoutStream, function(output) {
-        if (output === null) {
-            stdoutStream.close(null);
-            callback(standardOutput);
-        } else {
-            standardOutput += output;
-        }
-    });
-}
-
-function readStream(stream, callback) {
-    stream.read_line_async(GLib.PRIORITY_LOW, null, function(source, result) {
-        let [line] = source.read_line_finish(result);
-
-        if (line === null) {
-            callback(null);
-        } else {
-            callback(imports.byteArray.toString(line) + "\n");
-            readStream(source, callback);
-        }
-    });
-}
-
 const SliderMenuItem = GObject.registerClass({
     GType: 'SliderMenuItem'
 }, class SliderMenuItem extends PopupMenu.PopupMenuItem {
@@ -203,48 +160,26 @@ class SliderItem extends PopupMenu.PopupMenuSection {
     }
 }
 
-function setBrightness(display, newValue) {
-    let newBrightness = parseInt((newValue / 100) * display.max);
-    if (newBrightness <= minBrightnessThreshold) {
-        newBrightness = minBrightness;
-    }
-    global.log(display.name, newValue, newBrightness)
-    GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --nodetect --bus ${display.bus}`)
-}
 
-function addDisplayToPanel(display, panel, display_count) {
-    if (display_count == 1) {
-        //remove all text info before adding first display
-        panel.removeAllMenu()
-    }
-    let onSliderChange = function(newValue) {
-        setBrightness(display, newValue)
-    };
-    let displaySlider = new SliderItem(display.name, display.current, onSliderChange)
-    panel.addMenuItem(displaySlider);
-}
-
-function addTextItemToPanel(text, panel) {
-    let menuItem = new PopupMenu.PopupMenuItem(text, {
-        reactive: false
-    });
-    panel.addMenuItem(menuItem);
-}
-
-function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
-    try {
+function getDisplays() {
+    return new Promise((resolve, reject) => {
         let displays = [];
-        let display_names = [];
-        ddcutil_brief_info.split('\n').map(ddc_line => {
-            if (ddc_line.indexOf("/dev/i2c-") !== -1) {
-                /* I2C bus comes first, so when that is detect start a new display object */
-                let display_bus = ddc_line.split("/dev/i2c-")[1].trim();
-                /* read the current and max brightness using getvcp 10 */
-                spawnWithCallback([ddcutil_path, "getvcp", "--nodetect", "--brief", "10", "--bus", display_bus], function(vcpInfos) {
-                    let display = {};
-                    let ddc_supported = true;
+        let ddc_output = spawnCommandAndRead("ddcutil detect --brief");
+        if (ddc_output && ddc_output !== "") {
+            let ddc_lines = ddc_output.split('\n');
+            let ddc_supported = null;
+            let display = {};
+            for (let i = 0; i < ddc_lines.length; i++) {
+                let ddc_line = ddc_lines[i];
+                if (ddc_line.indexOf("/dev/i2c-") !== -1) {
+                    /* I2C bus comes first, so when that is detect start a new display object */
+                    let display_bus = ddc_line.split("/dev/i2c-")[1].trim();
+
+                    /* read the current and max brightness using getvcp 10 */
+                    let vcpInfos = spawnCommandAndRead("ddcutil getvcp --nodetect --brief 10 --bus " + display_bus);
                     if (vcpInfos.indexOf("DDC communication failed") !== -1) {
                         ddc_supported = false;
+                        continue;
                     } else {
                         ddc_supported = true;
                     }
@@ -254,67 +189,52 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
                     let currentBrightness = vcpInfosArray[3] / vcpInfosArray[4];
 
                     /* make display object */
-                    display = { "bus": display_bus, "max": maxBrightness, "current": currentBrightness, "supported": ddc_supported, "name": display_names[displays.length] };
-                    displays.push(display);
-                    addDisplayToPanel(display, panel, displays.length);
-                });
+                    display = { "bus": display_bus, "max": maxBrightness, "current": currentBrightness };
+                }
+                if (ddc_line.indexOf("Monitor:") !== -1 && ddc_supported) {
+                    /* Monitor name comes second, so when that is detected fill the object and push it to list */
+                    display["name"] = ddc_line.split("Monitor:")[1].trim().split(":")[1].trim()
+                    displays.push(display)
+                }
             }
-            if (ddc_line.indexOf("Monitor:") !== -1) {
-                /* Monitor name comes second in the output,
-                 so when that is detected fill the object and push it to list */
-                display_names.push(ddc_line.split("Monitor:")[1].trim().split(":")[1].trim())
-            }
+        }
+        resolve(displays)
+    });
+}
+
+function setBrightness(display, newValue) {
+    let newBrightness = parseInt((newValue / 100) * display.max);
+    if (newBrightness <= minBrightnessThreshold) {
+        newBrightness = minBrightness;
+    }
+    global.log(display.name, newValue, newBrightness)
+    GLib.spawn_command_line_async("ddcutil setvcp 10 " + newBrightness + " --nodetect --bus " + display.bus)
+}
+
+async function getAndPaintDisplays(panelmenu) {
+    let displays = await getDisplays();
+    if (displays.length > 0) {
+        displays.forEach(function(display) {
+            let onSliderChange = function(newValue) {
+                setBrightness(display, newValue)
+            };
+            let displaySlider = new SliderItem(display.name, display.current, onSliderChange)
+            panelmenu.addMenuItem(displaySlider);
         });
-    } catch (err) {
-        global.log(err);
+    } else {
+        let noDisplayFound = new PopupMenu.PopupMenuItem("ddcutil didn't find any display\nwith DDC/CI support.", {
+            reactive: false
+        });
+        panelmenu.addMenuItem(noDisplayFound);
     }
 }
-
-function getDisplaysInfoAsync(panel) {
-    spawnWithCallback([ddcutil_path, "detect", "--brief"], function(stdout) {
-        parseDisplaysInfoAndAddToPanel(stdout, panel)
-    });
-}
-
-
-function getCachedDisplayInfoAsync(panel) {
-    let file = Gio.File.new_for_path(ddcutil_detect_cache_file)
-    let cancellable = new Gio.Cancellable();
-    file.load_contents_async(cancellable, (source, result) => {
-        try {
-            result = source.load_contents_finish(result);
-            let [ok, contents, etag_out] = result;
-            parseDisplaysInfoAndAddToPanel(contents, panel)
-        } catch (e) {
-            global.log(`${ddcutil_detect_cache_file} cache file reading error`)
-        }
-    });
-    spawnWithCallback(["cat", ddcutil_detect_cache_file], function(stdout) {});
-}
-
-let panelmenu;
-let timeoutId = null;
 
 function SliderPanelMenu(set) {
     if (set == "enable") {
         panelmenu = new SliderPanelMenuButton()
         Main.panel.addToStatusArea("DDCUtilBrightnessSlider", panelmenu, 0, "right");
-        timeoutId = setTimeout(function() {
-            timeoutId = null;
-            if (panelmenu) {
-                addTextItemToPanel("Initializing", panelmenu);
-                try {
-                    if (GLib.file_test(ddcutil_detect_cache_file, GLib.FileTest.IS_REGULAR)) {
-                        getCachedDisplayInfoAsync(panelmenu);
-                    } else {
-                        getDisplaysInfoAsync(panelmenu);
-                    }
-                } catch (err) {
-                    global.log(err);
-                }
-            }
-        }, 1);
-
+        panelmenu.removeAllMenu();
+        getAndPaintDisplays(panelmenu);
     } else if (set == "disable") {
         panelmenu.destroy();
         panelmenu = null;
