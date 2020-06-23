@@ -69,7 +69,7 @@ const setTimeout = function(func, millis /* , ... args */ ) {
     let id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, millis, () => {
         func.apply(null, args);
         return GLib.SOURCE_REMOVE;; // Stop repeating
-    }, null);
+    });
 
     return id;
 };
@@ -210,7 +210,7 @@ function setBrightness(display, newValue) {
         newBrightness = minBrightness;
     }
     //global.log(display.name, newValue, newBrightness)
-    GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --nodetect --bus ${display.bus}`)
+    GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus}`)
 }
 
 function addDisplayToPanel(display, panel, display_count) {
@@ -241,7 +241,7 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
                 /* I2C bus comes first, so when that is detect start a new display object */
                 let display_bus = ddc_line.split("/dev/i2c-")[1].trim();
                 /* read the current and max brightness using getvcp 10 */
-                spawnWithCallback([ddcutil_path, "getvcp", "--nodetect", "--brief", "10", "--bus", display_bus], function(vcpInfos) {
+                spawnWithCallback([ddcutil_path, "getvcp", "--brief", "10", "--bus", display_bus], function(vcpInfos) {
                     let display = {};
                     let ddc_supported = true;
                     if (vcpInfos.indexOf("DDC communication failed") !== -1) {
