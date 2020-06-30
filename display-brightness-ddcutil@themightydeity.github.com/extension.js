@@ -115,19 +115,6 @@ function spawnWithCallback(argv, callback) {
     });
 }
 
-function readStream(stream, callback) {
-    stream.read_line_async(GLib.PRIORITY_LOW, null, function(source, result) {
-        let [line] = source.read_line_finish(result);
-
-        if (line === null) {
-            callback(null);
-        } else {
-            callback(imports.byteArray.toString(line) + "\n");
-            readStream(source, callback);
-        }
-    });
-}
-
 const SliderMenuItem = GObject.registerClass({
     GType: 'SliderMenuItem'
 }, class SliderMenuItem extends PopupMenu.PopupMenuItem {
@@ -192,7 +179,7 @@ function setBrightness(display, newValue) {
     if (newBrightness <= minBrightnessThreshold) {
         newBrightness = minBrightness;
     }
-    //global.log(display.name, newValue, newBrightness)
+    //log(display.name, newValue, newBrightness)
     GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus}`)
 }
 
@@ -250,7 +237,7 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
             }
         });
     } catch (err) {
-        global.log(err);
+        log(err);
     }
 }
 
@@ -268,7 +255,7 @@ function getCachedDisplayInfoAsync(panel) {
             let [ok, contents, etag_out] = source.load_contents_finish(result);
             parseDisplaysInfoAndAddToPanel(ByteArray.toString(contents), panel)
         } catch (e) {
-            global.log(`${ddcutil_detect_cache_file} cache file reading error`)
+            log(`${ddcutil_detect_cache_file} cache file reading error`)
         }
     });
     spawnWithCallback(["cat", ddcutil_detect_cache_file], function(stdout) {});
@@ -292,7 +279,7 @@ function SliderPanelMenu(set) {
                         getDisplaysInfoAsync(panelmenu);
                     }
                 } catch (err) {
-                    global.log(err);
+                    log(err);
                 }
             }
         }, 1);
