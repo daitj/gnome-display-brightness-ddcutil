@@ -104,30 +104,13 @@ function spawnCommandAndRead(command_line) {
 }
 
 function spawnWithCallback(argv, callback) {
-    let env = GLib.get_environ();
-    let [success, pid, stdinFile, stdoutFile, stderrFile] = GLib.spawn_async_with_pipes(
-        null, argv, env, 0, null);
+    let proc = Gio.Subprocess.new(argv, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
 
-    if (!success)
-        return;
+    proc.communicate_utf8_async(null, null, (proc, res) => {
+        let [ok, stdout, stderr] = proc.communicate_utf8_finish(res);
 
-    GLib.close(stdinFile);
-    GLib.close(stderrFile);
-
-    let standardOutput = "";
-
-    let stdoutStream = new Gio.DataInputStream({
-        base_stream: new Gio.UnixInputStream({
-            fd: stdoutFile
-        })
-    });
-
-    readStream(stdoutStream, function(output) {
-        if (output === null) {
-            stdoutStream.close(null);
-            callback(standardOutput);
-        } else {
-            standardOutput += output;
+        if (proc.get_successful()) {
+            callback(stdout);
         }
     });
 }
