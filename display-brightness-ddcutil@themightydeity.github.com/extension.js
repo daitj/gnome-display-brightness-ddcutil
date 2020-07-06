@@ -117,10 +117,11 @@ function spawnWithCallback(argv, callback) {
 
 const SliderMenuItem = GObject.registerClass({
     GType: 'SliderMenuItem'
-}, class SliderMenuItem extends PopupMenu.PopupMenuItem {
-    _init(slider) {
-        super._init("");
+}, class SliderMenuItem extends PopupMenu.PopupBaseMenuItem {
+    _init(slider, label) {
+        super._init();
         this.add_child(slider);
+        this.add_child(label);
     }
 });
 
@@ -154,22 +155,27 @@ class SliderItem extends PopupMenu.PopupMenuSection {
 
         this.ValueSlider = new Slider.Slider(this._currentValue);
         this.ValueSlider.connect('notify::value', Lang.bind(this, this._SliderChange));
+        this.ValueLabel = new St.Label({text: this._SliderValueToBrightness(this._currentValue).toString()});
 
-        this.SliderContainer = new SliderMenuItem(this.ValueSlider);
+        this.SliderContainer = new SliderMenuItem(this.ValueSlider, this.ValueLabel);
 
         // add Slider to it
         this.addMenuItem(this.NameContainer);
         this.addMenuItem(this.SliderContainer);
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
     }
+    _SliderValueToBrightness(sliderValue) {
+        return Math.floor(sliderValue * 100);
+    }
     _SliderChange() {
         let sliderItem = this
         if (sliderItem.timer) {
             clearTimeout(sliderItem.timer);
         }
+        let brightness = this._SliderValueToBrightness(sliderItem.ValueSlider.value);
+        sliderItem.ValueLabel.text = brightness.toString();
         sliderItem.timer = setTimeout(() => {
-            let sliderval = Math.floor(sliderItem.ValueSlider.value * 100);
-            sliderItem._onSliderChange(sliderval)
+            sliderItem._onSliderChange(brightness)
         }, 500)
     }
 }
