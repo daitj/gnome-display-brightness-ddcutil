@@ -20,7 +20,7 @@ const Main = imports.ui.main;
 const ByteArray = imports.byteArray;
 const { Clutter, GObject, St } = imports.gi;
 
-// for shell command 
+// for shell command
 const GLib = imports.gi.GLib;
 
 //io
@@ -43,8 +43,10 @@ const minBrightness = 1;
 /* when should min brightness value should be used */
 const minBrightnessThreshold = 5;
 
-/*  
-    instead of reading i2c bus everytime during startup, 
+const displays = [];
+
+/*
+    instead of reading i2c bus everytime during startup,
     as it is unlikely that bus number changes, we can read
     cache file instead.
     one can make this file by running following shell command:
@@ -162,6 +164,9 @@ class SliderItem extends PopupMenu.PopupMenuSection {
         this.addMenuItem(this.SliderContainer);
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
     }
+    changeValue(newValue) {
+        this.ValueSlider.value = newValue / 100;
+    }
     _SliderChange() {
         let sliderItem = this
         if (sliderItem.timer) {
@@ -183,17 +188,31 @@ function setBrightness(display, newValue) {
     GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus}`)
 }
 
+function setAllBrightness(newValue) {
+    displays.forEach(element => {
+        element.slider.changeValue(newValue);
+        setBrightness(element, newValue);
+    });
+}
+
 function addDisplayToPanel(display, panel, display_count) {
     if (display_count == 1) {
         //remove all text info before adding first display
-        panel.removeAllMenu()
+        panel.removeAllMenu();
+        let onSliderChange = function(newValue) {
+            setAllBrightness(newValue);
+        }
+        let allslider = new SliderItem("All", display.current, onSliderChange);
+        panel.addMenuItem(allslider)
     }
     let onSliderChange = function(newValue) {
         setBrightness(display, newValue)
     };
     let displaySlider = new SliderItem(display.name, display.current, onSliderChange)
+    display.slider = displaySlider;
     panel.addMenuItem(displaySlider);
 }
+
 
 function addTextItemToPanel(text, panel) {
     let menuItem = new PopupMenu.PopupMenuItem(text, {
@@ -204,7 +223,6 @@ function addTextItemToPanel(text, panel) {
 
 function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
     try {
-        let displays = [];
         let display_names = [];
         ddcutil_brief_info.split('\n').map(ddc_line => {
             if (ddc_line.indexOf("/dev/i2c-") !== -1) {
@@ -245,7 +263,7 @@ function getDisplaysInfoAsync(panel) {
     spawnWithCallback([ddcutil_path, "detect", "--brief"], function(stdout) {
         parseDisplaysInfoAndAddToPanel(stdout, panel)
     });
-}
+ }
 
 function getCachedDisplayInfoAsync(panel) {
     let file = Gio.File.new_for_path(ddcutil_detect_cache_file)
