@@ -54,7 +54,6 @@ const minBrightnessThreshold = 5;
 
 const displays = [];
 
-let loaded = false;
 
 /*
     instead of reading i2c bus everytime during startup,
@@ -148,9 +147,6 @@ const SliderPanelMenuButton = GObject.registerClass({
     removeAllMenu() {
         this.menu.removeAll();
     }
-    addMenuItemAtIndex(item, index) {
-    // this.menu.insert_child_at_index(item, index);
-    }
     addMenuItem(item, position = null) {
         this.menu.addMenuItem(item);
     }
@@ -198,6 +194,7 @@ function setBrightness(display, newValue) {
     if (newBrightness <= minBrightnessThreshold) {
         newBrightness = minBrightness;
     }
+    log(display.name, newValue, newBrightness);
     GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus}`)
 }
 
@@ -269,13 +266,11 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
     try {
         let display_names = [];
         let num_devices = (ddcutil_brief_info.match(new RegExp("/dev/i2c-", "g")) || []).length;
-        let processed_devices = 0;
         ddcutil_brief_info.split('\n').map(ddc_line => {
             if (ddc_line.indexOf("/dev/i2c-") !== -1) {
                 /* I2C bus comes first, so when that is detect start a new display object */
                 let display_bus = ddc_line.split("/dev/i2c-")[1].trim();
                 /* read the current and max brightness using getvcp 10 */
-                processed_devices++;
                 spawnWithCallback([ddcutil_path, "getvcp", "--brief", "10", "--bus", display_bus], function(vcpInfos) {
                     let display = {};
                     let ddc_supported = true;
