@@ -4,8 +4,8 @@
     "uuid": "display-brightness-ddcutil@themightydeity.github.com",
     "url": "https://github.com/themightydeity/gnome-display-brightness-ddcutil",
     "settings-schema": "org.gnome.shell.extensions.display-brightness-ddcutil",
-    "version": 7,
+    "version": 8,
     "shell-version": [
-        "3.36"
+        "3.38"
     ]
 }
