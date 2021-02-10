@@ -2,8 +2,12 @@
 <schemalist>
   <schema id="org.gnome.shell.extensions.display-brightness-ddcutil" path="/org/gnome/shell/extensions/display-brightness-ddcutil/">
     <key type="b" name="show-all-slider">
-      <default>true</default>
+      <default>false</default>
       <summary>Enables the All slider</summary>
+    </key>
+    <key type="b" name="show-value-label">
+      <default>false</default>
+      <summary>Show value label</summary>
     </key>
   </schema>
 </schemalist>

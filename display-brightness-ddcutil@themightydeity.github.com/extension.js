@@ -43,6 +43,7 @@ const PopupMenu = imports.ui.popupMenu;
 const Slider = imports.ui.slider;
 
 const SHOW_ALL_SLIDER = 'show-all-slider';
+const SHOW_VALUE_LABEL = 'show-value-label';
 
 
 let brightnessIcon = 'display-brightness-symbolic';
@@ -130,10 +131,14 @@ function spawnWithCallback(argv, callback) {
 
 const SliderMenuItem = GObject.registerClass({
     GType: 'SliderMenuItem'
-}, class SliderMenuItem extends PopupMenu.PopupMenuItem {
-    _init(slider) {
-        super._init("");
+}, class SliderMenuItem extends PopupMenu.PopupBaseMenuItem {
+    _init(slider, label) {
+        super._init();
         this.add_child(slider);
+
+        if(settings.get_boolean(SHOW_VALUE_LABEL)) {
+            this.add_child(label);
+        }
     }
 });
 
@@ -168,7 +173,9 @@ class SliderItem extends PopupMenu.PopupMenuSection {
         this.ValueSlider = new Slider.Slider(this._currentValue);
         this.ValueSlider.connect('notify::value', Lang.bind(this, this._SliderChange));
 
-        this.SliderContainer = new SliderMenuItem(this.ValueSlider);
+        this.ValueLabel = new St.Label({text: this._SliderValueToBrightness(this._currentValue).toString()});
+
+        this.SliderContainer = new SliderMenuItem(this.ValueSlider, this.ValueLabel);
 
         // add Slider to it
         this.addMenuItem(this.NameContainer);
@@ -178,14 +185,18 @@ class SliderItem extends PopupMenu.PopupMenuSection {
     changeValue(newValue) {
         this.ValueSlider.value = newValue / 100;
     }
+    _SliderValueToBrightness(sliderValue) {
+        return Math.floor(sliderValue * 100);
+    }
     _SliderChange() {
         let sliderItem = this
         if (sliderItem.timer) {
             clearTimeout(sliderItem.timer);
         }
+        let brightness = this._SliderValueToBrightness(sliderItem.ValueSlider.value);
+        sliderItem.ValueLabel.text = brightness.toString();
         sliderItem.timer = setTimeout(() => {
-            let sliderval = Math.floor(sliderItem.ValueSlider.value * 100);
-            sliderItem._onSliderChange(sliderval)
+            sliderItem._onSliderChange(brightness)
         }, 500)
     }
 }
@@ -325,7 +336,7 @@ function getCachedDisplayInfoAsync(panel) {
 let panelmenu;
 let timeoutId = null;
 
-function setEnableSlider(panel) {
+function onSettingsChange(panel) {
     reloadMenuWidgets(panel);
 }
 
@@ -334,7 +345,7 @@ function SliderPanelMenu(set) {
         panelmenu = new SliderPanelMenuButton();
         Main.panel.addToStatusArea("DDCUtilBrightnessSlider", panelmenu, 0, "right");
 
-        settings.connect('changed',function(){ setEnableSlider(panelmenu)});
+        settings.connect('changed',function(){ onSettingsChange(panelmenu)});
         
         timeoutId = setTimeout(function() {
             timeoutId = null;

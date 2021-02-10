@@ -7,6 +7,7 @@ const Convenience = Me.imports.convenience;
 
 
 const SHOW_ALL_SLIDER = 'show-all-slider';
+const SHOW_VALUE_LABEL = 'show-value-label';
 
 function init() { }
 
@@ -39,6 +40,21 @@ const MyPrefsWidget = GObject.registerClass(
       showAllSliderBox.pack_start(showAllSliderLabel, true, true, 0);
       showAllSliderBox.add(showAllSliderSwitch);
 
+      let showValueLabelBox = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL,
+        margin: 7});
+
+      const showValueLabelLabel = new Gtk.Label({label:"Show Value Label",
+      xalign: 0});
+
+      const showValueLabelSwitch = new Gtk.Switch({active: this._settings.get_boolean(SHOW_VALUE_LABEL)});
+      showValueLabelSwitch.connect('notify::active', button => {
+          this._settings.set_boolean(SHOW_VALUE_LABEL, button.active);
+      });
+
+      showValueLabelBox.pack_start(showValueLabelLabel, true, true, 0);
+      showValueLabelBox.add(showValueLabelSwitch);
+
+      this.add(showValueLabelBox);
       this.add(showAllSliderBox);
     }
 
