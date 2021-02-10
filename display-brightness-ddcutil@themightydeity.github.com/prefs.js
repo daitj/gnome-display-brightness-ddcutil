@@ -1,46 +1,45 @@
 const GObject = imports.gi.GObject;
 const Gtk = imports.gi.Gtk;
 const Gio = imports.gi.Gio;
+const ExtensionUtils = imports.misc.extensionUtils;
+const Me = ExtensionUtils.getCurrentExtension();
+const Convenience = Me.imports.convenience;
 
-let settings = new Gio.Settings({path:'/org/gnome/shell/extensions/display-brightness-ddcutil/', schema_id:'org.gnome.shell.extensions.display-brightness-ddcutil'});
 
-function init () {}
+const SHOW_ALL_SLIDER = 'show-all-slider';
 
-function buildPrefsWidget () {
+function init() { }
+
+function buildPrefsWidget() {
   let widget = new MyPrefsWidget();
   widget.show_all();
   return widget;
 }
 
 const MyPrefsWidget = GObject.registerClass(
-class MyPrefsWidget extends Gtk.Box {
+  class MyPrefsWidget extends Gtk.Box {
 
-  _init (params) {
+    _init(params) {
+      super._init(params);
+      this._settings = Convenience.getSettings();
+      this.set_orientation(Gtk.Orientation.VERTICAL);
+      this.connect('destroy', Gtk.main_quit);
 
-    super._init(params);
+      let showAllSliderBox = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL,
+        margin: 7});
 
-    log(settings.get_int('my-int'));
-    this.margin = 20;
-    this.set_spacing(15);
-    this.set_orientation(Gtk.Orientation.VERTICAL);
+        const showAllSliderLabel = new Gtk.Label({label:"Enable \"All\" Slider",
+      xalign: 0});
 
-    this.connect('destroy', Gtk.main_quit);
+      const showAllSliderSwitch = new Gtk.Switch({active: this._settings.get_boolean(SHOW_ALL_SLIDER)});
+      showAllSliderSwitch.connect('notify::active', button => {
+          this._settings.set_boolean(SHOW_ALL_SLIDER, button.active);
+      });
 
+      showAllSliderBox.pack_start(showAllSliderLabel, true, true, 0);
+      showAllSliderBox.add(showAllSliderSwitch);
 
-    let enableButton = new Gtk.CheckButton({label: "Enable \"All\" Slider"});
-    enableButton.set_active(settings.get_boolean('all-slider'));
+      this.add(showAllSliderBox);
+    }
 
-    enableButton.connect("toggled", function (w) {
-      settings.set_boolean('all-slider', enableButton.get_active());
-    });
-
-    let hBox = new Gtk.Box();
-    hBox.set_orientation(Gtk.Orientation.HORIZONTAL);
-
-    hBox.pack_start(enableButton, false, false, 0);
-    hBox.pack_end(enableButton, false, false, 0);
-
-    this.add(hBox);
-  }
-
-});
+  });

@@ -20,6 +20,7 @@ const Main = imports.ui.main;
 const ByteArray = imports.byteArray;
 const { Clutter, GObject, St } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
+const Me = ExtensionUtils.getCurrentExtension();
 
 
 // for shell command
@@ -29,11 +30,8 @@ const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 
 // for settings
-
-const Me = imports.misc.extensionUtils.getCurrentExtension();
-
-let settings = new Gio.Settings({path:'/org/gnome/shell/extensions/display-brightness-ddcutil/', schema_id:'org.gnome.shell.extensions.display-brightness-ddcutil'});
-
+const Convenience = Me.imports.convenience;
+settings = Convenience.getSettings();
 
 // icons and labels
 const Lang = imports.lang;
@@ -43,6 +41,9 @@ const Panel = imports.ui.panel;
 const PanelMenu = imports.ui.panelMenu
 const PopupMenu = imports.ui.popupMenu;
 const Slider = imports.ui.slider;
+
+const SHOW_ALL_SLIDER = 'show-all-slider';
+
 
 let brightnessIcon = 'display-brightness-symbolic';
 
@@ -230,7 +231,7 @@ function addDisplayToPanel(display, panel, display_count, max_display_cnt) {
     if (display_count == 1) {
         //remove all text info before adding first display
         panel.removeAllMenu();
-        if(settings.get_boolean("all-slider")) {
+        if(settings.get_boolean(SHOW_ALL_SLIDER)) {
             addAllSlider(panel);
         }
 
@@ -333,7 +334,8 @@ function SliderPanelMenu(set) {
         panelmenu = new SliderPanelMenuButton();
         Main.panel.addToStatusArea("DDCUtilBrightnessSlider", panelmenu, 0, "right");
 
-        settings.connect('changed::all-slider',function(){ setEnableSlider(panelmenu)});
+        settings.connect('changed',function(){ setEnableSlider(panelmenu)});
+        
         timeoutId = setTimeout(function() {
             timeoutId = null;
             if (panelmenu) {
