@@ -1,9 +1,53 @@
 # Display Brightness Slider for Gnome Shell
 
-## Permission
-Add your user to `i2c` group so that you can call `ddcutil` without `sudo`
+## Brightness Control
 
-## ddcutil
+1. install `ddcutil`
+
+2. Manually load kernel module `i2c-dev`
+
+```
+
+modprobe i2c-dev
+
+```
+
+3. Verify that your monitor supports brightness control
+
+```
+
+ddcutil capabilities | grep "Feature: 10"
+
+```
+
+4. udev rule for giving group i2c RW permission on the `/dev/i2c` devices
+
+```
+
+sudo cp /usr/share/ddcutil/data/45-ddcutils-i2c.rules /etc/udev/rules.d
+
+```
+
+5. Create i2c group and add yourself
+
+  ```
+
+  sudo usermod your-user-name -aG i2c
+
+  sudo groupadd --system i2c
+
+  ```
+
+6. load `i2c-dev` automatically
+
+```
+
+touch /etc/modules-load.d/i2c.conf
+
+echo "i2c-dev" >> /etc/modules-load.d/i2c.conf
+
+```
+
 This tool uses ddcutil as backend, so first make sure that your user can use use following shell commands.
 
 `ddcutil getvcp 10` to check the brightness of a monitor and
@@ -22,3 +66,4 @@ As a workaround I changed this extension to read cached info from a file, when i
 ```
 ddcutil --brief detect > $XDG_CACHE_HOME/ddcutil_detect
 ```
+
