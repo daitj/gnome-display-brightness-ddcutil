@@ -4,12 +4,6 @@
   
     <schema id="org.gnome.shell.extensions.display-brightness-ddcutil"
       path="/org/gnome/shell/extensions/display-brightness-ddcutil/">
-      
-      <key type="i" name="my-int">
-        <default>100</default>
-        <summary>xx</summary>
-        <description>blah</description>
-      </key>
       <key type="b" name="all-slider">
         <default>false</default>
         <summary>Enables the All slider</summary>
