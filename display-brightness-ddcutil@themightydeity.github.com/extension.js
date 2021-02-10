@@ -194,7 +194,7 @@ function setBrightness(display, newValue) {
     if (newBrightness <= minBrightnessThreshold) {
         newBrightness = minBrightness;
     }
-    log(display.name, newValue, newBrightness);
+    //log(display.name, newValue, newBrightness);
     GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus}`)
 }
 
@@ -330,8 +330,6 @@ function setEnableSlider(panel) {
 
 function SliderPanelMenu(set) {
     if (set == "enable") {
-        log("This int: " + settings.get_int("my-int"));
-
         panelmenu = new SliderPanelMenuButton();
         Main.panel.addToStatusArea("DDCUtilBrightnessSlider", panelmenu, 0, "right");
 
