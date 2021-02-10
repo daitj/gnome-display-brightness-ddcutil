@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <schemalist>
+
+  
+    <schema id="org.gnome.shell.extensions.display-brightness-ddcutil"
+      path="/org/gnome/shell/extensions/display-brightness-ddcutil/">
+      <key type="b" name="all-slider">
+        <default>false</default>
+        <summary>Enables the All slider</summary>
+      </key>
+    </schema>
+  </schemalist>
+  
+

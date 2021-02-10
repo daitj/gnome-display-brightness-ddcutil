@@ -19,12 +19,21 @@
 const Main = imports.ui.main;
 const ByteArray = imports.byteArray;
 const { Clutter, GObject, St } = imports.gi;
+const ExtensionUtils = imports.misc.extensionUtils;
 
-// for shell command 
+
+// for shell command
 const GLib = imports.gi.GLib;
 
 //io
 const Gio = imports.gi.Gio;
+
+// for settings
+
+const Me = imports.misc.extensionUtils.getCurrentExtension();
+
+let settings = new Gio.Settings({path:'/org/gnome/shell/extensions/display-brightness-ddcutil/', schema_id:'org.gnome.shell.extensions.display-brightness-ddcutil'});
+
 
 // icons and labels
 const Lang = imports.lang;
@@ -43,8 +52,11 @@ const minBrightness = 1;
 /* when should min brightness value should be used */
 const minBrightnessThreshold = 5;
 
-/*  
-    instead of reading i2c bus everytime during startup, 
+const displays = [];
+
+
+/*
+    instead of reading i2c bus everytime during startup,
     as it is unlikely that bus number changes, we can read
     cache file instead.
     one can make this file by running following shell command:
@@ -135,7 +147,7 @@ const SliderPanelMenuButton = GObject.registerClass({
     removeAllMenu() {
         this.menu.removeAll();
     }
-    addMenuItem(item) {
+    addMenuItem(item, position = null) {
         this.menu.addMenuItem(item);
     }
 });
@@ -162,6 +174,9 @@ class SliderItem extends PopupMenu.PopupMenuSection {
         this.addMenuItem(this.SliderContainer);
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
     }
+    changeValue(newValue) {
+        this.ValueSlider.value = newValue / 100;
+    }
     _SliderChange() {
         let sliderItem = this
         if (sliderItem.timer) {
@@ -179,21 +194,60 @@ function setBrightness(display, newValue) {
     if (newBrightness <= minBrightnessThreshold) {
         newBrightness = minBrightness;
     }
-    //log(display.name, newValue, newBrightness)
+    //log(display.name, newValue, newBrightness);
     GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus}`)
 }
 
-function addDisplayToPanel(display, panel, display_count) {
+function setAllBrightness(newValue) {
+    displays.forEach(element => {
+        element.slider.changeValue(newValue);
+        setBrightness(element, newValue);
+    });
+}
+
+function addSettingsItem(panel) {
+    let settingsItem = new PopupMenu.PopupMenuItem("Settings");
+    settingsItem.connect('activate', openPrefs);
+    panel.addMenuItem(settingsItem, 3);
+}
+
+function addAllSlider(panel) {
+     let onSliderChange = function(newValue) {
+        setAllBrightness(newValue);
+     }
+    let allslider = new SliderItem("All", displays[0].current, onSliderChange);
+    panel.addMenuItem(allslider, 0)
+}
+
+function reloadMenuWidgets(panel) {
+    panel.removeAllMenu();
+    for(var i = 0; i < displays.length; i++) {
+        addDisplayToPanel(displays[i], panel, i+1, displays.length);
+    }
+}
+
+function addDisplayToPanel(display, panel, display_count, max_display_cnt) {
     if (display_count == 1) {
         //remove all text info before adding first display
-        panel.removeAllMenu()
+        panel.removeAllMenu();
+        if(settings.get_boolean("all-slider")) {
+            addAllSlider(panel);
+        }
+
     }
-    let onSliderChange = function(newValue) {
+     let onSliderChange = function(newValue) {
         setBrightness(display, newValue)
-    };
-    let displaySlider = new SliderItem(display.name, display.current, onSliderChange)
-    panel.addMenuItem(displaySlider);
+    }
+
+    let displaySlider = new SliderItem(display.name, display.current, onSliderChange);
+    display.slider = displaySlider;
+    panel.addMenuItem(displaySlider, display_count);
+    if (display_count == max_display_cnt){
+        addSettingsItem(panel);
+    }
+
 }
+
 
 function addTextItemToPanel(text, panel) {
     let menuItem = new PopupMenu.PopupMenuItem(text, {
@@ -202,10 +256,16 @@ function addTextItemToPanel(text, panel) {
     panel.addMenuItem(menuItem);
 }
 
+function addItemToPanel(text, panel) {
+  let menuItem = new PopupMenu.PopupMenuItem(text);
+  panel.addMenuItem(menuItem);
+  return menuItem;
+}
+
 function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
     try {
-        let displays = [];
         let display_names = [];
+        let num_devices = (ddcutil_brief_info.match(new RegExp("/dev/i2c-", "g")) || []).length;
         ddcutil_brief_info.split('\n').map(ddc_line => {
             if (ddc_line.indexOf("/dev/i2c-") !== -1) {
                 /* I2C bus comes first, so when that is detect start a new display object */
@@ -225,10 +285,10 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
                     let currentBrightness = vcpInfosArray[3] / vcpInfosArray[4];
 
                     /* make display object */
-                    display = { "bus": display_bus, "max": maxBrightness, "current": currentBrightness, "supported": ddc_supported, "name": display_names[displays.length] };
+                    display = { "bus": display_bus, "max": maxBrightness, "current": currentBrightness, "supported": ddc_supported, "name": display_names[displays.length]};
                     displays.push(display);
-                    addDisplayToPanel(display, panel, displays.length);
-                });
+                    addDisplayToPanel(display, panel, displays.length, num_devices);
+                    });
             }
             if (ddc_line.indexOf("Monitor:") !== -1) {
                 /* Monitor name comes second in the output,
@@ -243,9 +303,9 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
 
 function getDisplaysInfoAsync(panel) {
     spawnWithCallback([ddcutil_path, "detect", "--brief"], function(stdout) {
-        parseDisplaysInfoAndAddToPanel(stdout, panel)
+        parseDisplaysInfoAndAddToPanel(stdout, panel);
     });
-}
+ }
 
 function getCachedDisplayInfoAsync(panel) {
     let file = Gio.File.new_for_path(ddcutil_detect_cache_file)
@@ -253,7 +313,7 @@ function getCachedDisplayInfoAsync(panel) {
     file.load_contents_async(cancellable, (source, result) => {
         try {
             let [ok, contents, etag_out] = source.load_contents_finish(result);
-            parseDisplaysInfoAndAddToPanel(ByteArray.toString(contents), panel)
+            parseDisplaysInfoAndAddToPanel(ByteArray.toString(contents), panel);
         } catch (e) {
             log(`${ddcutil_detect_cache_file} cache file reading error`)
         }
@@ -264,10 +324,16 @@ function getCachedDisplayInfoAsync(panel) {
 let panelmenu;
 let timeoutId = null;
 
+function setEnableSlider(panel) {
+    reloadMenuWidgets(panel);
+}
+
 function SliderPanelMenu(set) {
     if (set == "enable") {
-        panelmenu = new SliderPanelMenuButton()
+        panelmenu = new SliderPanelMenuButton();
         Main.panel.addToStatusArea("DDCUtilBrightnessSlider", panelmenu, 0, "right");
+
+        settings.connect('changed::all-slider',function(){ setEnableSlider(panelmenu)});
         timeoutId = setTimeout(function() {
             timeoutId = null;
             if (panelmenu) {
@@ -290,5 +356,19 @@ function SliderPanelMenu(set) {
         if (timeoutId) {
             clearTimeout(timeoutId)
         }
+    }
+}
+
+
+function openPrefs() {
+    if (typeof ExtensionUtils.openPrefs === 'function') {
+        ExtensionUtils.openPrefs();
+    } else {
+        Util.spawn(['sh', '-c',
+            'command -v gnome-extensions 2>&1 && gnome-extensions prefs ' +
+            Me.uuid +
+            ' || gnome-shell-extension-prefs ' +
+            Me.uuid
+        ]);
     }
 }
