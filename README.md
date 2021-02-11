@@ -48,7 +48,7 @@ echo "i2c-dev" >> /etc/modules-load.d/i2c.conf
 
 ```
 
-This tool uses ddcutil as backend, so first make sure that your user can use use following shell commands.
+This tool uses ddcutil as backend, so first make sure that your user can use use following shell commands without root or sudo.
 
 `ddcutil getvcp 10` to check the brightness of a monitor and
 
