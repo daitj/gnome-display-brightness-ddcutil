@@ -104,9 +104,24 @@ function BrightnessControl(set) {
     }
 }
 
+let monitorChangeTimeout = null;
+
 function onMonitorChange(){
-    BrightnessControl("disable");
-    BrightnessControl("enable");
+    /* 
+    when monitor change happens, 
+    sometimes the turned off monitor is still accepting DDC connection
+    this is not a great fix, because some monitor 
+    will still take longer than 3 seconds to be off
+    */
+    if(monitorChangeTimeout !== null){
+        Convenience.clearTimeout(monitorChangeTimeout)
+    }
+    monitorChangeTimeout = Convenience.setTimeout(function(){
+        monitorChangeTimeout = null;
+        BrightnessControl("disable");
+        BrightnessControl("enable");
+    }, 3000);
+
 }
 
 function setBrightness(display, newValue) {
@@ -199,7 +214,7 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
                          D6 = Power mode
                          x01 = DPM: On,  DPMS: Off
                         */
-                        if (vcpPowerInfosArray[3] == "x01"){
+                        if (vcpPowerInfosArray.length >= 3  && vcpPowerInfosArray[3] == "x01"){
                             /* read the current and max brightness using getvcp 10 */
                             Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "10", "--bus", display_bus], function (vcpInfos) {
                                 let display = {};
