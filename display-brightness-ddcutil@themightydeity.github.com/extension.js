@@ -214,7 +214,7 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
                          D6 = Power mode
                          x01 = DPM: On,  DPMS: Off
                         */
-                        if (vcpPowerInfosArray.length >= 3  && vcpPowerInfosArray[3] == "x01"){
+                        if (vcpPowerInfosArray.length >= 4  && vcpPowerInfosArray[3] == "x01"){
                             /* read the current and max brightness using getvcp 10 */
                             Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "10", "--bus", display_bus], function (vcpInfos) {
                                 let display = {};
