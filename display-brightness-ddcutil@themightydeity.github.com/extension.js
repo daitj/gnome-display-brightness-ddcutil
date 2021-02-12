@@ -18,35 +18,21 @@
 
 const Main = imports.ui.main;
 const ByteArray = imports.byteArray;
-const { Clutter, GObject, St } = imports.gi;
+const {GLib, Gio, St} = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
-
-// for shell command
-const GLib = imports.gi.GLib;
-
-//io
-const Gio = imports.gi.Gio;
-
-// for settings
 const Convenience = Me.imports.convenience;
-settings = Convenience.getSettings();
 
-// icons and labels
-const Lang = imports.lang;
+//for ui stuff of this extension
+const { 
+    StatusAreaBrightnessMenu, 
+    SingleMonitorMenuItem, 
+    SingleMonitorSliderAndValue } = Me.imports.ui;
 
-// menu items
-const Panel = imports.ui.panel;
-const PanelMenu = imports.ui.panelMenu
 const PopupMenu = imports.ui.popupMenu;
-const Slider = imports.ui.slider;
 
-const SHOW_ALL_SLIDER = 'show-all-slider';
-const SHOW_VALUE_LABEL = 'show-value-label';
-
-
-let brightnessIcon = 'display-brightness-symbolic';
+const {SHOW_ALL_SLIDER, SHOW_VALUE_LABEL} = Me.imports.convenience;
 
 /* lowest possible value for brightness */
 const minBrightness = 1;
@@ -56,6 +42,9 @@ const minBrightnessThreshold = 5;
 
 let displays = [];
 
+let mainMenuButton = null;
+
+let timeoutId = null;
 
 /*
     instead of reading i2c bus everytime during startup,
@@ -69,137 +58,55 @@ const ddcutil_detect_cache_file = `${cache_dir}/ddcutil_detect`;
 
 const ddcutil_path = "/usr/bin/ddcutil";
 
-//timer
-/**
- * Taken from: https://github.com/optimisme/gjs-examples/blob/master/assets/timers.js
- */
-const setTimeout = function (func, millis /* , ... args */) {
 
-    let args = [];
-    if (arguments.length > 2) {
-        args = args.slice.call(arguments, 2);
-    }
-
-    let id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, millis, () => {
-        func.apply(null, args);
-        return GLib.SOURCE_REMOVE;; // Stop repeating
-    });
-
-    return id;
-};
-
-const clearTimeout = function (id) {
-    GLib.source_remove(id);
-};
-
-class Extension {
+class DDCUtilBrightnessControlExtension {
     constructor() { }
-
     enable() {
-        SliderPanelMenu("enable")
+        BrightnessControl("enable")
     }
-
     disable() {
-        SliderPanelMenu("disable")
+        BrightnessControl("disable")
     }
 }
 
 function init() {
-    return new Extension();
+    return new DDCUtilBrightnessControlExtension();
 }
+function BrightnessControl(set) {
+    if (set == "enable") {
+        mainMenuButton = new StatusAreaBrightnessMenu();
+        Main.panel.addToStatusArea("DDCUtilBrightnessSlider", mainMenuButton, 0, "right");
+        timeoutId = Convenience.setTimeout(function () {
+            timeoutId = null;
+            if (mainMenuButton !== null) {
+                /* connect all signals */
+                connectSettingsSignals();
+                connectPanelSignals();
+                connectMonitorChangeSignals();
 
-function spawnCommandAndRead(command_line) {
-    try {
-        let stuff = ByteArray.toString(GLib.spawn_command_line_sync(command_line)[1]);
-        return stuff;
-    } catch (err) {
-        return null;
-    }
-}
+                addTextItemToPanel("Initializing");
 
-function spawnWithCallback(argv, callback) {
-    let proc = Gio.Subprocess.new(argv, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
+                addAllDisplaysToPanel();
+            }
+        }, 1);
 
-    proc.communicate_utf8_async(null, null, (proc, res) => {
-        let [ok, stdout, stderr] = proc.communicate_utf8_finish(res);
-
-        if (proc.get_successful()) {
-            callback(stdout);
-        }
-    });
-}
-
-const SliderMenuItem = GObject.registerClass({
-    GType: 'SliderMenuItem'
-}, class SliderMenuItem extends PopupMenu.PopupBaseMenuItem {
-    _init(slider, label) {
-        super._init();
-        this.add_child(slider);
-
-        if (settings.get_boolean(SHOW_VALUE_LABEL)) {
-            this.add_child(label);
+    } else if (set == "disable") {
+        /* disconnect all signals */
+        disconnectSettingsSignals();
+        disconnectPanelSignals();
+        disconnectMonitorSignals();
+        mainMenuButton.destroy();
+        mainMenuButton = null;
+        displays = [];
+        if (timeoutId) {
+            Convenience.clearTimeout(timeoutId)
         }
     }
-});
+}
 
-const SliderPanelMenuButton = GObject.registerClass({
-    GType: 'SliderPanelMenuButton'
-}, class SliderPanelMenuButton extends PanelMenu.Button {
-    _init() {
-        super._init(0.0);
-        let icon = new St.Icon({ icon_name: brightnessIcon, style_class: 'system-status-icon' });
-        this.add_actor(icon);
-    }
-    removeAllMenu() {
-        this.menu.removeAll();
-    }
-    addMenuItem(item, position = null) {
-        this.menu.addMenuItem(item);
-    }
-});
-
-class SliderItem extends PopupMenu.PopupMenuSection {
-    constructor(displayName, currentValue, onSliderChange) {
-        super();
-        this._timer = null
-        this._displayName = displayName
-        this._currentValue = currentValue
-        this._onSliderChange = onSliderChange
-        this._init();
-    }
-    _init() {
-        this.NameContainer = new PopupMenu.PopupMenuItem(this._displayName, { hover: false, reactive: false, can_focus: false });
-
-        this.ValueSlider = new Slider.Slider(this._currentValue);
-        this.ValueSlider.connect('notify::value', Lang.bind(this, this._SliderChange));
-
-        this.ValueLabel = new St.Label({ text: this._SliderValueToBrightness(this._currentValue).toString() });
-
-        this.SliderContainer = new SliderMenuItem(this.ValueSlider, this.ValueLabel);
-
-        // add Slider to it
-        this.addMenuItem(this.NameContainer);
-        this.addMenuItem(this.SliderContainer);
-        this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-    }
-    changeValue(newValue) {
-        this.ValueSlider.value = newValue / 100;
-    }
-    _SliderValueToBrightness(sliderValue) {
-        return Math.floor(sliderValue * 100);
-    }
-    _SliderChange() {
-        let sliderItem = this
-        if (sliderItem.timer) {
-            clearTimeout(sliderItem.timer);
-        }
-        let brightness = this._SliderValueToBrightness(sliderItem.ValueSlider.value);
-        sliderItem.ValueLabel.text = brightness.toString();
-        sliderItem.timer = setTimeout(() => {
-            sliderItem.timer = null;
-            sliderItem._onSliderChange(brightness)
-        }, 500)
-    }
+function onMonitorChange(){
+    BrightnessControl("disable");
+    BrightnessControl("enable");
 }
 
 function setBrightness(display, newValue) {
@@ -218,53 +125,50 @@ function setAllBrightness(newValue) {
     });
 }
 
-function addSettingsItem(panel) {
+function addSettingsItem() {
     let settingsItem = new PopupMenu.PopupMenuItem("Settings");
     settingsItem.connect('activate', openPrefs);
-    panel.addMenuItem(settingsItem, 3);
+    mainMenuButton.addMenuItem(settingsItem, 3);
 }
 
-function addAllSlider(panel) {
+function addAllSlider() {
     let onAllSliderChange = function (newValue) {
         setAllBrightness(newValue);
     }
-    let allslider = new SliderItem("All", displays[0].current, onAllSliderChange);
-    panel.addMenuItem(allslider)
+    let allslider = new SingleMonitorSliderAndValue("All", displays[0].current, onAllSliderChange);
+    mainMenuButton.addMenuItem(allslider)
 }
 
-function reloadMenuWidgets(panel) {
-    panel.removeAllMenu();
-
-    if (settings.get_boolean(SHOW_ALL_SLIDER)) {
-        addAllSlider(panel);
-    }
-    displays.forEach(display => {
-        addDisplayToPanel(display, panel);
-    });
-    addSettingsItem(panel);
-}
-
-function addDisplayToPanel(display, panel) {
+function addDisplayToPanel(display) {
     let onSliderChange = function (newValue) {
         setBrightness(display, newValue)
     }
-    let displaySlider = new SliderItem(display.name, display.current, onSliderChange);
+    let displaySlider = new SingleMonitorSliderAndValue(display.name, display.current, onSliderChange);
     display.slider = displaySlider;
-    panel.addMenuItem(displaySlider);
+    mainMenuButton.addMenuItem(displaySlider);
 }
 
+function reloadMenuWidgets() {
+    if(mainMenuButton === null){
+        return;
+    }
+    mainMenuButton.removeAllMenu();
 
-function addTextItemToPanel(text, panel) {
+    if (settings.get_boolean(SHOW_ALL_SLIDER)) {
+        addAllSlider();
+    }
+    displays.forEach(display => {
+        addDisplayToPanel(display);
+    });
+    addSettingsItem();
+}
+
+function addTextItemToPanel(text) {
+    if(mainMenuButton === null) return;
     let menuItem = new PopupMenu.PopupMenuItem(text, {
         reactive: false
     });
-    panel.addMenuItem(menuItem);
-}
-
-function addItemToPanel(text, panel) {
-    let menuItem = new PopupMenu.PopupMenuItem(text);
-    panel.addMenuItem(menuItem);
-    return menuItem;
+    mainMenuButton.addMenuItem(menuItem);
 }
 
 function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
@@ -287,7 +191,7 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
                 /* save diplay_loop_id as a const for rest of the async calls below here*/
                 const display_id = diplay_loop_id;
                 /* check if display is on or not */
-                spawnWithCallback([ddcutil_path, "getvcp", "--brief", "D6", "--bus", display_bus], function (vcpPowerInfos) {
+                Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "D6", "--bus", display_bus], function (vcpPowerInfos) {
                     /* only add display to list if ddc communication is supported with the bus*/
                     if (vcpPowerInfos.indexOf("DDC communication failed") === -1) {
                         let vcpPowerInfosArray = vcpPowerInfos.trim().split(" ");
@@ -297,7 +201,7 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
                         */
                         if (vcpPowerInfosArray[3] == "x01"){
                             /* read the current and max brightness using getvcp 10 */
-                            spawnWithCallback([ddcutil_path, "getvcp", "--brief", "10", "--bus", display_bus], function (vcpInfos) {
+                            Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "10", "--bus", display_bus], function (vcpInfos) {
                                 let display = {};
 
                                 let vcpInfosArray = vcpInfos.trim().split(" ");
@@ -330,7 +234,7 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
 }
 
 function getDisplaysInfoAsync(panel) {
-    spawnWithCallback([ddcutil_path, "detect", "--brief"], function (stdout) {
+    Convenience.spawnWithCallback([ddcutil_path, "detect", "--brief"], function (stdout) {
         parseDisplaysInfoAndAddToPanel(stdout, panel);
     });
 }
@@ -346,47 +250,51 @@ function getCachedDisplayInfoAsync(panel) {
             log(`${ddcutil_detect_cache_file} cache file reading error`)
         }
     });
-    spawnWithCallback(["cat", ddcutil_detect_cache_file], function (stdout) { });
+    Convenience.spawnWithCallback(["cat", ddcutil_detect_cache_file], function (stdout) { });
 }
 
-let panelmenu;
-let timeoutId = null;
 
 let settingsSignals = {};
 
-function connectSettingsSignals(panel) {
+function onPanelChange(actor, child){
+    reloadMenuWidgets()
+}
+
+function onSettingsChange(){
+    reloadMenuWidgets()
+}
+
+function connectSettingsSignals() {
     settingsSignals = {
-        change: settings.connect('changed', function () { reloadMenuWidgets(panel) })
+        change: settings.connect('changed', onSettingsChange)
     }
 }
 
 let panelSignals = {};
 
-function connectPanelSignals(panel) {
+function connectPanelSignals() {
     panelChildSignals = {
         left: {
-            add: Main.panel._leftBox.connect('actor_added', function () { reloadMenuWidgets(panel) }),
-            del: Main.panel._leftBox.connect('actor_removed', function () { reloadMenuWidgets(panel) })
+            add: Main.panel._leftBox.connect('actor_added', onPanelChange),
+            del: Main.panel._leftBox.connect('actor_removed', onPanelChange)
         },
         center: {
-            add: Main.panel._centerBox.connect('actor_added', function () { reloadMenuWidgets(panel) }),
-            del: Main.panel._centerBox.connect('actor_removed', function () { reloadMenuWidgets(panel) })
+            add: Main.panel._centerBox.connect('actor_added', onPanelChange),
+            del: Main.panel._centerBox.connect('actor_removed', onPanelChange)
         },
         right: {
-            add: Main.panel._rightBox.connect('actor_added', function () { reloadMenuWidgets(panel) }),
-            del: Main.panel._rightBox.connect('actor_removed', function () { reloadMenuWidgets(panel) })
+            add: Main.panel._rightBox.connect('actor_added', onPanelChange),
+            del: Main.panel._rightBox.connect('actor_removed', onPanelChange)
         }
     }
 }
+
 
 let monitorSignals = {}
 
 function connectMonitorChangeSignals() {
     monitorSignals = {
-        change: Main.layoutManager.connect('monitors-changed', function () {
-            SliderPanelMenu("disable");
-            SliderPanelMenu("enable");
-        }),
+        change: Main.layoutManager.connect('monitors-changed', onMonitorChange),
     }
 }
 
@@ -409,45 +317,12 @@ function disconnectMonitorSignals() {
 function addAllDisplaysToPanel(){
     try {
         if (GLib.file_test(ddcutil_detect_cache_file, (GLib.FileTest.IS_REGULAR))) {
-            getCachedDisplayInfoAsync(panelmenu);
+            getCachedDisplayInfoAsync(mainMenuButton);
         } else {
-            getDisplaysInfoAsync(panelmenu);
+            getDisplaysInfoAsync(mainMenuButton);
         }
     } catch (err) {
         log(err);
-    }
-}
-function SliderPanelMenu(set) {
-    if (set == "enable") {
-        panelmenu = new SliderPanelMenuButton();
-        Main.panel.addToStatusArea("DDCUtilBrightnessSlider", panelmenu, 0, "right");
-
-        timeoutId = setTimeout(function () {
-            timeoutId = null;
-            if (panelmenu) {
-
-                /* connect all signals */
-                connectSettingsSignals(panelmenu);
-                connectPanelSignals(panelmenu);
-                connectMonitorChangeSignals();
-
-                addTextItemToPanel("Initializing", panelmenu);
-
-                addAllDisplaysToPanel();
-            }
-        }, 1);
-
-    } else if (set == "disable") {
-        /* disconnect all signals */
-        disconnectSettingsSignals();
-        disconnectPanelSignals();
-        disconnectMonitorSignals();
-        panelmenu.destroy();
-        panelmenu = null;
-        displays = [];
-        if (timeoutId) {
-            clearTimeout(timeoutId)
-        }
     }
 }
 

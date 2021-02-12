@@ -5,9 +5,8 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Convenience = Me.imports.convenience;
 
+const {SHOW_ALL_SLIDER, SHOW_VALUE_LABEL} = Me.imports.convenience;
 
-const SHOW_ALL_SLIDER = 'show-all-slider';
-const SHOW_VALUE_LABEL = 'show-value-label';
 
 function init() { }
 
