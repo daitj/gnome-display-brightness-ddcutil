@@ -72,6 +72,10 @@ class DDCUtilBrightnessControlExtension {
 function init() {
     return new DDCUtilBrightnessControlExtension();
 }
+
+function brightnessLog(str){
+    log("display-brightness-ddcutil extension:\n"+str);
+}
 function BrightnessControl(set) {
     if (set == "enable") {
         mainMenuButton = new StatusAreaBrightnessMenu();
@@ -104,32 +108,11 @@ function BrightnessControl(set) {
     }
 }
 
-let monitorChangeTimeout = null;
-
-function onMonitorChange(){
-    /* 
-    when monitor change happens, 
-    sometimes the turned off monitor is still accepting DDC connection
-    this is not a great fix, because some monitor 
-    will still take longer than 3 seconds to be off
-    */
-    if(monitorChangeTimeout !== null){
-        Convenience.clearTimeout(monitorChangeTimeout)
-    }
-    monitorChangeTimeout = Convenience.setTimeout(function(){
-        monitorChangeTimeout = null;
-        BrightnessControl("disable");
-        BrightnessControl("enable");
-    }, 3000);
-
-}
-
 function setBrightness(display, newValue) {
     let newBrightness = parseInt((newValue / 100) * display.max);
     if (newBrightness <= minBrightnessThreshold) {
         newBrightness = minBrightness;
     }
-    //log(display.name, newValue, newBrightness);
     GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus}`)
 }
 
@@ -143,7 +126,20 @@ function setAllBrightness(newValue) {
 function addSettingsItem() {
     let settingsItem = new PopupMenu.PopupMenuItem("Settings");
     settingsItem.connect('activate', openPrefs);
-    mainMenuButton.addMenuItem(settingsItem, 3);
+    mainMenuButton.addMenuItem(settingsItem,1);
+
+    let reloadItem = new PopupMenu.PopupMenuItem("Reload");
+    reloadItem.connect('activate', event => {
+        BrightnessControl("disable");
+        BrightnessControl("enable");
+    });
+    mainMenuButton.addMenuItem(reloadItem,2);
+
+    const reloadExtensionButton = new Gtk.Button({label:"Show Value Label",
+      xalign: 0});
+      reloadExtensionButton.connect('button-press-event', button => {
+          
+      });
 }
 
 function addAllSlider() {
@@ -189,24 +185,25 @@ function addTextItemToPanel(text) {
 function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
     try {
         let display_names = [];
-        let num_devices = (ddcutil_brief_info.match(new RegExp("/dev/i2c-", "g")) || []).length;
-
         /* 
         due to spawnWithCallback fetching faster information for second display in list before first one
         there is a situation where name is displayed for first device but controls second device.
 
-        To fix that, we define our own id for the loop, which is used to detect right device.
+        To fix that, we define our own id inside the loop, which is used to detect right device.
         */
         let diplay_loop_id = 0;
-
+        brightnessLog("ddcutil brief info:\n" + ddcutil_brief_info);
         ddcutil_brief_info.split('\n').map(ddc_line => {
             if (ddc_line.indexOf("/dev/i2c-") !== -1) {
+                brightnessLog("ddcutil brief info found bus line:\n" +  " "+ ddc_line)
                 /* I2C bus comes first, so when that is detect start a new display object */
                 let display_bus = ddc_line.split("/dev/i2c-")[1].trim();
                 /* save diplay_loop_id as a const for rest of the async calls below here*/
                 const display_id = diplay_loop_id;
                 /* check if display is on or not */
+                brightnessLog("ddcutil reading display state for bus: " +display_bus)
                 Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "D6", "--bus", display_bus], function (vcpPowerInfos) {
+                    brightnessLog("ddcutil reading display status for bus: " + display_bus +" is: " + vcpPowerInfos)
                     /* only add display to list if ddc communication is supported with the bus*/
                     if (vcpPowerInfos.indexOf("DDC communication failed") === -1) {
                         let vcpPowerInfosArray = vcpPowerInfos.trim().split(" ");
@@ -244,7 +241,7 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
             }
         });
     } catch (err) {
-        log(err);
+        brightnessLog(err);
     }
 }
 
@@ -262,22 +259,45 @@ function getCachedDisplayInfoAsync(panel) {
             let [ok, contents, etag_out] = source.load_contents_finish(result);
             parseDisplaysInfoAndAddToPanel(ByteArray.toString(contents), panel);
         } catch (e) {
-            log(`${ddcutil_detect_cache_file} cache file reading error`)
+            brightnessLog(`${ddcutil_detect_cache_file} cache file reading error`)
         }
     });
     Convenience.spawnWithCallback(["cat", ddcutil_detect_cache_file], function (stdout) { });
 }
 
 
-let settingsSignals = {};
-
 function onPanelChange(actor, child){
+    brightnessLog("Panel change detected, reloading widgets")
     reloadMenuWidgets()
 }
 
 function onSettingsChange(){
+    brightnessLog("Settings change detected, reloading widgets")
     reloadMenuWidgets()
 }
+
+let monitorChangeTimeout = null;
+
+function onMonitorChange(){
+    /* 
+    when monitor change happens, 
+    sometimes the turned off monitor is still accepting DDC connection
+    this is not a great fix, because some monitor 
+    will still take longer than 5 seconds to be off
+    */
+   brightnessLog("Monitor change detected, reloading extension in 5 seconds.")
+    if(monitorChangeTimeout !== null){
+        Convenience.clearTimeout(monitorChangeTimeout)
+    }
+    monitorChangeTimeout = Convenience.setTimeout(function(){
+        monitorChangeTimeout = null;
+        BrightnessControl("disable");
+        BrightnessControl("enable");
+    }, 5000);
+
+}
+
+let settingsSignals = {};
 
 function connectSettingsSignals() {
     settingsSignals = {
@@ -303,6 +323,7 @@ function connectPanelSignals() {
         }
     }
 }
+
 
 
 let monitorSignals = {}
@@ -337,7 +358,7 @@ function addAllDisplaysToPanel(){
             getDisplaysInfoAsync(mainMenuButton);
         }
     } catch (err) {
-        log(err);
+        brightnessLog(err);
     }
 }
 

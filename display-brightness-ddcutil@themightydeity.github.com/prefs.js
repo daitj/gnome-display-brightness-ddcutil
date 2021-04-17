@@ -12,7 +12,6 @@ function init() { }
 
 function buildPrefsWidget() {
   let widget = new MyPrefsWidget();
-  widget.show_all();
   return widget;
 }
 
@@ -23,38 +22,38 @@ const MyPrefsWidget = GObject.registerClass(
       super._init(params);
       this._settings = Convenience.getSettings();
       this.set_orientation(Gtk.Orientation.VERTICAL);
-      this.connect('destroy', Gtk.main_quit);
 
-      let showAllSliderBox = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL,
-        margin: 7});
+      let showAllSliderBox = new Gtk.Box({marginStart:7, marginEnd:7, marginBottom:5, marginTop:5});
 
-        const showAllSliderLabel = new Gtk.Label({label:"Enable \"All\" Slider",
-      xalign: 0});
+      const showAllSliderLabel = new Gtk.Label({label:"Enable \"All\" Slider",
+      xalign: 0, marginEnd:7});
 
       const showAllSliderSwitch = new Gtk.Switch({active: this._settings.get_boolean(SHOW_ALL_SLIDER)});
       showAllSliderSwitch.connect('notify::active', button => {
           this._settings.set_boolean(SHOW_ALL_SLIDER, button.active);
       });
 
-      showAllSliderBox.pack_start(showAllSliderLabel, true, true, 0);
-      showAllSliderBox.add(showAllSliderSwitch);
+      showAllSliderBox.append(showAllSliderLabel);
+      showAllSliderBox.append(showAllSliderSwitch);
 
-      let showValueLabelBox = new Gtk.Box({orientation: Gtk.Orientation.HORIZONTAL,
-        margin: 7});
+
+
+      let showValueLabelBox = new Gtk.Box({marginStart:7, marginEnd:7, marginBottom:5, marginTop:5});
 
       const showValueLabelLabel = new Gtk.Label({label:"Show Value Label",
-      xalign: 0});
+      xalign: 0, marginEnd:7});
 
       const showValueLabelSwitch = new Gtk.Switch({active: this._settings.get_boolean(SHOW_VALUE_LABEL)});
       showValueLabelSwitch.connect('notify::active', button => {
           this._settings.set_boolean(SHOW_VALUE_LABEL, button.active);
       });
 
-      showValueLabelBox.pack_start(showValueLabelLabel, true, true, 0);
-      showValueLabelBox.add(showValueLabelSwitch);
+      showValueLabelBox.append(showValueLabelLabel);
+      showValueLabelBox.append(showValueLabelSwitch);
 
-      this.add(showValueLabelBox);
-      this.add(showAllSliderBox);
+      this.append(showValueLabelBox);
+      this.append(showAllSliderBox);
+
     }
 
   });
