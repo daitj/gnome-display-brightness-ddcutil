@@ -18,7 +18,8 @@
 
 const Main = imports.ui.main;
 const ByteArray = imports.byteArray;
-const {GLib, Gio, St} = imports.gi;
+const {GLib, Gio, St, Gtk} = imports.gi;
+
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
