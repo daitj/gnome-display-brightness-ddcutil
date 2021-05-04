@@ -86,10 +86,10 @@ function BrightnessControl(set) {
             if (mainMenuButton !== null) {
                 /* connect all signals */
                 connectSettingsSignals();
-                connectPanelSignals();
                 connectMonitorChangeSignals();
 
                 addTextItemToPanel("Initializing");
+                addSettingsItem();
 
                 addAllDisplaysToPanel();
             }
@@ -98,8 +98,8 @@ function BrightnessControl(set) {
     } else if (set == "disable") {
         /* disconnect all signals */
         disconnectSettingsSignals();
-        disconnectPanelSignals();
         disconnectMonitorSignals();
+
         mainMenuButton.destroy();
         mainMenuButton = null;
         displays = [];
@@ -267,10 +267,6 @@ function getCachedDisplayInfoAsync(panel) {
 }
 
 
-function onPanelChange(actor, child){
-    brightnessLog("Panel change detected, reloading widgets")
-    reloadMenuWidgets()
-}
 
 function onSettingsChange(){
     brightnessLog("Settings change detected, reloading widgets")
@@ -306,26 +302,6 @@ function connectSettingsSignals() {
     }
 }
 
-let panelSignals = {};
-
-function connectPanelSignals() {
-    panelChildSignals = {
-        left: {
-            add: Main.panel._leftBox.connect('actor_added', onPanelChange),
-            del: Main.panel._leftBox.connect('actor_removed', onPanelChange)
-        },
-        center: {
-            add: Main.panel._centerBox.connect('actor_added', onPanelChange),
-            del: Main.panel._centerBox.connect('actor_removed', onPanelChange)
-        },
-        right: {
-            add: Main.panel._rightBox.connect('actor_added', onPanelChange),
-            del: Main.panel._rightBox.connect('actor_removed', onPanelChange)
-        }
-    }
-}
-
-
 
 let monitorSignals = {}
 
@@ -339,14 +315,6 @@ function disconnectSettingsSignals() {
     settings.disconnect(settingsSignals.change);
 }
 
-function disconnectPanelSignals() {
-    Main.panel._leftBox.disconnect(panelChildSignals.left.add);
-    Main.panel._leftBox.disconnect(panelChildSignals.left.del);
-    Main.panel._centerBox.disconnect(panelChildSignals.center.add);
-    Main.panel._centerBox.disconnect(panelChildSignals.center.del);
-    Main.panel._rightBox.disconnect(panelChildSignals.right.add);
-    Main.panel._rightBox.disconnect(panelChildSignals.right.del);
-}
 function disconnectMonitorSignals() {
     Main.layoutManager.disconnect(monitorSignals.change);
 }
