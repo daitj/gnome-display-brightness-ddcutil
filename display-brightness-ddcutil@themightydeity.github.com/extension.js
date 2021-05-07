@@ -18,7 +18,7 @@
 
 const Main = imports.ui.main;
 const ByteArray = imports.byteArray;
-const {GLib, Gio, St, Gtk} = imports.gi;
+const {GLib, Gio, St} = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
@@ -81,19 +81,17 @@ function BrightnessControl(set) {
     if (set == "enable") {
         mainMenuButton = new StatusAreaBrightnessMenu();
         Main.panel.addToStatusArea("DDCUtilBrightnessSlider", mainMenuButton, 0, "right");
-        timeoutId = Convenience.setTimeout(function () {
-            timeoutId = null;
-            if (mainMenuButton !== null) {
-                /* connect all signals */
-                connectSettingsSignals();
-                connectMonitorChangeSignals();
+        if (mainMenuButton !== null) {
+            /* connect all signals */
+            connectSettingsSignals();
+            connectMonitorChangeSignals();
 
-                addTextItemToPanel("Initializing");
-                addSettingsItem();
+            addTextItemToPanel("Initializing");
+            addSettingsItem();
 
-                addAllDisplaysToPanel();
-            }
-        }, 1);
+            addAllDisplaysToPanel();
+        }
+        
 
     } else if (set == "disable") {
         /* disconnect all signals */
@@ -135,12 +133,6 @@ function addSettingsItem() {
         BrightnessControl("enable");
     });
     mainMenuButton.addMenuItem(reloadItem,2);
-
-    const reloadExtensionButton = new Gtk.Button({label:"Show Value Label",
-      xalign: 0});
-      reloadExtensionButton.connect('button-press-event', button => {
-          
-      });
 }
 
 function addAllSlider() {
