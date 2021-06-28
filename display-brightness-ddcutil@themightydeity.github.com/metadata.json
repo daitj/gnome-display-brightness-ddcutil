@@ -6,6 +6,6 @@
     "settings-schema": "org.gnome.shell.extensions.display-brightness-ddcutil",
     "version": 13,
     "shell-version": [
-        "40.0"
+        "40"
     ]
 }
