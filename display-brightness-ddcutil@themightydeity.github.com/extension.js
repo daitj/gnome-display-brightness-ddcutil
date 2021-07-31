@@ -22,8 +22,12 @@ const {GLib, Gio, St} = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
+const Gettext = imports.gettext;
 
 const Convenience = Me.imports.convenience;
+
+const Domain = Gettext.domain(Me.metadata['gettext-domain']);
+const _ = Domain.gettext;
 
 //for ui stuff of this extension
 const { 
@@ -71,6 +75,8 @@ class DDCUtilBrightnessControlExtension {
 }
 
 function init() {
+    ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
+
     return new DDCUtilBrightnessControlExtension();
 }
 
@@ -86,7 +92,7 @@ function BrightnessControl(set) {
             connectSettingsSignals();
             connectMonitorChangeSignals();
 
-            addTextItemToPanel("Initializing");
+            addTextItemToPanel(_("Initializing"));
             addSettingsItem();
 
             addAllDisplaysToPanel();
@@ -123,11 +129,11 @@ function setAllBrightness(newValue) {
 }
 
 function addSettingsItem() {
-    let settingsItem = new PopupMenu.PopupMenuItem("Settings");
+    let settingsItem = new PopupMenu.PopupMenuItem(_("Settings"));
     settingsItem.connect('activate', openPrefs);
     mainMenuButton.addMenuItem(settingsItem,1);
 
-    let reloadItem = new PopupMenu.PopupMenuItem("Reload");
+    let reloadItem = new PopupMenu.PopupMenuItem(_("Reload"));
     reloadItem.connect('activate', event => {
         BrightnessControl("disable");
         BrightnessControl("enable");
@@ -139,7 +145,7 @@ function addAllSlider() {
     let onAllSliderChange = function (newValue) {
         setAllBrightness(newValue);
     }
-    let allslider = new SingleMonitorSliderAndValue("All", displays[0].current, onAllSliderChange);
+    let allslider = new SingleMonitorSliderAndValue(_("All"), displays[0].current, onAllSliderChange);
     mainMenuButton.addMenuItem(allslider)
 }
 
@@ -229,7 +235,7 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
             if (ddc_line.indexOf("Monitor:") !== -1) {
                 /* Monitor name comes second in the output,
                  so when that is detected fill the object and push it to list */
-                display_names[diplay_loop_id] = ddc_line.split("Monitor:")[1].trim().split(":")[1].trim()
+                display_names[diplay_loop_id] = ddc_line.split(_("Monitor:"))[1].trim().split(":")[1].trim()
                 diplay_loop_id++;
             }
         });
