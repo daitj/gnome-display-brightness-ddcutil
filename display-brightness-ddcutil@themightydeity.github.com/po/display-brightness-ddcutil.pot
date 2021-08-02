@@ -1,0 +1,46 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-07-31 00:41+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:95
+msgid "Initializing"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:132
+msgid "Settings"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:136
+msgid "Reload"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:148
+msgid "All"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:238
+msgid "Monitor:"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/prefs.js:34
+msgid "Enable \"All\" Slider"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/prefs.js:49
+msgid "Show Value Label"
+msgstr ""
