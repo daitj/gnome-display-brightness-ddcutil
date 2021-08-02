@@ -1,6 +1,11 @@
-# Display Brightness Slider for Gnome Shell
-
-## Brightness Control
+Display Brightness Slider for Gnome Shell
+- [Setup ddcutil](#setup-ddcutil)
+- [Installation](#installation)
+  - [Automatically from GNOME extensions](#automatically-from-gnome-extensions)
+  - [Manually from the source code](#manually-from-the-source-code)
+- [Issues](#issues)
+  - [Screen hangs/locks on first startup](#screen-hangslocks-on-first-startup)
+## Setup ddcutil
 
 1. install `ddcutil`
 
@@ -57,6 +62,20 @@ This tool uses ddcutil as backend, so first make sure that your user can use use
 It automatically supports multiple displays detected by
 
 `ddcutil detect`
+
+
+## Installation
+
+### Automatically from GNOME extensions
+You can find this extension [here](https://extensions.gnome.org/extension/2645/brightness-control-using-ddcutil/)
+
+### Manually from the source code
+Clone this repo and in the repo's root directory run these shell commands
+
+```
+make build
+make install
+```
 
 ## Issues
 

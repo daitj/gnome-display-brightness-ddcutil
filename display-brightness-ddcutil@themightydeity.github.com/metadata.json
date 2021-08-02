@@ -5,10 +5,8 @@
     "url": "https://github.com/themightydeity/gnome-display-brightness-ddcutil",
     "settings-schema": "org.gnome.shell.extensions.display-brightness-ddcutil",
     "gettext-domain": "display-brightness-ddcutil",
-    "version": 14,
+    "version": 15,
     "shell-version": [
-        "40.0",
-        "40.1",
-        "40.2"
+        "40"
     ]
 }
