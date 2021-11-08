@@ -29,7 +29,7 @@ ddcutil capabilities | grep "Feature: 10"
 
 ```
 
-sudo cp /usr/share/ddcutil/data/45-ddcutils-i2c.rules /etc/udev/rules.d
+sudo cp /usr/share/ddcutil/data/45-ddcutil-i2c.rules /etc/udev/rules.d
 
 ```
 
