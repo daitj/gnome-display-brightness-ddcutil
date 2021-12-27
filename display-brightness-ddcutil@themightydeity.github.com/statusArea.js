@@ -16,7 +16,7 @@ const {SHOW_ALL_SLIDER, SHOW_VALUE_LABEL} = Me.imports.convenience;
 
 // for settings
 const Convenience = Me.imports.convenience;
-settings = Convenience.getSettings();
+settings = ExtensionUtils.getSettings();
 
 const brightnessIcon = 'display-brightness-symbolic';
 
@@ -35,7 +35,6 @@ var StatusAreaBrightnessMenu = GObject.registerClass({
         this.menu.addMenuItem(item);
     }
 });
-
 
 var SingleMonitorMenuItem = GObject.registerClass({
     GType: 'SingleMonitorMenuItem'

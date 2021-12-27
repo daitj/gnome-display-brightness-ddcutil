@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-31 00:41+0200\n"
+"POT-Creation-Date: 2021-12-28 15:58+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,30 +17,30 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:95
-msgid "Initializing"
-msgstr ""
-
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:132
-msgid "Settings"
-msgstr ""
-
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:136
-msgid "Reload"
-msgstr ""
-
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:148
-msgid "All"
-msgstr ""
-
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:238
-msgid "Monitor:"
-msgstr ""
-
-#: display-brightness-ddcutil@themightydeity.github.com/prefs.js:34
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:46
 msgid "Enable \"All\" Slider"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/prefs.js:49
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:80
 msgid "Show Value Label"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:93
+msgid "Initializing"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:129
+msgid "Settings"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:133
+msgid "Reload"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:145
+msgid "All"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:235
+msgid "Monitor:"
 msgstr ""

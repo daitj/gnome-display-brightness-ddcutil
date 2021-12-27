@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface domain="display-brightness-ddcutil">
+  <requires lib="gtk" version="4.0"/>
+  <template class="PrefsWidget" parent="GtkBox">
+    <property name="orientation">vertical</property>
+    <property name="hexpand">1</property>
+    <child>
+      <object class="GtkScrolledWindow" id="items_container">
+        <property name="width-request">500</property>
+        <property name="height-request">500</property>
+        <property name="hscrollbar-policy">never</property>
+        <property name="vexpand">1</property>
+        <child>
+          <object class="GtkViewport" id="main_prefs">
+            <child>
+              <object class="GtkBox" id="main_prefs_box">
+                <property name="margin-start">36</property>
+                <property name="margin-end">36</property>
+                <property name="margin-top">36</property>
+                <property name="margin-bottom">36</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkFrame" id="main_frame">
+                    <property name="label-xalign">0</property>
+                    <child>
+                      <object class="GtkListBox" id="main_listbox">
+                        <property name="selection-mode">none</property>
+                        <child>
+                          <object class="GtkListBoxRow" id="show_all_slider_row">
+                              <child>
+                                <object class="GtkBox" id="show_all_slider_pref_box">
+                                <property name="margin-start">12</property>
+                                <property name="margin-end">12</property>
+                                <property name="margin-top">12</property>
+                                <property name="margin-bottom">12</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkBox" id="show_all_slider_box">
+                                    <property name="spacing">32</property>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="valign">center</property>
+                                        <property name="label" translatable="yes">Enable "All" Slider</property>
+                                        <property name="xalign">0</property>
+                                        <property name="hexpand">1</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkSwitch" id="show_all_slider_switch">
+                                        <property name="valign">center</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkListBoxRow" id="show_value_label_row">
+                              <child>
+                                <object class="GtkBox" id="value_label_pref_box">
+                                <property name="margin-start">12</property>
+                                <property name="margin-end">12</property>
+                                <property name="margin-top">12</property>
+                                <property name="margin-bottom">12</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkBox" id="show_value_label_box">
+                                    <property name="spacing">32</property>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="valign">center</property>
+                                        <property name="label" translatable="yes">Show Value Label</property>
+                                        <property name="xalign">0</property>
+                                        <property name="hexpand">1</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkSwitch" id="show_value_label_switch">
+                                        <property name="valign">center</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

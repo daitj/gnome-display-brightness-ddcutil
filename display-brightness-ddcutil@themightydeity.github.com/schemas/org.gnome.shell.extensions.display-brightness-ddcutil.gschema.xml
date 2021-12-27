@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schemalist>
+<schemalist gettext-domain="display-brightness-ddcutil">
   <schema id="org.gnome.shell.extensions.display-brightness-ddcutil" path="/org/gnome/shell/extensions/display-brightness-ddcutil/">
     <key type="b" name="show-all-slider">
       <default>false</default>
@@ -11,5 +11,3 @@
     </key>
   </schema>
 </schemalist>
-  
-
