@@ -152,6 +152,11 @@ function addDisplayToPanel(display) {
     }
     let displaySlider = new SingleMonitorSliderAndValue(display.name, display.current, onSliderChange);
     display.slider = displaySlider;
+
+    mainMenuButton.connect('scroll-event', (actor, event) => {
+        return display.slider.getSlider().emit('scroll-event', event);
+    });
+
     mainMenuButton.addMenuItem(displaySlider);
 }
 
