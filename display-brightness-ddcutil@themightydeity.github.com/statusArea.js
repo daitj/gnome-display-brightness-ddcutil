@@ -76,6 +76,9 @@ var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends Popu
     changeValue(newValue) {
         this.ValueSlider.value = newValue / 100;
     }
+    getSlider() {
+        return this.ValueSlider;
+    }
     _SliderValueToBrightness(sliderValue) {
         return Math.floor(sliderValue * 100);
     }
