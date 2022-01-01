@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-12-28 15:58+0100\n"
-"PO-Revision-Date: 2021-12-28 15:58+0100\n"
+"POT-Creation-Date: 2022-01-01 19:42+0100\n"
+"PO-Revision-Date: 2022-01-01 19:42+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
@@ -18,30 +18,51 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.0.1\n"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:46
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:27
+msgid "General"
+msgstr "General"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:56
 msgid "Enable \"All\" Slider"
 msgstr "Activar el control para \"Todos\""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:80
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:87
 msgid "Show Value Label"
 msgstr "Mostrar la etiqueta del valor"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:93
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:113
+msgid "Keyboard Shortcuts"
+msgstr "Atajos del teclado"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:142
+msgid "Increase Brightness"
+msgstr "Aumentar brillo"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:152
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:186
+msgid "Apply"
+msgstr "Aplicar"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:176
+msgid "Decrease Brightness"
+msgstr "Reducir brillo"
+
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:95
 msgid "Initializing"
 msgstr "Inicializando"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:129
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:133
 msgid "Settings"
 msgstr "Configuración"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:133
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:137
 msgid "Reload"
 msgstr "Recargar"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:145
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:149
 msgid "All"
 msgstr "Todos"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:235
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:239
 msgid "Monitor:"
 msgstr "Monitor:"

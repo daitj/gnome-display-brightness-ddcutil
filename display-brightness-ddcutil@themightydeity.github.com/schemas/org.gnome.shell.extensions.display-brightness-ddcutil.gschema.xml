@@ -9,5 +9,13 @@
       <default>false</default>
       <summary>Show value label</summary>
     </key>
+    <key type="as" name="increase-brightness-shortcut">
+      <default><![CDATA[['<Ctrl><Alt><Shift>h']]]></default>
+      <summary>Ctrl+Alt+Shift+H</summary>
+    </key>
+    <key type="as" name="decrease-brightness-shortcut">
+      <default><![CDATA[['<Ctrl><Alt><Shift>g']]]></default>
+      <summary>Ctrl+Alt+Shift+G</summary>
+    </key>
   </schema>
 </schemalist>
