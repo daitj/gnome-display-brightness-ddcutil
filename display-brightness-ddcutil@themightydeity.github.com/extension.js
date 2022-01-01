@@ -22,18 +22,16 @@ const {GLib, Gio, St} = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const Gettext = imports.gettext;
 
 const Convenience = Me.imports.convenience;
 
-const Domain = Gettext.domain(Me.metadata['gettext-domain']);
-const _ = Domain.gettext;
+const _ = ExtensionUtils.gettext;
 
 //for ui stuff of this extension
 const { 
     StatusAreaBrightnessMenu, 
     SingleMonitorMenuItem, 
-    SingleMonitorSliderAndValue } = Me.imports.ui;
+    SingleMonitorSliderAndValue } = Me.imports.statusArea;
 
 const PopupMenu = imports.ui.popupMenu;
 
@@ -75,7 +73,7 @@ class DDCUtilBrightnessControlExtension {
 }
 
 function init() {
-    ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
+    ExtensionUtils.initTranslations();
 
     return new DDCUtilBrightnessControlExtension();
 }
@@ -97,7 +95,6 @@ function BrightnessControl(set) {
 
             addAllDisplaysToPanel();
         }
-        
 
     } else if (set == "disable") {
         /* disconnect all signals */
@@ -264,8 +261,6 @@ function getCachedDisplayInfoAsync(panel) {
     Convenience.spawnWithCallback(["cat", ddcutil_detect_cache_file], function (stdout) { });
 }
 
-
-
 function onSettingsChange(){
     brightnessLog("Settings change detected, reloading widgets")
     reloadMenuWidgets()
@@ -300,7 +295,6 @@ function connectSettingsSignals() {
     }
 }
 
-
 let monitorSignals = {}
 
 function connectMonitorChangeSignals() {
@@ -328,7 +322,6 @@ function addAllDisplaysToPanel(){
         brightnessLog(err);
     }
 }
-
 
 function openPrefs() {
     if (typeof ExtensionUtils.openPrefs === 'function') {
