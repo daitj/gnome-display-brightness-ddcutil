@@ -11,6 +11,10 @@ const PrefsWidget = GObject.registerClass({
     InternalChildren: [
         'show_all_slider_switch',
         'show_value_label_switch',
+        'increase_shortcut_entry',
+        'decrease_shortcut_entry',
+        'increase_shortcut_button',
+        'decrease_shortcut_button'
     ],
 }, class PrefsWidget extends Gtk.Box {
 
@@ -31,6 +35,17 @@ const PrefsWidget = GObject.registerClass({
           'active',
           Gio.SettingsBindFlags.DEFAULT
       );
+
+      this._increase_shortcut_entry.text = this.settings.get_strv('increase-brightness-shortcut')[0];
+      this._decrease_shortcut_entry.text = this.settings.get_strv('decrease-brightness-shortcut')[0];
+
+      this._increase_shortcut_button.connect('clicked', widget => {
+			    this.settings.set_strv('increase-brightness-shortcut', [this._increase_shortcut_entry.text]);
+		  });
+
+      this._decrease_shortcut_button.connect('clicked', widget => {
+			    this.settings.set_strv('decrease-brightness-shortcut', [this._decrease_shortcut_entry.text]);
+		  });
     }
 
   }

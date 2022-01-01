@@ -1,3 +1,7 @@
+all:
+	make build
+	make install
+
 build:
 	make schemas
 	gnome-extensions pack -f --podir=po --extra-source=ui --extra-source=convenience.js --extra-source=statusArea.js ./display-brightness-ddcutil@themightydeity.github.com/ --out-dir=./dist

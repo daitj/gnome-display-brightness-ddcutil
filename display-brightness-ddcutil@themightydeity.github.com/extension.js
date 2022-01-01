@@ -18,7 +18,7 @@
 
 const Main = imports.ui.main;
 const ByteArray = imports.byteArray;
-const {GLib, Gio, St} = imports.gi;
+const {GLib, Gio, Meta, Shell, St} = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
@@ -90,6 +90,8 @@ function BrightnessControl(set) {
             connectSettingsSignals();
             connectMonitorChangeSignals();
 
+            addKeyboardShortcuts();
+
             addTextItemToPanel(_("Initializing"));
             addSettingsItem();
 
@@ -100,6 +102,8 @@ function BrightnessControl(set) {
         /* disconnect all signals */
         disconnectSettingsSignals();
         disconnectMonitorSignals();
+
+        removeKeyboardShortcuts();
 
         mainMenuButton.destroy();
         mainMenuButton = null;
@@ -263,6 +267,8 @@ function getCachedDisplayInfoAsync(panel) {
 
 function onSettingsChange(){
     brightnessLog("Settings change detected, reloading widgets")
+    removeKeyboardShortcuts()
+    addKeyboardShortcuts()
     reloadMenuWidgets()
 }
 
@@ -334,4 +340,36 @@ function openPrefs() {
             Me.uuid
         ]);
     }
+}
+
+function increase() {
+    GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 + 10 --bus 3`)
+}
+
+function decrease() {
+    GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 - 10 --bus 3`)
+}
+
+function addKeyboardShortcuts() {
+    console.log("Add keyboard shortcuts");
+    Main.wm.addKeybinding(
+            'increase-brightness-shortcut',
+            settings,
+            Meta.KeyBindingFlags.NONE,
+            Shell.ActionMode.ALL,
+            this.increase.bind(this)
+    );
+    Main.wm.addKeybinding(
+            'decrease-brightness-shortcut',
+            settings,
+            Meta.KeyBindingFlags.NONE,
+            Shell.ActionMode.ALL,
+            this.decrease.bind(this)
+    );
+}
+
+function removeKeyboardShortcuts() {
+    console.log("Remove keyboard shortcuts");
+    Main.wm.removeKeybinding('increase-brightness-shortcut');
+    Main.wm.removeKeybinding('decrease-brightness-shortcut');
 }
