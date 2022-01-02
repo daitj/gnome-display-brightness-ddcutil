@@ -22,19 +22,19 @@ const { GLib, Gio, Meta, Shell, St } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
+const _ = ExtensionUtils.gettext;
 
 const Convenience = Me.imports.convenience;
-
-const _ = ExtensionUtils.gettext;
 
 //for ui stuff of this extension
 const {
     StatusAreaBrightnessMenu,
-    SingleMonitorMenuItem,
+    SystemMenuBrightnessMenu,
     SingleMonitorSliderAndValue
-} = Me.imports.statusArea;
+} = Me.imports.indicator;
 
 const PopupMenu = imports.ui.popupMenu;
+const AggregateMenu = Main.panel.statusArea.aggregateMenu;
 
 const {
     SHOW_ALL_SLIDER,
@@ -66,7 +66,6 @@ const ddcutil_detect_cache_file = `${cache_dir}/ddcutil_detect`;
 
 const ddcutil_path = "/usr/bin/ddcutil";
 
-
 class DDCUtilBrightnessControlExtension {
     constructor() { }
     enable() {
@@ -86,8 +85,15 @@ function init() {
 
 function BrightnessControl(set) {
     if (set == "enable") {
-        mainMenuButton = new StatusAreaBrightnessMenu();
-        Main.panel.addToStatusArea("DDCUtilBrightnessSlider", mainMenuButton, 0, "right");
+        if (settings.get_string('button-location') == "panel") {
+            brightnessLog("Adding to panel");
+            mainMenuButton = new StatusAreaBrightnessMenu();
+            Main.panel.addToStatusArea("DDCUtilBrightnessSlider", mainMenuButton, 0, "right");
+        } else {
+            brightnessLog("Adding to system menu");
+            mainMenuButton = new SystemMenuBrightnessMenu();
+            AggregateMenu.menu.addMenuItem(mainMenuButton, 2);
+        }
         if (mainMenuButton !== null) {
             /* connect all signals */
             connectSettingsSignals();
@@ -95,8 +101,10 @@ function BrightnessControl(set) {
 
             addKeyboardShortcuts();
 
-            addTextItemToPanel(_("Initializing"));
-            addSettingsItem();
+            if (settings.get_string('button-location') == "panel") {
+                addTextItemToPanel(_("Initializing"));
+                addSettingsItem();
+            }
 
             addAllDisplaysToPanel();
         }
@@ -139,8 +147,7 @@ function addSettingsItem() {
 
     let reloadItem = new PopupMenu.PopupMenuItem(_("Reload"));
     reloadItem.connect('activate', event => {
-        BrightnessControl("disable");
-        BrightnessControl("enable");
+        reloadExtension();
     });
     mainMenuButton.addMenuItem(reloadItem, 2);
 }
@@ -153,7 +160,9 @@ function addAllSlider() {
     mainMenuButton.addMenuItem(allslider)
 
     /* save slider in main menu, so that it can be accessed easily for different events */
-    mainMenuButton.storeValueSliderForEvents(allslider.getValueSlider())
+    if (settings.get_string('button-location') == "panel") {
+        mainMenuButton.storeValueSliderForEvents(allslider.getValueSlider())
+    }
 }
 
 function addDisplayToPanel(display) {
@@ -166,7 +175,7 @@ function addDisplayToPanel(display) {
 
     /* when "All" slider is shown we do not need to store each display's value slider */
     /* save slider in main menu, so that it can be accessed easily for different events */
-    if (!settings.get_boolean(SHOW_ALL_SLIDER)) {
+    if (!settings.get_boolean(SHOW_ALL_SLIDER) && (settings.get_string('button-location') == "panel")) {
         mainMenuButton.storeValueSliderForEvents(displaySlider.getValueSlider())
     }
 
@@ -177,7 +186,9 @@ function reloadMenuWidgets() {
         return;
     }
     mainMenuButton.removeAllMenu();
-    mainMenuButton.clearStoredValueSliders();
+    if (settings.get_string('button-location') == "panel") {
+        mainMenuButton.clearStoredValueSliders();
+    }
 
     if (settings.get_boolean(SHOW_ALL_SLIDER)) {
         addAllSlider();
@@ -185,7 +196,15 @@ function reloadMenuWidgets() {
     displays.forEach(display => {
         addDisplayToPanel(display);
     });
-    addSettingsItem();
+
+    if (settings.get_string('button-location') == "panel") {
+        addSettingsItem();
+    }
+}
+
+function reloadExtension () {
+    BrightnessControl("disable");
+    BrightnessControl("enable");
 }
 
 function addTextItemToPanel(text) {
@@ -199,7 +218,7 @@ function addTextItemToPanel(text) {
 function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
     try {
         let display_names = [];
-        /* 
+        /*
         due to spawnWithCallback fetching faster information for second display in list before first one
         there is a situation where name is displayed for first device but controls second device.
 
@@ -221,7 +240,7 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
                     /* only add display to list if ddc communication is supported with the bus*/
                     if (vcpPowerInfos.indexOf("DDC communication failed") === -1) {
                         let vcpPowerInfosArray = vcpPowerInfos.trim().split(" ");
-                        /* 
+                        /*
                          D6 = Power mode
                          x01 = DPM: On,  DPMS: Off
                         */
@@ -290,9 +309,9 @@ let monitorChangeTimeout = null;
 
 function onMonitorChange() {
     /* 
-    when monitor change happens, 
+    when monitor change happens,
     sometimes the turned off monitor is still accepting DDC connection
-    this is not a great fix, because some monitor 
+    this is not a great fix, because some monitor
     will still take longer than 5 seconds to be off
     */
     brightnessLog("Monitor change detected, reloading extension in 5 seconds.")
@@ -311,7 +330,9 @@ let settingsSignals = {};
 
 function connectSettingsSignals() {
     settingsSignals = {
-        change: settings.connect('changed', onSettingsChange)
+        change: settings.connect('changed', onSettingsChange),
+        reload: settings.connect('changed::reload', reloadExtension),
+        indicator: settings.connect('changed::button-location', reloadExtension)
     }
 }
 
@@ -357,10 +378,12 @@ function openPrefs() {
 }
 
 function increase() {
+    brightnessLog("Increase brightness");
     mainMenuButton.emit('value-up')
 }
 
 function decrease() {
+    brightnessLog("Decrease brightness");
     mainMenuButton.emit('value-down');
 }
 

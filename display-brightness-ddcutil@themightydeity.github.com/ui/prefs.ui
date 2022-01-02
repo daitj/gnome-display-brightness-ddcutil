@@ -100,6 +100,41 @@
                             </child>
                           </object>
                         </child>
+                        <child>
+                          <object class="GtkListBoxRow" id="button_location_row">
+                              <child>
+                                <object class="GtkBox" id="button_location_pref_box">
+                                <property name="margin-start">12</property>
+                                <property name="margin-end">12</property>
+                                <property name="margin-top">12</property>
+                                <property name="margin-bottom">12</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkBox" id="button_location_box">
+                                    <property name="spacing">32</property>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="valign">center</property>
+                                        <property name="label" translatable="yes">Button Location</property>
+                                        <property name="xalign">0</property>
+                                        <property name="hexpand">1</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkComboBoxText" id="button_location_combo_button">
+                                        <property name="active-id">panel</property>
+                                        <items>
+                                          <item id="panel" translatable="yes">Top Bar</item>
+                                          <item id="menu" translatable="yes">System Menu</item>
+                                        </items>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>

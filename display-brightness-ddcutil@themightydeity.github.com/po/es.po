@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-01 19:42+0100\n"
-"PO-Revision-Date: 2022-01-01 19:42+0100\n"
+"POT-Creation-Date: 2022-01-04 03:25+0100\n"
+"PO-Revision-Date: 2022-01-02 15:21+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
@@ -17,6 +17,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.0.1\n"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/headerbar.ui:8
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:148
+msgid "Reload"
+msgstr "Recargar"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:27
 msgid "General"
@@ -30,39 +35,47 @@ msgstr "Activar el control para \"Todos\""
 msgid "Show Value Label"
 msgstr "Mostrar la etiqueta del valor"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:113
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:118
+msgid "Button Location"
+msgstr "Ubicación del botón"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:127
+msgid "Top Bar"
+msgstr "Barra superior"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:128
+msgid "System Menu"
+msgstr "Menú del sistema"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:148
 msgid "Keyboard Shortcuts"
 msgstr "Atajos del teclado"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:142
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:177
 msgid "Increase Brightness"
 msgstr "Aumentar brillo"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:152
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:186
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:187
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:221
 msgid "Apply"
 msgstr "Aplicar"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:176
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:211
 msgid "Decrease Brightness"
 msgstr "Reducir brillo"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:95
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:105
 msgid "Initializing"
 msgstr "Inicializando"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:133
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:144
 msgid "Settings"
 msgstr "Configuración"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:137
-msgid "Reload"
-msgstr "Recargar"
-
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:149
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:159
 msgid "All"
 msgstr "Todos"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:239
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:272
 msgid "Monitor:"
 msgstr "Monitor:"
