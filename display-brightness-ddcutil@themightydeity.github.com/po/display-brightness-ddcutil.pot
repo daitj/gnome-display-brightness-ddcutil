@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-01 19:42+0100\n"
+"POT-Creation-Date: 2022-01-04 03:31+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,11 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/headerbar.ui:8
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:148
+msgid "Reload"
+msgstr ""
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:27
 msgid "General"
@@ -29,39 +34,47 @@ msgstr ""
 msgid "Show Value Label"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:113
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:118
+msgid "Button Location"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:127
+msgid "Top Bar"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:128
+msgid "System Menu"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:148
 msgid "Keyboard Shortcuts"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:142
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:177
 msgid "Increase Brightness"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:152
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:186
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:187
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:221
 msgid "Apply"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:176
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:211
 msgid "Decrease Brightness"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:95
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:105
 msgid "Initializing"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:133
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:144
 msgid "Settings"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:137
-msgid "Reload"
-msgstr ""
-
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:149
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:159
 msgid "All"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:239
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:272
 msgid "Monitor:"
 msgstr ""

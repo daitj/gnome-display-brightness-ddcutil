@@ -1,21 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="display-brightness-ddcutil">
   <schema id="org.gnome.shell.extensions.display-brightness-ddcutil" path="/org/gnome/shell/extensions/display-brightness-ddcutil/">
+    <key type="b" name="reload">
+      <default>false</default>
+      <summary>Reloads the Extension</summary>
+    </key>
     <key type="b" name="show-all-slider">
       <default>false</default>
-      <summary>Enables the All slider</summary>
+      <summary>Enables the All Slider</summary>
     </key>
     <key type="b" name="show-value-label">
       <default>false</default>
-      <summary>Show value label</summary>
+      <summary>Show Value Label</summary>
+    </key>
+    <key name="button-location" type="s">
+      <choices>
+        <choice value="panel"/>
+        <choice value="menu"/>
+      </choices>
+      <default>"panel"</default>
+      <summary>Brightness Button Location</summary>
     </key>
     <key type="as" name="increase-brightness-shortcut">
       <default><![CDATA[['<Ctrl><Alt><Shift>h']]]></default>
-      <summary>Ctrl+Alt+Shift+H</summary>
+      <summary>Increase Brightness Shortcut</summary>
     </key>
     <key type="as" name="decrease-brightness-shortcut">
       <default><![CDATA[['<Ctrl><Alt><Shift>g']]]></default>
-      <summary>Ctrl+Alt+Shift+G</summary>
+      <summary>Decrease Brightness Shortcut</summary>
     </key>
   </schema>
 </schemalist>

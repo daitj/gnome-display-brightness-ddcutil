@@ -22,9 +22,6 @@ const {
 const Convenience = Me.imports.convenience;
 settings = ExtensionUtils.getSettings();
 
-const brightnessIcon = 'display-brightness-symbolic';
-
-
 var StatusAreaBrightnessMenu = GObject.registerClass({
     GType: 'StatusAreaBrightnessMenu',
     Signals: { 'value-up': {}, 'value-down': {} },
@@ -32,7 +29,7 @@ var StatusAreaBrightnessMenu = GObject.registerClass({
     _init() {
         this._valueSliders = [];
         super._init(0.0);
-        let icon = new St.Icon({ icon_name: brightnessIcon, style_class: 'system-status-icon' });
+        let icon = new St.Icon({ icon_name: 'display-brightness-symbolic', style_class: 'system-status-icon' });
         this.add_actor(icon);
         this.connect('scroll-event', (actor, event) => {
             actor.getStoredValueSliders().forEach(valueSlider => {
@@ -70,13 +67,25 @@ var StatusAreaBrightnessMenu = GObject.registerClass({
     }
 });
 
+var SystemMenuBrightnessMenu = class SystemMenuBrightnessMenu extends PopupMenu.PopupMenuSection {
+    _init() {
+        super._init();
+    }
+    removeAllMenu() {
+        this.removeAll();
+    }
+};
+
 var SingleMonitorMenuItem = GObject.registerClass({
     GType: 'SingleMonitorMenuItem'
 }, class SingleMonitorMenuItem extends PopupMenu.PopupBaseMenuItem {
-    _init(slider, label) {
+    _init(icon, slider, label) {
         super._init();
+        if (icon != null) {
+            this.add_actor(icon);
+        }
         this.add_child(slider);
-        
+
         if (settings.get_boolean(SHOW_VALUE_LABEL)) {
             this.add_child(label);
         }
@@ -100,12 +109,18 @@ var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends Popu
 
         this.ValueLabel = new St.Label({ text: this._SliderValueToBrightness(this._currentValue).toString() });
 
-        this.SliderContainer = new SingleMonitorMenuItem(this.ValueSlider, this.ValueLabel);
-
-        // add Slider to it
-        this.addMenuItem(this.NameContainer);
+        if (settings.get_string('button-location') == "panel") {
+            this.NameContainer = new PopupMenu.PopupMenuItem(this._displayName, { hover: false, reactive: false, can_focus: false });
+            this.SliderContainer = new SingleMonitorMenuItem(null, this.ValueSlider, this.ValueLabel);
+            this.addMenuItem(this.NameContainer);
+        } else {
+            let icon = new St.Icon({ icon_name: 'video-display-symbolic', style_class: 'popup-menu-icon' });
+            this.SliderContainer = new SingleMonitorMenuItem(icon, this.ValueSlider, this.ValueLabel);
+        }
         this.addMenuItem(this.SliderContainer);
-        this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        if (settings.get_string('button-location') == "panel") {
+            this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+        }
     }
     changeValue(newValue) {
         this.ValueSlider.value = newValue / 100;

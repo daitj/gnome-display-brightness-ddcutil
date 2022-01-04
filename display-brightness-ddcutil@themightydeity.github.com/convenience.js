@@ -28,7 +28,6 @@
 const Gettext = imports.gettext;
 const { GLib, Gio } = imports.gi;
 
-const Config = imports.misc.config;
 const ExtensionUtils = imports.misc.extensionUtils;
 
 var SHOW_ALL_SLIDER = 'show-all-slider';
