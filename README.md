@@ -6,6 +6,7 @@ Display Brightness Slider for Gnome Shell
 - [Issues](#issues)
   - [Screen hangs/locks on first startup](#screen-hangslocks-on-first-startup)
 - [Credits](#credits)
+    - [Thanks to the following people for contributing via pull requests:](#thanks-to-the-following-people-for-contributing-via-pull-requests)
 ## Setup ddcutil
 
 1. install `ddcutil`
@@ -89,6 +90,7 @@ ddcutil --brief detect > $XDG_CACHE_HOME/ddcutil_detect
 
 ## Credits
 
-This extension is developed and maintained by @datij
+This extension is developed and maintained by [@datij](https://github.com/datij)
 
-Features like: new settings ui, keyboard shortcuts and ability to set icon location were developed by @oscfdezdz.
+#### Thanks to the following people for contributing via pull requests:
+- @oscfdezdz for adding new settings ui, keyboard shortcuts and ability to set icon location
