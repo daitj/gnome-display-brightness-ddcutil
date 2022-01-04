@@ -1,65 +1,98 @@
-const GObject = imports.gi.GObject;
-const Gtk = imports.gi.Gtk;
-const Gio = imports.gi.Gio;
+const { Gio, GObject, Gtk } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const Gettext = imports.gettext;
 const Convenience = Me.imports.convenience;
 
-const Domain = Gettext.domain(Me.metadata['gettext-domain']);
-const _ = Domain.gettext;
+const { Headerbar } = Me.imports.headerbar;
 
-const {SHOW_ALL_SLIDER, SHOW_VALUE_LABEL} = Me.imports.convenience;
+const PrefsWidget = GObject.registerClass({
+    GTypeName: 'PrefsWidget',
+    Template: Me.dir.get_child('./ui/prefs.ui').get_uri(),
+    InternalChildren: [
+        'show_all_slider_switch',
+        'show_value_label_switch',
+        'show_display_name_switch',
+        'button_location_combo_button',
+        'increase_shortcut_entry',
+        'decrease_shortcut_entry',
+        'increase_shortcut_button',
+        'decrease_shortcut_button',
+        'allow_zero_brightness_switch',
+        'disable_display_state_check_switch'
+    ],
+}, class PrefsWidget extends Gtk.Box {
 
+    _init(params = {}) {
+        super._init(params);
+        this.settings = ExtensionUtils.getSettings();
+
+        this.settings.bind(
+            'show-all-slider',
+            this._show_all_slider_switch,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+
+        this.settings.bind(
+            'show-value-label',
+            this._show_value_label_switch,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+
+        this.settings.bind(
+            'show-display-name',
+            this._show_display_name_switch,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+
+        this.settings.bind(
+            'button-location',
+            this._button_location_combo_button,
+            'active-id',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+
+        this.settings.bind(
+            'allow-zero-brightness',
+            this._allow_zero_brightness_switch,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+
+        this.settings.bind(
+            'disable-display-state-check',
+            this._disable_display_state_check_switch,
+            'active-id',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+
+        this._increase_shortcut_entry.text = this.settings.get_strv('increase-brightness-shortcut')[0];
+        this._decrease_shortcut_entry.text = this.settings.get_strv('decrease-brightness-shortcut')[0];
+
+        this._increase_shortcut_button.connect('clicked', widget => {
+            this.settings.set_strv('increase-brightness-shortcut', [this._increase_shortcut_entry.text]);
+        });
+
+        this._decrease_shortcut_button.connect('clicked', widget => {
+            this.settings.set_strv('decrease-brightness-shortcut', [this._decrease_shortcut_entry.text]);
+        });
+    }
+
+}
+);
 
 function init() {
-  ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
+    ExtensionUtils.initTranslations();
 }
 
 function buildPrefsWidget() {
-  let widget = new MyPrefsWidget();
-  return widget;
+    const preferences = new PrefsWidget();
+    preferences.connect('notify::root', () => {
+        const window = preferences.get_root();
+        const headerbar = new Headerbar();
+        window.set_titlebar(headerbar);
+    });
+    return preferences;
 }
-
-const MyPrefsWidget = GObject.registerClass(
-  class MyPrefsWidget extends Gtk.Box {
-
-    _init(params) {
-      super._init(params);
-      this._settings = Convenience.getSettings();
-      this.set_orientation(Gtk.Orientation.VERTICAL);
-
-      let showAllSliderBox = new Gtk.Box({marginStart:7, marginEnd:7, marginBottom:5, marginTop:5});
-
-      const showAllSliderLabel = new Gtk.Label({label:_("Enable \"All\" Slider"),
-      xalign: 0, marginEnd:7});
-
-      const showAllSliderSwitch = new Gtk.Switch({active: this._settings.get_boolean(SHOW_ALL_SLIDER)});
-      showAllSliderSwitch.connect('notify::active', button => {
-          this._settings.set_boolean(SHOW_ALL_SLIDER, button.active);
-      });
-
-      showAllSliderBox.append(showAllSliderLabel);
-      showAllSliderBox.append(showAllSliderSwitch);
-
-
-
-      let showValueLabelBox = new Gtk.Box({marginStart:7, marginEnd:7, marginBottom:5, marginTop:5});
-
-      const showValueLabelLabel = new Gtk.Label({label:_("Show Value Label"),
-      xalign: 0, marginEnd:7});
-
-      const showValueLabelSwitch = new Gtk.Switch({active: this._settings.get_boolean(SHOW_VALUE_LABEL)});
-      showValueLabelSwitch.connect('notify::active', button => {
-          this._settings.set_boolean(SHOW_VALUE_LABEL, button.active);
-      });
-
-      showValueLabelBox.append(showValueLabelLabel);
-      showValueLabelBox.append(showValueLabelSwitch);
-
-      this.append(showValueLabelBox);
-      this.append(showAllSliderBox);
-
-    }
-
-  });

@@ -18,28 +18,31 @@
 
 const Main = imports.ui.main;
 const ByteArray = imports.byteArray;
-const {GLib, Gio, St} = imports.gi;
+const { GLib, Gio, Meta, Shell, St } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const Gettext = imports.gettext;
+const _ = ExtensionUtils.gettext;
 
 const Convenience = Me.imports.convenience;
 
-const Domain = Gettext.domain(Me.metadata['gettext-domain']);
-const _ = Domain.gettext;
-
 //for ui stuff of this extension
-const { 
-    StatusAreaBrightnessMenu, 
-    SingleMonitorMenuItem, 
-    SingleMonitorSliderAndValue } = Me.imports.ui;
+const {
+    StatusAreaBrightnessMenu,
+    SystemMenuBrightnessMenu,
+    SingleMonitorSliderAndValue
+} = Me.imports.indicator;
 
 const PopupMenu = imports.ui.popupMenu;
+const AggregateMenu = Main.panel.statusArea.aggregateMenu;
 
-const {SHOW_ALL_SLIDER, SHOW_VALUE_LABEL} = Me.imports.convenience;
+const {
+    brightnessLog
+} = Me.imports.convenience;
 
-/* lowest possible value for brightness */
+/* lowest possible value for brightness
+    this is skipped if allow-zero-brightness is set
+*/
 const minBrightness = 1;
 
 /* when should min brightness value should be used */
@@ -63,7 +66,6 @@ const ddcutil_detect_cache_file = `${cache_dir}/ddcutil_detect`;
 
 const ddcutil_path = "/usr/bin/ddcutil";
 
-
 class DDCUtilBrightnessControlExtension {
     constructor() { }
     enable() {
@@ -75,34 +77,45 @@ class DDCUtilBrightnessControlExtension {
 }
 
 function init() {
-    ExtensionUtils.initTranslations(Me.metadata['gettext-domain']);
+    ExtensionUtils.initTranslations();
 
     return new DDCUtilBrightnessControlExtension();
 }
 
-function brightnessLog(str){
-    log("display-brightness-ddcutil extension:\n"+str);
-}
+
 function BrightnessControl(set) {
     if (set == "enable") {
-        mainMenuButton = new StatusAreaBrightnessMenu();
-        Main.panel.addToStatusArea("DDCUtilBrightnessSlider", mainMenuButton, 0, "right");
+        if (settings.get_string('button-location') == "panel") {
+            brightnessLog("Adding to panel");
+            mainMenuButton = new StatusAreaBrightnessMenu();
+            Main.panel.addToStatusArea("DDCUtilBrightnessSlider", mainMenuButton, 0, "right");
+        } else {
+            brightnessLog("Adding to system menu");
+            mainMenuButton = new SystemMenuBrightnessMenu();
+            AggregateMenu._indicators.add_child(mainMenuButton);
+            AggregateMenu.menu.addMenuItem(mainMenuButton.menu, 3);
+        }
         if (mainMenuButton !== null) {
             /* connect all signals */
             connectSettingsSignals();
             connectMonitorChangeSignals();
 
-            addTextItemToPanel(_("Initializing"));
-            addSettingsItem();
+            addKeyboardShortcuts();
+
+            if (settings.get_string('button-location') == "panel") {
+                addTextItemToPanel(_("Initializing"));
+                addSettingsItem();
+            }
 
             addAllDisplaysToPanel();
         }
-        
 
     } else if (set == "disable") {
         /* disconnect all signals */
         disconnectSettingsSignals();
         disconnectMonitorSignals();
+
+        removeKeyboardShortcuts();
 
         mainMenuButton.destroy();
         mainMenuButton = null;
@@ -116,7 +129,11 @@ function BrightnessControl(set) {
 function setBrightness(display, newValue) {
     let newBrightness = parseInt((newValue / 100) * display.max);
     if (newBrightness <= minBrightnessThreshold) {
-        newBrightness = minBrightness;
+        if (settings.get_boolean('allow-zero-brightness')) {
+            newBrightness = 0;
+        } else {
+            newBrightness = minBrightness;
+        }
     }
     GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus}`)
 }
@@ -131,14 +148,13 @@ function setAllBrightness(newValue) {
 function addSettingsItem() {
     let settingsItem = new PopupMenu.PopupMenuItem(_("Settings"));
     settingsItem.connect('activate', openPrefs);
-    mainMenuButton.addMenuItem(settingsItem,1);
+    mainMenuButton.addMenuItem(settingsItem, 1);
 
     let reloadItem = new PopupMenu.PopupMenuItem(_("Reload"));
     reloadItem.connect('activate', event => {
-        BrightnessControl("disable");
-        BrightnessControl("enable");
+        reloadExtension();
     });
-    mainMenuButton.addMenuItem(reloadItem,2);
+    mainMenuButton.addMenuItem(reloadItem, 2);
 }
 
 function addAllSlider() {
@@ -147,6 +163,9 @@ function addAllSlider() {
     }
     let allslider = new SingleMonitorSliderAndValue(_("All"), displays[0].current, onAllSliderChange);
     mainMenuButton.addMenuItem(allslider)
+
+    /* save slider in main menu, so that it can be accessed easily for different events */
+    mainMenuButton.storeValueSliderForEvents(allslider.getValueSlider())
 }
 
 function addDisplayToPanel(display) {
@@ -156,35 +175,69 @@ function addDisplayToPanel(display) {
     let displaySlider = new SingleMonitorSliderAndValue(display.name, display.current, onSliderChange);
     display.slider = displaySlider;
     mainMenuButton.addMenuItem(displaySlider);
+
+    /* when "All" slider is shown we do not need to store each display's value slider */
+    /* save slider in main menu, so that it can be accessed easily for different events */
+    if (!settings.get_boolean('show-all-slider')) {
+        mainMenuButton.storeValueSliderForEvents(displaySlider.getValueSlider())
+    }
+
 }
 
+let _reloadMenuWidgetsTimer = null;
+/* 
+   reload menu widgets being called many time caused some lag
+   after every display info was parsed, add this should run reloadMenuWidgets only once
+ */
 function reloadMenuWidgets() {
-    if(mainMenuButton === null){
+    if (_reloadMenuWidgetsTimer) {
+        Convenience.clearTimeout(_reloadMenuWidgetsTimer);
+    }
+    _reloadMenuWidgetsTimer = Convenience.setTimeout(() => {
+        _reloadMenuWidgetsTimer = null;
+        _reloadMenuWidgets();
+    }, 1000)
+}
+
+function _reloadMenuWidgets() {
+    if (mainMenuButton === null) {
         return;
     }
-    mainMenuButton.removeAllMenu();
+    console.debug("Reloading widgets");
 
-    if (settings.get_boolean(SHOW_ALL_SLIDER)) {
+    mainMenuButton.removeAllMenu();
+    mainMenuButton.clearStoredValueSliders();
+
+    if (settings.get_boolean('show-all-slider')) {
         addAllSlider();
     }
     displays.forEach(display => {
         addDisplayToPanel(display);
     });
-    addSettingsItem();
+
+    if (settings.get_string('button-location') == "panel") {
+        addSettingsItem();
+    }
+}
+
+function reloadExtension() {
+    brightnessLog("Reload extension");
+    BrightnessControl("disable");
+    BrightnessControl("enable");
 }
 
 function addTextItemToPanel(text) {
-    if(mainMenuButton === null) return;
+    if (mainMenuButton === null) return;
     let menuItem = new PopupMenu.PopupMenuItem(text, {
         reactive: false
     });
     mainMenuButton.addMenuItem(menuItem);
 }
 
-function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
+function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info) {
     try {
         let display_names = [];
-        /* 
+        /*
         due to spawnWithCallback fetching faster information for second display in list before first one
         there is a situation where name is displayed for first device but controls second device.
 
@@ -194,23 +247,28 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
         brightnessLog("ddcutil brief info:\n" + ddcutil_brief_info);
         ddcutil_brief_info.split('\n').map(ddc_line => {
             if (ddc_line.indexOf("/dev/i2c-") !== -1) {
-                brightnessLog("ddcutil brief info found bus line:\n" +  " "+ ddc_line)
+                brightnessLog("ddcutil brief info found bus line:\n" + " " + ddc_line)
                 /* I2C bus comes first, so when that is detect start a new display object */
                 let display_bus = ddc_line.split("/dev/i2c-")[1].trim();
                 /* save diplay_loop_id as a const for rest of the async calls below here*/
                 const display_id = diplay_loop_id;
                 /* check if display is on or not */
-                brightnessLog("ddcutil reading display state for bus: " +display_bus)
+                brightnessLog("ddcutil reading display state for bus: " + display_bus)
                 Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "D6", "--bus", display_bus], function (vcpPowerInfos) {
-                    brightnessLog("ddcutil reading display status for bus: " + display_bus +" is: " + vcpPowerInfos)
+                    brightnessLog("ddcutil reading display status for bus: " + display_bus + " is: " + vcpPowerInfos)
                     /* only add display to list if ddc communication is supported with the bus*/
                     if (vcpPowerInfos.indexOf("DDC communication failed") === -1) {
                         let vcpPowerInfosArray = vcpPowerInfos.trim().split(" ");
-                        /* 
-                         D6 = Power mode
-                         x01 = DPM: On,  DPMS: Off
-                        */
-                        if (vcpPowerInfosArray.length >= 4  && vcpPowerInfosArray[3] == "x01"){
+
+                        let stateCheck = (vcpPowerInfosArray.length >= 4);
+                        if (!settings.get_string('disable-display-state-check')) {
+                            /*
+                             D6 = Power mode
+                             x01 = DPM: On,  DPMS: Off
+                            */
+                            stateCheck = (stateCheck && vcpPowerInfosArray[3] == "x01")
+                        }
+                        if (stateCheck) {
                             /* read the current and max brightness using getvcp 10 */
                             Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "10", "--bus", display_bus], function (vcpInfos) {
                                 let display = {};
@@ -221,16 +279,16 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
                                 let currentBrightness = vcpInfosArray[3] / vcpInfosArray[4];
 
                                 /* make display object */
-                                display = { "bus": display_bus, "max": maxBrightness, "current": currentBrightness, "name": display_names[display_id]};
+                                display = { "bus": display_bus, "max": maxBrightness, "current": currentBrightness, "name": display_names[display_id] };
                                 displays.push(display);
 
                                 /* cheap way of making reloading all display slider in the panel */
-                                reloadMenuWidgets(panel);
+                                reloadMenuWidgets();
                             });
                         }
                     }
                 });
-                
+
             }
             if (ddc_line.indexOf("Monitor:") !== -1) {
                 /* Monitor name comes second in the output,
@@ -246,7 +304,7 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
 
 function getDisplaysInfoAsync(panel) {
     Convenience.spawnWithCallback([ddcutil_path, "detect", "--brief"], function (stdout) {
-        parseDisplaysInfoAndAddToPanel(stdout, panel);
+        parseDisplaysInfoAndAddToPanel(stdout);
     });
 }
 
@@ -256,7 +314,7 @@ function getCachedDisplayInfoAsync(panel) {
     file.load_contents_async(cancellable, (source, result) => {
         try {
             let [ok, contents, etag_out] = source.load_contents_finish(result);
-            parseDisplaysInfoAndAddToPanel(ByteArray.toString(contents), panel);
+            parseDisplaysInfoAndAddToPanel(ByteArray.toString(contents));
         } catch (e) {
             brightnessLog(`${ddcutil_detect_cache_file} cache file reading error`)
         }
@@ -264,27 +322,27 @@ function getCachedDisplayInfoAsync(panel) {
     Convenience.spawnWithCallback(["cat", ddcutil_detect_cache_file], function (stdout) { });
 }
 
-
-
-function onSettingsChange(){
+function onSettingsChange() {
     brightnessLog("Settings change detected, reloading widgets")
+    removeKeyboardShortcuts()
+    addKeyboardShortcuts()
     reloadMenuWidgets()
 }
 
 let monitorChangeTimeout = null;
 
-function onMonitorChange(){
+function onMonitorChange() {
     /* 
-    when monitor change happens, 
+    when monitor change happens,
     sometimes the turned off monitor is still accepting DDC connection
-    this is not a great fix, because some monitor 
+    this is not a great fix, because some monitor
     will still take longer than 5 seconds to be off
     */
-   brightnessLog("Monitor change detected, reloading extension in 5 seconds.")
-    if(monitorChangeTimeout !== null){
+    brightnessLog("Monitor change detected, reloading extension in 5 seconds.")
+    if (monitorChangeTimeout !== null) {
         Convenience.clearTimeout(monitorChangeTimeout)
     }
-    monitorChangeTimeout = Convenience.setTimeout(function(){
+    monitorChangeTimeout = Convenience.setTimeout(function () {
         monitorChangeTimeout = null;
         BrightnessControl("disable");
         BrightnessControl("enable");
@@ -296,10 +354,11 @@ let settingsSignals = {};
 
 function connectSettingsSignals() {
     settingsSignals = {
-        change: settings.connect('changed', onSettingsChange)
+        change: settings.connect('changed', onSettingsChange),
+        reload: settings.connect('changed::reload', reloadExtension),
+        indicator: settings.connect('changed::button-location', reloadExtension)
     }
 }
-
 
 let monitorSignals = {}
 
@@ -317,7 +376,7 @@ function disconnectMonitorSignals() {
     Main.layoutManager.disconnect(monitorSignals.change);
 }
 
-function addAllDisplaysToPanel(){
+function addAllDisplaysToPanel() {
     try {
         if (GLib.file_test(ddcutil_detect_cache_file, (GLib.FileTest.IS_REGULAR))) {
             getCachedDisplayInfoAsync(mainMenuButton);
@@ -328,7 +387,6 @@ function addAllDisplaysToPanel(){
         brightnessLog(err);
     }
 }
-
 
 function openPrefs() {
     if (typeof ExtensionUtils.openPrefs === 'function') {
@@ -341,4 +399,38 @@ function openPrefs() {
             Me.uuid
         ]);
     }
+}
+
+function increase() {
+    console.debug("Increase brightness");
+    mainMenuButton.emit('value-up')
+}
+
+function decrease() {
+    console.debug("Decrease brightness");
+    mainMenuButton.emit('value-down');
+}
+
+function addKeyboardShortcuts() {
+    console.debug("Add keyboard shortcuts");
+    Main.wm.addKeybinding(
+        'increase-brightness-shortcut',
+        settings,
+        Meta.KeyBindingFlags.NONE,
+        Shell.ActionMode.ALL,
+        this.increase.bind(this)
+    );
+    Main.wm.addKeybinding(
+        'decrease-brightness-shortcut',
+        settings,
+        Meta.KeyBindingFlags.NONE,
+        Shell.ActionMode.ALL,
+        this.decrease.bind(this)
+    );
+}
+
+function removeKeyboardShortcuts() {
+    console.debug("Remove keyboard shortcuts");
+    Main.wm.removeKeybinding('increase-brightness-shortcut');
+    Main.wm.removeKeybinding('decrease-brightness-shortcut');
 }

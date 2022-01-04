@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface domain="display-brightness-ddcutil">
+  <requires lib="gtk" version="4.0"/>
+  <template class="Headerbar" parent="GtkHeaderBar">
+    <child type="start">
+      <object class="GtkButton" id="reload_button">
+        <property name="icon-name">view-refresh-symbolic</property>
+        <property name="tooltip-text" translatable="yes">Reload</property>
+        <signal name="clicked" handler="onReloadButtonClicked" swapped="no"/>
+      </object>
+    </child>
+  </template>
+</interface>

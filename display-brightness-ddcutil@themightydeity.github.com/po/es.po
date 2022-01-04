@@ -7,41 +7,93 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-07-31 00:04+0200\n"
-"PO-Revision-Date: 2021-07-31 13:00+0200\n"
+"POT-Creation-Date: 2022-01-04 19:40+0200\n"
+"PO-Revision-Date: 2022-01-02 15:21+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.4.3\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.0.1\n"
 
-#: extension.js:94
-msgid "Initializing"
-msgstr "Inicializando"
-
-#: extension.js:131
-msgid "Settings"
-msgstr "Configuración"
-
-#: extension.js:135
+#: display-brightness-ddcutil@themightydeity.github.com/ui/headerbar.ui:8
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:153
 msgid "Reload"
 msgstr "Recargar"
 
-#: extension.js:147
-msgid "All"
-msgstr "Todos"
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:27
+msgid "General"
+msgstr "General"
 
-#: extension.js:237
-msgid "Monitor:"
-msgstr "Monitor:"
-
-#: prefs.js:28
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:56
 msgid "Enable \"All\" Slider"
 msgstr "Activar el control para \"Todos\""
 
-#: prefs.js:43
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:87
 msgid "Show Value Label"
 msgstr "Mostrar la etiqueta del valor"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:118
+msgid "Show Display Name"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:149
+msgid "Button Location"
+msgstr "Ubicación del botón"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:158
+msgid "Top Bar"
+msgstr "Barra superior"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:159
+msgid "System Menu"
+msgstr "Menú del sistema"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:179
+msgid "Keyboard Shortcuts"
+msgstr "Atajos del teclado"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:208
+msgid "Increase Brightness"
+msgstr "Aumentar brillo"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:218
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:252
+msgid "Apply"
+msgstr "Aplicar"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:242
+msgid "Decrease Brightness"
+msgstr "Reducir brillo"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:271
+#, fuzzy
+msgid "Advanced Settings"
+msgstr "Configuración"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:300
+#, fuzzy
+msgid "Allow zero brightness"
+msgstr "Reducir brillo"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:331
+msgid "Disable display state check"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:106
+msgid "Initializing"
+msgstr "Inicializando"
+
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:149
+msgid "Settings"
+msgstr "Configuración"
+
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:164
+msgid "All"
+msgstr "Todos"
+
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:296
+msgid "Monitor:"
+msgstr "Monitor:"

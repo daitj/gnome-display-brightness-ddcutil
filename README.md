@@ -5,6 +5,7 @@ Display Brightness Slider for Gnome Shell
   - [Manually from the source code](#manually-from-the-source-code)
 - [Issues](#issues)
   - [Screen hangs/locks on first startup](#screen-hangslocks-on-first-startup)
+- [Credits](#credits)
 ## Setup ddcutil
 
 1. install `ddcutil`
@@ -37,9 +38,9 @@ sudo cp /usr/share/ddcutil/data/45-ddcutil-i2c.rules /etc/udev/rules.d
 
   ```
 
-  sudo usermod your-user-name -aG i2c
-
   sudo groupadd --system i2c
+
+  sudo usermod your-user-name -aG i2c
 
   ```
 
@@ -86,3 +87,8 @@ As a workaround I changed this extension to read cached info from a file, when i
 ddcutil --brief detect > $XDG_CACHE_HOME/ddcutil_detect
 ```
 
+## Credits
+
+This extension is developed and maintained by @datij
+
+Features like: new settings ui, keyboard shortcuts and ability to set icon location were developed by @oscfdezdz.
