@@ -26,13 +26,17 @@
 */
 
 const Gettext = imports.gettext;
-const {GLib, Gio} = imports.gi;
+const { GLib, Gio } = imports.gi;
 
 const Config = imports.misc.config;
 const ExtensionUtils = imports.misc.extensionUtils;
 
 var SHOW_ALL_SLIDER = 'show-all-slider';
 var SHOW_VALUE_LABEL = 'show-value-label';
+
+function brightnessLog(str) {
+  log("display-brightness-ddcutil extension:\n" + str);
+}
 
 //timer
 /**
@@ -42,12 +46,12 @@ function setTimeout(func, millis /* , ... args */) {
 
   let args = [];
   if (arguments.length > 2) {
-      args = args.slice.call(arguments, 2);
+    args = args.slice.call(arguments, 2);
   }
 
   let id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, millis, () => {
-      func.apply(null, args);
-      return GLib.SOURCE_REMOVE;; // Stop repeating
+    func.apply(null, args);
+    return GLib.SOURCE_REMOVE;; // Stop repeating
   });
 
   return id;
@@ -63,10 +67,10 @@ function spawnWithCallback(argv, callback) {
   let proc = Gio.Subprocess.new(argv, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
 
   proc.communicate_utf8_async(null, null, (proc, res) => {
-      let [ok, stdout, stderr] = proc.communicate_utf8_finish(res);
+    let [ok, stdout, stderr] = proc.communicate_utf8_finish(res);
 
-      if (proc.get_successful()) {
-          callback(stdout);
-      }
+    if (proc.get_successful()) {
+      callback(stdout);
+    }
   });
 }
