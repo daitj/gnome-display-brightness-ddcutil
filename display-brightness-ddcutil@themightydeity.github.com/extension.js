@@ -37,12 +37,12 @@ const PopupMenu = imports.ui.popupMenu;
 const AggregateMenu = Main.panel.statusArea.aggregateMenu;
 
 const {
-    SHOW_ALL_SLIDER,
-    SHOW_VALUE_LABEL,
     brightnessLog
 } = Me.imports.convenience;
 
-/* lowest possible value for brightness */
+/* lowest possible value for brightness
+    this is skipped if allow-zero-brightness is set
+*/
 const minBrightness = 1;
 
 /* when should min brightness value should be used */
@@ -92,7 +92,8 @@ function BrightnessControl(set) {
         } else {
             brightnessLog("Adding to system menu");
             mainMenuButton = new SystemMenuBrightnessMenu();
-            AggregateMenu.menu.addMenuItem(mainMenuButton, 2);
+            AggregateMenu._indicators.add_child(mainMenuButton);
+            AggregateMenu.menu.addMenuItem(mainMenuButton.menu, 3);
         }
         if (mainMenuButton !== null) {
             /* connect all signals */
@@ -128,7 +129,11 @@ function BrightnessControl(set) {
 function setBrightness(display, newValue) {
     let newBrightness = parseInt((newValue / 100) * display.max);
     if (newBrightness <= minBrightnessThreshold) {
-        newBrightness = minBrightness;
+        if (settings.get_boolean('allow-zero-brightness')) {
+            newBrightness = 0;
+        } else {
+            newBrightness = minBrightness;
+        }
     }
     GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus}`)
 }
@@ -160,9 +165,7 @@ function addAllSlider() {
     mainMenuButton.addMenuItem(allslider)
 
     /* save slider in main menu, so that it can be accessed easily for different events */
-    if (settings.get_string('button-location') == "panel") {
-        mainMenuButton.storeValueSliderForEvents(allslider.getValueSlider())
-    }
+    mainMenuButton.storeValueSliderForEvents(allslider.getValueSlider())
 }
 
 function addDisplayToPanel(display) {
@@ -175,22 +178,37 @@ function addDisplayToPanel(display) {
 
     /* when "All" slider is shown we do not need to store each display's value slider */
     /* save slider in main menu, so that it can be accessed easily for different events */
-    if (!settings.get_boolean(SHOW_ALL_SLIDER) && (settings.get_string('button-location') == "panel")) {
+    if (!settings.get_boolean('show-all-slider')) {
         mainMenuButton.storeValueSliderForEvents(displaySlider.getValueSlider())
     }
 
 }
 
+let _reloadMenuWidgetsTimer = null;
+/* 
+   reload menu widgets being called many time caused some lag
+   after every display info was parsed, add this should run reloadMenuWidgets only once
+ */
 function reloadMenuWidgets() {
+    if (_reloadMenuWidgetsTimer) {
+        Convenience.clearTimeout(_reloadMenuWidgetsTimer);
+    }
+    _reloadMenuWidgetsTimer = Convenience.setTimeout(() => {
+        _reloadMenuWidgetsTimer = null;
+        _reloadMenuWidgets();
+    }, 1000)
+}
+
+function _reloadMenuWidgets() {
     if (mainMenuButton === null) {
         return;
     }
-    mainMenuButton.removeAllMenu();
-    if (settings.get_string('button-location') == "panel") {
-        mainMenuButton.clearStoredValueSliders();
-    }
+    console.debug("Reloading widgets");
 
-    if (settings.get_boolean(SHOW_ALL_SLIDER)) {
+    mainMenuButton.removeAllMenu();
+    mainMenuButton.clearStoredValueSliders();
+
+    if (settings.get_boolean('show-all-slider')) {
         addAllSlider();
     }
     displays.forEach(display => {
@@ -202,7 +220,8 @@ function reloadMenuWidgets() {
     }
 }
 
-function reloadExtension () {
+function reloadExtension() {
+    brightnessLog("Reload extension");
     BrightnessControl("disable");
     BrightnessControl("enable");
 }
@@ -215,7 +234,7 @@ function addTextItemToPanel(text) {
     mainMenuButton.addMenuItem(menuItem);
 }
 
-function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
+function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info) {
     try {
         let display_names = [];
         /*
@@ -240,11 +259,16 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
                     /* only add display to list if ddc communication is supported with the bus*/
                     if (vcpPowerInfos.indexOf("DDC communication failed") === -1) {
                         let vcpPowerInfosArray = vcpPowerInfos.trim().split(" ");
-                        /*
-                         D6 = Power mode
-                         x01 = DPM: On,  DPMS: Off
-                        */
-                        if (vcpPowerInfosArray.length >= 4 && vcpPowerInfosArray[3] == "x01") {
+
+                        let stateCheck = (vcpPowerInfosArray.length >= 4);
+                        if (!settings.get_string('disable-display-state-check')) {
+                            /*
+                             D6 = Power mode
+                             x01 = DPM: On,  DPMS: Off
+                            */
+                            stateCheck = (stateCheck && vcpPowerInfosArray[3] == "x01")
+                        }
+                        if (stateCheck) {
                             /* read the current and max brightness using getvcp 10 */
                             Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "10", "--bus", display_bus], function (vcpInfos) {
                                 let display = {};
@@ -259,7 +283,7 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
                                 displays.push(display);
 
                                 /* cheap way of making reloading all display slider in the panel */
-                                reloadMenuWidgets(panel);
+                                reloadMenuWidgets();
                             });
                         }
                     }
@@ -280,7 +304,7 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info, panel) {
 
 function getDisplaysInfoAsync(panel) {
     Convenience.spawnWithCallback([ddcutil_path, "detect", "--brief"], function (stdout) {
-        parseDisplaysInfoAndAddToPanel(stdout, panel);
+        parseDisplaysInfoAndAddToPanel(stdout);
     });
 }
 
@@ -290,7 +314,7 @@ function getCachedDisplayInfoAsync(panel) {
     file.load_contents_async(cancellable, (source, result) => {
         try {
             let [ok, contents, etag_out] = source.load_contents_finish(result);
-            parseDisplaysInfoAndAddToPanel(ByteArray.toString(contents), panel);
+            parseDisplaysInfoAndAddToPanel(ByteArray.toString(contents));
         } catch (e) {
             brightnessLog(`${ddcutil_detect_cache_file} cache file reading error`)
         }
@@ -378,17 +402,17 @@ function openPrefs() {
 }
 
 function increase() {
-    brightnessLog("Increase brightness");
+    console.debug("Increase brightness");
     mainMenuButton.emit('value-up')
 }
 
 function decrease() {
-    brightnessLog("Decrease brightness");
+    console.debug("Decrease brightness");
     mainMenuButton.emit('value-down');
 }
 
 function addKeyboardShortcuts() {
-    brightnessLog("Add keyboard shortcuts");
+    console.debug("Add keyboard shortcuts");
     Main.wm.addKeybinding(
         'increase-brightness-shortcut',
         settings,
@@ -406,7 +430,7 @@ function addKeyboardShortcuts() {
 }
 
 function removeKeyboardShortcuts() {
-    brightnessLog("Remove keyboard shortcuts");
+    console.debug("Remove keyboard shortcuts");
     Main.wm.removeKeybinding('increase-brightness-shortcut');
     Main.wm.removeKeybinding('decrease-brightness-shortcut');
 }

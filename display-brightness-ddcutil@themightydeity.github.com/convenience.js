@@ -30,9 +30,6 @@ const { GLib, Gio } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 
-var SHOW_ALL_SLIDER = 'show-all-slider';
-var SHOW_VALUE_LABEL = 'show-value-label';
-
 function brightnessLog(str) {
   log("display-brightness-ddcutil extension:\n" + str);
 }

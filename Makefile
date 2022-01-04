@@ -1,4 +1,4 @@
-all: build install
+all: pot build
 
 build: schemas
 	gnome-extensions pack \
@@ -13,18 +13,18 @@ build: schemas
 install:
 	gnome-extensions install \
 		--force \
-		./dist/display-brightness-ddcutil@themightydeity.github.com.shell-extension.zip
+		"./dist/display-brightness-ddcutil@themightydeity.github.com.shell-extension.zip"
 
 pot:
-	mkdir -p ./display-brightness-ddcutil@themightydeity.github.com/po
+	mkdir -p "./display-brightness-ddcutil@themightydeity.github.com/po"
 	xgettext \
 		--from-code=UTF-8 \
-		--output=display-brightness-ddcutil\@themightydeity.github.com/po/display-brightness-ddcutil.pot \
-		./display-brightness-ddcutil\@themightydeity.github.com/ui/* ./display-brightness-ddcutil\@themightydeity.github.com/extension.js
+		--output="./display-brightness-ddcutil@themightydeity.github.com/po/display-brightness-ddcutil.pot" \
+		"./display-brightness-ddcutil@themightydeity.github.com/ui/"* "./display-brightness-ddcutil@themightydeity.github.com/extension.js"
 
 update-po:
-	for po_file in ./display-brightness-ddcutil@themightydeity.github.com/po/*.po; do \
-		msgmerge --update $$po_file display-brightness-ddcutil@themightydeity.github.com/po/display-brightness-ddcutil.pot; \
+	for po_file in "./display-brightness-ddcutil@themightydeity.github.com/po/"*.po; do \
+		msgmerge --update "$$po_file" "display-brightness-ddcutil@themightydeity.github.com/po/display-brightness-ddcutil.pot"; \
 	done
 
 schemas:

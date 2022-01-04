@@ -13,14 +13,41 @@ const PopupMenu = imports.ui.popupMenu;
 const { Slider, SLIDER_SCROLL_STEP } = imports.ui.slider;
 
 const {
-    SHOW_ALL_SLIDER,
-    SHOW_VALUE_LABEL,
     brightnessLog
 } = Me.imports.convenience;
 
 // for settings
 const Convenience = Me.imports.convenience;
 settings = ExtensionUtils.getSettings();
+
+function decycle(obj, stack = []) {
+    if (!obj || typeof obj !== 'object')
+        return obj;
+    
+    if (stack.includes(obj))
+        return null;
+
+    let s = stack.concat([obj]);
+
+    return Array.isArray(obj)
+        ? obj.map(x => decycle(x, s))
+        : Object.fromEntries(
+            Object.entries(obj)
+                .map(([k, v]) => [k, decycle(v, s)]));
+}
+
+
+function valueSliderMoveEvent(actor, scroll_step){
+    actor.getStoredValueSliders().forEach(valueSlider => {
+        valueSlider.value = Math.min(Math.max(0, valueSlider.value + scroll_step), valueSlider._maxValue);
+    });
+}
+function valueSliderScrollEvent(actor, event){
+    actor.getStoredValueSliders().forEach(valueSlider => {
+        valueSlider.emit('scroll-event', event);
+    });
+    return Clutter.EVENT_STOP;
+}
 
 var StatusAreaBrightnessMenu = GObject.registerClass({
     GType: 'StatusAreaBrightnessMenu',
@@ -31,22 +58,13 @@ var StatusAreaBrightnessMenu = GObject.registerClass({
         super._init(0.0);
         let icon = new St.Icon({ icon_name: 'display-brightness-symbolic', style_class: 'system-status-icon' });
         this.add_actor(icon);
-        this.connect('scroll-event', (actor, event) => {
-            actor.getStoredValueSliders().forEach(valueSlider => {
-                valueSlider.emit('scroll-event', event);
-            });
-            return Clutter.EVENT_STOP;
-        });
+        this.connect('scroll-event', valueSliderScrollEvent);
         this.connect('value-up', (actor, event) => {
-            actor.getStoredValueSliders().forEach(valueSlider => {
-                valueSlider.value = Math.min(Math.max(0, valueSlider.value + SLIDER_SCROLL_STEP), valueSlider._maxValue);
-            });
+            valueSliderMoveEvent(actor, SLIDER_SCROLL_STEP)
             return Clutter.EVENT_STOP;
         });
         this.connect('value-down', (actor, event) => {
-            actor.getStoredValueSliders().forEach(valueSlider => {
-                valueSlider.value = Math.min(Math.max(0, valueSlider.value - SLIDER_SCROLL_STEP), valueSlider._maxValue);
-            });
+            valueSliderMoveEvent(actor, -SLIDER_SCROLL_STEP)
             return Clutter.EVENT_STOP;
         });
     }
@@ -65,28 +83,64 @@ var StatusAreaBrightnessMenu = GObject.registerClass({
     addMenuItem(item, position = null) {
         this.menu.addMenuItem(item);
     }
+
 });
 
-var SystemMenuBrightnessMenu = class SystemMenuBrightnessMenu extends PopupMenu.PopupMenuSection {
+var SystemMenuBrightnessMenu = GObject.registerClass({
+    GType: 'SystemMenuBrightnessMenu',
+    Signals: { 'value-up': {}, 'value-down': {} },
+}, class SystemMenuBrightnessMenu extends PanelMenu.SystemIndicator {
     _init() {
         super._init();
+        this._indicator = this._addIndicator();
+        this._indicator.icon_name = 'display-brightness-symbolic';
+        this._valueSliders = [];
+
+        this.connect('scroll-event', valueSliderScrollEvent);
+        this.connect('value-up', (actor, event) => {
+            valueSliderMoveEvent(actor, SLIDER_SCROLL_STEP)
+            return Clutter.EVENT_STOP;
+        });
+        this.connect('value-down', (actor, event) => {
+            valueSliderMoveEvent(actor, -SLIDER_SCROLL_STEP)
+            return Clutter.EVENT_STOP;
+        });
+        this.connect('destroy', this._onDestroy.bind(this)); 
     }
     removeAllMenu() {
-        this.removeAll();
+        this.menu.removeAll()
     }
-};
+    addMenuItem(item, position = null) {
+        this.menu.addMenuItem(item)
+    }
+    clearStoredValueSliders(){
+        this._valueSliders = [];
+    }
+    storeValueSliderForEvents(slider){
+        this._valueSliders.push(slider);
+    }
+    getStoredValueSliders(){
+        return this._valueSliders;
+    }
+    _onDestroy() {
+        this.menu.destroy();
+    }
+});
 
 var SingleMonitorMenuItem = GObject.registerClass({
     GType: 'SingleMonitorMenuItem'
 }, class SingleMonitorMenuItem extends PopupMenu.PopupBaseMenuItem {
-    _init(icon, slider, label) {
+    _init(icon, name, slider, label) {
         super._init();
         if (icon != null) {
             this.add_actor(icon);
         }
+        if(name != null && settings.get_boolean('show-display-name')){
+            this.add_child(name);
+        }
         this.add_child(slider);
 
-        if (settings.get_boolean(SHOW_VALUE_LABEL)) {
+        if (settings.get_boolean('show-value-label')) {
             this.add_child(label);
         }
     }
@@ -109,13 +163,15 @@ var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends Popu
 
         this.ValueLabel = new St.Label({ text: this._SliderValueToBrightness(this._currentValue).toString() });
 
+        this.NameContainer = new PopupMenu.PopupMenuItem(this._displayName, { hover: false, reactive: false, can_focus: false });
         if (settings.get_string('button-location') == "panel") {
-            this.NameContainer = new PopupMenu.PopupMenuItem(this._displayName, { hover: false, reactive: false, can_focus: false });
-            this.SliderContainer = new SingleMonitorMenuItem(null, this.ValueSlider, this.ValueLabel);
-            this.addMenuItem(this.NameContainer);
+            this.SliderContainer = new SingleMonitorMenuItem(null, null, this.ValueSlider, this.ValueLabel);
+            if(settings.get_boolean('show-display-name')){
+                this.addMenuItem(this.NameContainer);
+            }
         } else {
-            let icon = new St.Icon({ icon_name: 'video-display-symbolic', style_class: 'popup-menu-icon' });
-            this.SliderContainer = new SingleMonitorMenuItem(icon, this.ValueSlider, this.ValueLabel);
+            let icon = new St.Icon({ icon_name: 'display-brightness-symbolic', style_class: 'popup-menu-icon' });
+            this.SliderContainer = new SingleMonitorMenuItem(icon, this.NameContainer, this.ValueSlider, this.ValueLabel);
         }
         this.addMenuItem(this.SliderContainer);
         if (settings.get_string('button-location') == "panel") {

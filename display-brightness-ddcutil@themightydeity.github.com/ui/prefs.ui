@@ -7,7 +7,7 @@
     <child>
       <object class="GtkScrolledWindow" id="items_container">
         <property name="width-request">500</property>
-        <property name="height-request">500</property>
+        <property name="height-request">700</property>
         <property name="hscrollbar-policy">never</property>
         <property name="vexpand">1</property>
         <child>
@@ -91,6 +91,37 @@
                                     </child>
                                     <child>
                                       <object class="GtkSwitch" id="show_value_label_switch">
+                                        <property name="valign">center</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkListBoxRow" id="show_display_name_row">
+                              <child>
+                                <object class="GtkBox" id="show_display_name_pref_box">
+                                <property name="margin-start">12</property>
+                                <property name="margin-end">12</property>
+                                <property name="margin-top">12</property>
+                                <property name="margin-bottom">12</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkBox" id="show_display_name_box">
+                                    <property name="spacing">32</property>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="valign">center</property>
+                                        <property name="label" translatable="yes">Show Display Name</property>
+                                        <property name="xalign">0</property>
+                                        <property name="hexpand">1</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkSwitch" id="show_display_name_switch">
                                         <property name="valign">center</property>
                                       </object>
                                     </child>
@@ -219,6 +250,92 @@
                                     <child>
                                       <object class="GtkButton" id="decrease_shortcut_button">
                                         <property name="label" translatable="yes">Apply</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkBox" id="advanced_settings_title">
+                    <property name="margin-top">36</property>
+                    <property name="margin-bottom">12</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label" translatable="yes">Advanced Settings</property>
+                        <attributes>
+                          <attribute name="weight" value="bold"/>
+                        </attributes>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkFrame" id="advanced_settings">
+                    <property name="label-xalign">0</property>
+                    <child>
+                      <object class="GtkListBox" id="advanced_settings_listbox">
+                        <property name="selection-mode">none</property>
+                        <child>
+                          <object class="GtkListBoxRow" id="allow_zero_brightness_row">
+                            <child>
+                              <object class="GtkBox" id="allow_zero_brightness_pref_box">
+                                <property name="margin-start">12</property>
+                                <property name="margin-end">12</property>
+                                <property name="margin-top">12</property>
+                                <property name="margin-bottom">12</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkBox" id="allow_zero_brightness_box">
+                                    <property name="spacing">32</property>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="valign">center</property>
+                                        <property name="label" translatable="yes">Allow zero brightness</property>
+                                        <property name="xalign">0</property>
+                                        <property name="hexpand">1</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkSwitch" id="allow_zero_brightness_switch">
+                                        <property name="valign">center</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkListBoxRow" id="disable_display_state_check_row">
+                            <child>
+                              <object class="GtkBox" id="disable_display_state_check_pref_box">
+                                <property name="margin-start">12</property>
+                                <property name="margin-end">12</property>
+                                <property name="margin-top">12</property>
+                                <property name="margin-bottom">12</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkBox" id="disable_display_state_check_box">
+                                    <property name="spacing">32</property>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="valign">center</property>
+                                        <property name="label" translatable="yes">Disable display state check</property>
+                                        <property name="xalign">0</property>
+                                        <property name="hexpand">1</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkSwitch" id="disable_display_state_check_switch">
+                                        <property name="valign">center</property>
                                       </object>
                                     </child>
                                   </object>

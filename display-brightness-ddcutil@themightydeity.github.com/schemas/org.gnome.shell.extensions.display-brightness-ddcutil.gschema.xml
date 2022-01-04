@@ -13,6 +13,10 @@
       <default>false</default>
       <summary>Show Value Label</summary>
     </key>
+    <key type="b" name="show-display-name">
+      <default>true</default>
+      <summary>Show Display Name</summary>
+    </key>
     <key name="button-location" type="s">
       <choices>
         <choice value="panel"/>
@@ -28,6 +32,14 @@
     <key type="as" name="decrease-brightness-shortcut">
       <default><![CDATA[['<Ctrl><Alt><Shift>g']]]></default>
       <summary>Decrease Brightness Shortcut</summary>
+    </key>
+      <key type="b" name="allow-zero-brightness">
+      <default>false</default>
+      <summary>Allow zero brightness</summary>
+    </key>
+      <key type="b" name="disable-display-state-check">
+      <default>false</default>
+      <summary>Disable display state check</summary>
     </key>
   </schema>
 </schemalist>
