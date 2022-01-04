@@ -261,7 +261,7 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info) {
                         let vcpPowerInfosArray = vcpPowerInfos.trim().split(" ");
 
                         let stateCheck = (vcpPowerInfosArray.length >= 4);
-                        if (!settings.get_string('disable-display-state-check')) {
+                        if (!settings.get_boolean('disable-display-state-check')) {
                             /*
                              D6 = Power mode
                              x01 = DPM: On,  DPMS: Off
