@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-01-04 19:40+0200\n"
-"PO-Revision-Date: 2022-01-02 15:21+0100\n"
+"PO-Revision-Date: 2022-01-04 20:16+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
@@ -29,7 +29,7 @@ msgstr "General"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:56
 msgid "Enable \"All\" Slider"
-msgstr "Activar el control para \"Todos\""
+msgstr "Activar el deslizador para \"Todos\""
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:87
 msgid "Show Value Label"
@@ -37,7 +37,7 @@ msgstr "Mostrar la etiqueta del valor"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:118
 msgid "Show Display Name"
-msgstr ""
+msgstr "Mostrar nombre de la pantalla"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:149
 msgid "Button Location"
@@ -69,18 +69,16 @@ msgid "Decrease Brightness"
 msgstr "Reducir brillo"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:271
-#, fuzzy
 msgid "Advanced Settings"
-msgstr "Configuración"
+msgstr "Configuración avanzada"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:300
-#, fuzzy
 msgid "Allow zero brightness"
-msgstr "Reducir brillo"
+msgstr "Permitir brillo cero"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:331
 msgid "Disable display state check"
-msgstr ""
+msgstr "Desactivar la comprobación del estado de la pantalla"
 
 #: display-brightness-ddcutil@themightydeity.github.com/extension.js:106
 msgid "Initializing"
