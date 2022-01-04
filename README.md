@@ -1,4 +1,7 @@
 Display Brightness Slider for Gnome Shell
+
+![screenshot](screenshot.jpg)
+
 - [Setup ddcutil](#setup-ddcutil)
 - [Installation](#installation)
   - [Automatically from GNOME extensions](#automatically-from-gnome-extensions)
