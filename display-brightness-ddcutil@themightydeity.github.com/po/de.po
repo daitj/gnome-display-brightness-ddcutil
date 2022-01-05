@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-01-04 19:40+0200\n"
-"PO-Revision-Date: 2022-01-05 12:39+0100\n"
+"PO-Revision-Date: 2022-01-05 12:42+0100\n"
 "Language-Team: \n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
@@ -29,7 +29,7 @@ msgstr "Allgemein"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:56
 msgid "Enable \"All\" Slider"
-msgstr "Geteilten Schieberegler anzeigen"
+msgstr "Gemeinsamen Schieberegler anzeigen"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:87
 msgid "Show Value Label"
