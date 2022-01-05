@@ -84,12 +84,12 @@ var SystemMenuBrightnessMenu = GObject.registerClass({
     GType: 'SystemMenuBrightnessMenu',
     Signals: { 'value-up': {}, 'value-down': {} },
 }, class SystemMenuBrightnessMenu extends PanelMenu.SystemIndicator {
-    _init() {
+    _init(settings) {
         super._init();
+        this._valueSliders = [];
         this._indicator = this._addIndicator();
         this._indicator.icon_name = 'display-brightness-symbolic';
-        this._valueSliders = [];
-
+        this._indicator.visible = !settings.get_boolean('hide-system-indicator');
         this.connect('scroll-event', valueSliderScrollEvent);
         this.connect('value-up', (actor, event) => {
             valueSliderMoveEvent(actor, SLIDER_SCROLL_STEP)

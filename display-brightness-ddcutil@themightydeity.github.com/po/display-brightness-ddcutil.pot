@@ -42,40 +42,44 @@ msgstr ""
 msgid "Button Location"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:158
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:159
 msgid "Top Bar"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:159
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:160
 msgid "System Menu"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:179
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:188
+msgid "Hide System Indicator"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:216
 msgid "Keyboard Shortcuts"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:208
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:245
 msgid "Increase Brightness"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:218
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:252
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:255
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:289
 msgid "Apply"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:242
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:279
 msgid "Decrease Brightness"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:271
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:308
 msgid "Advanced Settings"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:300
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:337
 msgid "Allow zero brightness"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:331
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:368
 msgid "Disable display state check"
 msgstr ""
 

@@ -17,13 +17,17 @@
       <default>true</default>
       <summary>Show Display Name</summary>
     </key>
-    <key name="button-location" type="s">
+    <key type="s" name="button-location">
       <choices>
         <choice value="panel"/>
         <choice value="menu"/>
       </choices>
       <default>"panel"</default>
       <summary>Brightness Button Location</summary>
+    </key>
+    <key type="b" name="hide-system-indicator">
+      <default>false</default>
+      <summary>Hides System Indicator</summary>
     </key>
     <key type="as" name="increase-brightness-shortcut">
       <default><![CDATA[['<Ctrl><Alt><Shift>h']]]></default>
