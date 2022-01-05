@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-04 19:40+0200\n"
+"POT-Creation-Date: 2022-01-05 14:39+0200\n"
 "PO-Revision-Date: 2022-01-04 20:16+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -19,7 +19,7 @@ msgstr ""
 "X-Generator: Poedit 3.0.1\n"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/headerbar.ui:8
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:153
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:163
 msgid "Reload"
 msgstr "Recargar"
 
@@ -84,14 +84,14 @@ msgstr "Desactivar la comprobación del estado de la pantalla"
 msgid "Initializing"
 msgstr "Inicializando"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:149
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:157
 msgid "Settings"
 msgstr "Configuración"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:164
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:174
 msgid "All"
 msgstr "Todos"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:296
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:307
 msgid "Monitor:"
 msgstr "Monitor:"

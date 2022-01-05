@@ -3,9 +3,6 @@ const Me = ExtensionUtils.getCurrentExtension();
 
 const { GObject, St, Clutter } = imports.gi;
 
-// icons and labels
-const Lang = imports.lang;
-
 // menu items
 const Panel = imports.ui.panel;
 const PanelMenu = imports.ui.panelMenu
@@ -16,9 +13,7 @@ const {
     brightnessLog
 } = Me.imports.convenience;
 
-// for settings
 const Convenience = Me.imports.convenience;
-settings = ExtensionUtils.getSettings();
 
 function decycle(obj, stack = []) {
     if (!obj || typeof obj !== 'object')
@@ -83,7 +78,6 @@ var StatusAreaBrightnessMenu = GObject.registerClass({
     addMenuItem(item, position = null) {
         this.menu.addMenuItem(item);
     }
-
 });
 
 var SystemMenuBrightnessMenu = GObject.registerClass({
@@ -105,7 +99,6 @@ var SystemMenuBrightnessMenu = GObject.registerClass({
             valueSliderMoveEvent(actor, -SLIDER_SCROLL_STEP)
             return Clutter.EVENT_STOP;
         });
-        this.connect('destroy', this._onDestroy.bind(this)); 
     }
     removeAllMenu() {
         this.menu.removeAll()
@@ -122,15 +115,12 @@ var SystemMenuBrightnessMenu = GObject.registerClass({
     getStoredValueSliders(){
         return this._valueSliders;
     }
-    _onDestroy() {
-        this.menu.destroy();
-    }
 });
 
 var SingleMonitorMenuItem = GObject.registerClass({
     GType: 'SingleMonitorMenuItem'
 }, class SingleMonitorMenuItem extends PopupMenu.PopupBaseMenuItem {
-    _init(icon, name, slider, label) {
+    _init(settings, icon, name, slider, label) {
         super._init();
         if (icon != null) {
             this.add_actor(icon);
@@ -147,8 +137,9 @@ var SingleMonitorMenuItem = GObject.registerClass({
 });
 
 var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends PopupMenu.PopupMenuSection {
-    constructor(displayName, currentValue, onSliderChange) {
+    constructor(settings, displayName, currentValue, onSliderChange) {
         super();
+        this._settings = settings;
         this._timer = null
         this._displayName = displayName
         this._currentValue = currentValue
@@ -159,22 +150,22 @@ var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends Popu
         this.NameContainer = new PopupMenu.PopupMenuItem(this._displayName, { hover: false, reactive: false, can_focus: false });
 
         this.ValueSlider = new Slider(this._currentValue);
-        this.ValueSlider.connect('notify::value', Lang.bind(this, this._SliderChange));
+        this.ValueSlider.connect('notify::value', this._SliderChange.bind(this));
 
         this.ValueLabel = new St.Label({ text: this._SliderValueToBrightness(this._currentValue).toString() });
 
         this.NameContainer = new PopupMenu.PopupMenuItem(this._displayName, { hover: false, reactive: false, can_focus: false });
-        if (settings.get_string('button-location') == "panel") {
-            this.SliderContainer = new SingleMonitorMenuItem(null, null, this.ValueSlider, this.ValueLabel);
-            if(settings.get_boolean('show-display-name')){
+        if (this._settings.get_string('button-location') == "panel") {
+            this.SliderContainer = new SingleMonitorMenuItem(this._settings, null, null, this.ValueSlider, this.ValueLabel);
+            if(this._settings.get_boolean('show-display-name')){
                 this.addMenuItem(this.NameContainer);
             }
         } else {
             let icon = new St.Icon({ icon_name: 'display-brightness-symbolic', style_class: 'popup-menu-icon' });
-            this.SliderContainer = new SingleMonitorMenuItem(icon, this.NameContainer, this.ValueSlider, this.ValueLabel);
+            this.SliderContainer = new SingleMonitorMenuItem(this._settings, icon, this.NameContainer, this.ValueSlider, this.ValueLabel);
         }
         this.addMenuItem(this.SliderContainer);
-        if (settings.get_string('button-location') == "panel") {
+        if (this._settings.get_string('button-location') == "panel") {
             this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         }
     }
@@ -188,15 +179,18 @@ var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends Popu
         return Math.floor(sliderValue * 100);
     }
     _SliderChange() {
-        let sliderItem = this
-        if (sliderItem.timer) {
-            Convenience.clearTimeout(sliderItem.timer);
-        }
-        let brightness = this._SliderValueToBrightness(sliderItem.ValueSlider.value);
+        this.clearTimeout();
+        let brightness = this._SliderValueToBrightness(this.ValueSlider.value);
         sliderItem.ValueLabel.text = brightness.toString();
-        sliderItem.timer = Convenience.setTimeout(() => {
+        let sliderItem = this
+        this.timer = Convenience.setTimeout(() => {
             sliderItem.timer = null;
             sliderItem._onSliderChange(brightness)
         }, 500)
+    }
+    clearTimeout(){
+        if (this.timer) {
+            Convenience.clearTimeout(this.timer);
+        }
     }
 }

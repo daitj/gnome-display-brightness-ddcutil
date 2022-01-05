@@ -52,8 +52,6 @@ let displays = [];
 
 let mainMenuButton = null;
 
-let timeoutId = null;
-
 /*
     instead of reading i2c bus everytime during startup,
     as it is unlikely that bus number changes, we can read
@@ -84,7 +82,9 @@ function init() {
 
 
 function BrightnessControl(set) {
+    let settings = ExtensionUtils.getSettings();
     if (set == "enable") {
+        displays = [];
         if (settings.get_string('button-location') == "panel") {
             brightnessLog("Adding to panel");
             mainMenuButton = new StatusAreaBrightnessMenu();
@@ -97,32 +97,40 @@ function BrightnessControl(set) {
         }
         if (mainMenuButton !== null) {
             /* connect all signals */
-            connectSettingsSignals();
+            connectSettingsSignals(settings);
             connectMonitorChangeSignals();
 
-            addKeyboardShortcuts();
+            addKeyboardShortcuts(settings);
 
             if (settings.get_string('button-location') == "panel") {
                 addTextItemToPanel(_("Initializing"));
                 addSettingsItem();
             }
 
-            addAllDisplaysToPanel();
+            addAllDisplaysToPanel(settings);
         }
 
     } else if (set == "disable") {
         /* disconnect all signals */
-        disconnectSettingsSignals();
+        disconnectSettingsSignals(settings);
         disconnectMonitorSignals();
 
+        /* remove shortcuts */
         removeKeyboardShortcuts();
 
+        /* clear timeouts */
+        if (_reloadMenuWidgetsTimer) {
+            Convenience.clearTimeout(_reloadMenuWidgetsTimer);
+        }
+        displays.forEach(display=>{
+            display.slider.clearTimeout();
+        })
+
+        /* clear variables */
         mainMenuButton.destroy();
         mainMenuButton = null;
-        displays = [];
-        if (timeoutId) {
-            Convenience.clearTimeout(timeoutId)
-        }
+        displays = null;
+        settings = null;
     }
 }
 
@@ -147,7 +155,9 @@ function setAllBrightness(newValue) {
 
 function addSettingsItem() {
     let settingsItem = new PopupMenu.PopupMenuItem(_("Settings"));
-    settingsItem.connect('activate', openPrefs);
+    settingsItem.connect('activate', ()=>{
+        ExtensionUtils.openPrefs();
+    });
     mainMenuButton.addMenuItem(settingsItem, 1);
 
     let reloadItem = new PopupMenu.PopupMenuItem(_("Reload"));
@@ -157,22 +167,22 @@ function addSettingsItem() {
     mainMenuButton.addMenuItem(reloadItem, 2);
 }
 
-function addAllSlider() {
+function addAllSlider(settings) {
     let onAllSliderChange = function (newValue) {
         setAllBrightness(newValue);
     }
-    let allslider = new SingleMonitorSliderAndValue(_("All"), displays[0].current, onAllSliderChange);
+    let allslider = new SingleMonitorSliderAndValue(settings, _("All"), displays[0].current, onAllSliderChange);
     mainMenuButton.addMenuItem(allslider)
 
     /* save slider in main menu, so that it can be accessed easily for different events */
     mainMenuButton.storeValueSliderForEvents(allslider.getValueSlider())
 }
 
-function addDisplayToPanel(display) {
+function addDisplayToPanel(settings, display) {
     let onSliderChange = function (newValue) {
         setBrightness(display, newValue)
     }
-    let displaySlider = new SingleMonitorSliderAndValue(display.name, display.current, onSliderChange);
+    let displaySlider = new SingleMonitorSliderAndValue(settings, display.name, display.current, onSliderChange);
     display.slider = displaySlider;
     mainMenuButton.addMenuItem(displaySlider);
 
@@ -189,30 +199,31 @@ let _reloadMenuWidgetsTimer = null;
    reload menu widgets being called many time caused some lag
    after every display info was parsed, add this should run reloadMenuWidgets only once
  */
-function reloadMenuWidgets() {
+function reloadMenuWidgets(settings) {
     if (_reloadMenuWidgetsTimer) {
         Convenience.clearTimeout(_reloadMenuWidgetsTimer);
     }
     _reloadMenuWidgetsTimer = Convenience.setTimeout(() => {
         _reloadMenuWidgetsTimer = null;
-        _reloadMenuWidgets();
+        _reloadMenuWidgets(settings);
     }, 1000)
 }
 
-function _reloadMenuWidgets() {
+function _reloadMenuWidgets(settings) {
     if (mainMenuButton === null) {
         return;
     }
+
     console.debug("Reloading widgets");
 
     mainMenuButton.removeAllMenu();
     mainMenuButton.clearStoredValueSliders();
 
     if (settings.get_boolean('show-all-slider')) {
-        addAllSlider();
+        addAllSlider(settings);
     }
     displays.forEach(display => {
-        addDisplayToPanel(display);
+        addDisplayToPanel(settings, display);
     });
 
     if (settings.get_string('button-location') == "panel") {
@@ -234,7 +245,7 @@ function addTextItemToPanel(text) {
     mainMenuButton.addMenuItem(menuItem);
 }
 
-function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info) {
+function parseDisplaysInfoAndAddToPanel(settings, ddcutil_brief_info) {
     try {
         let display_names = [];
         /*
@@ -283,7 +294,7 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info) {
                                 displays.push(display);
 
                                 /* cheap way of making reloading all display slider in the panel */
-                                reloadMenuWidgets();
+                                reloadMenuWidgets(settings);
                             });
                         }
                     }
@@ -302,19 +313,19 @@ function parseDisplaysInfoAndAddToPanel(ddcutil_brief_info) {
     }
 }
 
-function getDisplaysInfoAsync(panel) {
+function getDisplaysInfoAsync(settings) {
     Convenience.spawnWithCallback([ddcutil_path, "detect", "--brief"], function (stdout) {
-        parseDisplaysInfoAndAddToPanel(stdout);
+        parseDisplaysInfoAndAddToPanel(settings, stdout);
     });
 }
 
-function getCachedDisplayInfoAsync(panel) {
+function getCachedDisplayInfoAsync(settings) {
     let file = Gio.File.new_for_path(ddcutil_detect_cache_file)
     let cancellable = new Gio.Cancellable();
     file.load_contents_async(cancellable, (source, result) => {
         try {
             let [ok, contents, etag_out] = source.load_contents_finish(result);
-            parseDisplaysInfoAndAddToPanel(ByteArray.toString(contents));
+            parseDisplaysInfoAndAddToPanel(settings, ByteArray.toString(contents));
         } catch (e) {
             brightnessLog(`${ddcutil_detect_cache_file} cache file reading error`)
         }
@@ -322,11 +333,11 @@ function getCachedDisplayInfoAsync(panel) {
     Convenience.spawnWithCallback(["cat", ddcutil_detect_cache_file], function (stdout) { });
 }
 
-function onSettingsChange() {
+function onSettingsChange(settings) {
     brightnessLog("Settings change detected, reloading widgets")
     removeKeyboardShortcuts()
-    addKeyboardShortcuts()
-    reloadMenuWidgets()
+    addKeyboardShortcuts(settings)
+    reloadMenuWidgets(settings)
 }
 
 let monitorChangeTimeout = null;
@@ -352,9 +363,11 @@ function onMonitorChange() {
 
 let settingsSignals = {};
 
-function connectSettingsSignals() {
+function connectSettingsSignals(settings) {
     settingsSignals = {
-        change: settings.connect('changed', onSettingsChange),
+        change: settings.connect('changed', ()=>{
+            onSettingsChange(settings)
+        }),
         reload: settings.connect('changed::reload', reloadExtension),
         indicator: settings.connect('changed::button-location', reloadExtension)
     }
@@ -368,7 +381,7 @@ function connectMonitorChangeSignals() {
     }
 }
 
-function disconnectSettingsSignals() {
+function disconnectSettingsSignals(settings) {
     settings.disconnect(settingsSignals.change);
 }
 
@@ -376,28 +389,15 @@ function disconnectMonitorSignals() {
     Main.layoutManager.disconnect(monitorSignals.change);
 }
 
-function addAllDisplaysToPanel() {
+function addAllDisplaysToPanel(settings) {
     try {
         if (GLib.file_test(ddcutil_detect_cache_file, (GLib.FileTest.IS_REGULAR))) {
-            getCachedDisplayInfoAsync(mainMenuButton);
+            getCachedDisplayInfoAsync(settings);
         } else {
-            getDisplaysInfoAsync(mainMenuButton);
+            getDisplaysInfoAsync(settings);
         }
     } catch (err) {
         brightnessLog(err);
-    }
-}
-
-function openPrefs() {
-    if (typeof ExtensionUtils.openPrefs === 'function') {
-        ExtensionUtils.openPrefs();
-    } else {
-        Util.spawn(['sh', '-c',
-            'command -v gnome-extensions 2>&1 && gnome-extensions prefs ' +
-            Me.uuid +
-            ' || gnome-shell-extension-prefs ' +
-            Me.uuid
-        ]);
     }
 }
 
@@ -411,7 +411,7 @@ function decrease() {
     mainMenuButton.emit('value-down');
 }
 
-function addKeyboardShortcuts() {
+function addKeyboardShortcuts(settings) {
     console.debug("Add keyboard shortcuts");
     Main.wm.addKeybinding(
         'increase-brightness-shortcut',

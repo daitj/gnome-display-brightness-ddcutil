@@ -1,4 +1,4 @@
-all: pot build
+all: pot update-po build
 
 build: schemas
 	gnome-extensions pack \

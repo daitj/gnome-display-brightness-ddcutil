@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-05 00:03+0200\n"
+"POT-Creation-Date: 2022-01-05 14:42+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/headerbar.ui:8
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:153
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:163
 msgid "Reload"
 msgstr ""
 
@@ -83,14 +83,14 @@ msgstr ""
 msgid "Initializing"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:149
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:157
 msgid "Settings"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:164
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:174
 msgid "All"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:296
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:307
 msgid "Monitor:"
 msgstr ""
