@@ -214,7 +214,7 @@ function _reloadMenuWidgets(settings) {
         return;
     }
 
-    console.debug("Reloading widgets");
+    brightnessLog("Reloading widgets");
 
     mainMenuButton.removeAllMenu();
     mainMenuButton.clearStoredValueSliders();
@@ -402,17 +402,17 @@ function addAllDisplaysToPanel(settings) {
 }
 
 function increase() {
-    console.debug("Increase brightness");
+    brightnessLog("Increase brightness");
     mainMenuButton.emit('value-up')
 }
 
 function decrease() {
-    console.debug("Decrease brightness");
+    brightnessLog("Decrease brightness");
     mainMenuButton.emit('value-down');
 }
 
 function addKeyboardShortcuts(settings) {
-    console.debug("Add keyboard shortcuts");
+    brightnessLog("Add keyboard shortcuts");
     Main.wm.addKeybinding(
         'increase-brightness-shortcut',
         settings,
@@ -430,7 +430,7 @@ function addKeyboardShortcuts(settings) {
 }
 
 function removeKeyboardShortcuts() {
-    console.debug("Remove keyboard shortcuts");
+    brightnessLog("Remove keyboard shortcuts");
     Main.wm.removeKeybinding('increase-brightness-shortcut');
     Main.wm.removeKeybinding('decrease-brightness-shortcut');
 }
