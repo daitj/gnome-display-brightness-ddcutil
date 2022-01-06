@@ -156,10 +156,10 @@ function setBrightness(settings, display, newValue) {
     GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus}`)
 }
 
-function setAllBrightness(newValue) {
-    displays.forEach(element => {
-        element.slider.changeValue(newValue);
-        setBrightness(element, newValue);
+function setAllBrightness(settings, newValue) {
+    displays.forEach(display => {
+        display.slider.changeValue(newValue);
+        setBrightness(settings, display, newValue);
     });
 }
 
