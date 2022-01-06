@@ -22,7 +22,16 @@ const { GLib, Gio, Meta, Shell, St } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
+
+
+// i18n
+/*
+//some Pop_OS users started getting _ is not a function error with the line below
 const _ = ExtensionUtils.gettext;
+//so I had to use the old code instead
+*/
+const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
+const _ = Gettext.gettext;
 
 const Convenience = Me.imports.convenience;
 
@@ -134,7 +143,7 @@ function BrightnessControl(set) {
     }
 }
 
-function setBrightness(display, newValue) {
+function setBrightness(settings, display, newValue) {
     let newBrightness = parseInt((newValue / 100) * display.max);
     if (newBrightness <= minBrightnessThreshold) {
         if (settings.get_boolean('allow-zero-brightness')) {
@@ -143,6 +152,7 @@ function setBrightness(display, newValue) {
             newBrightness = minBrightness;
         }
     }
+    //brightnessLog(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus}`)
     GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus}`)
 }
 
@@ -169,7 +179,7 @@ function addSettingsItem() {
 
 function addAllSlider(settings) {
     let onAllSliderChange = function (newValue) {
-        setAllBrightness(newValue);
+        setAllBrightness(settings, newValue);
     }
     let allslider = new SingleMonitorSliderAndValue(settings, _("All"), displays[0].current, onAllSliderChange);
     mainMenuButton.addMenuItem(allslider)
@@ -180,7 +190,7 @@ function addAllSlider(settings) {
 
 function addDisplayToPanel(settings, display) {
     let onSliderChange = function (newValue) {
-        setBrightness(display, newValue)
+        setBrightness(settings, display, newValue)
     }
     let displaySlider = new SingleMonitorSliderAndValue(settings, display.name, display.current, onSliderChange);
     display.slider = displaySlider;

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-05 14:39+0200\n"
+"POT-Creation-Date: 2022-01-07 00:24+0200\n"
 "PO-Revision-Date: 2022-01-04 20:16+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -19,7 +19,7 @@ msgstr ""
 "X-Generator: Poedit 3.0.1\n"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/headerbar.ui:8
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:163
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:173
 msgid "Reload"
 msgstr "Recargar"
 
@@ -80,18 +80,18 @@ msgstr "Permitir brillo cero"
 msgid "Disable display state check"
 msgstr "Desactivar la comprobación del estado de la pantalla"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:106
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:115
 msgid "Initializing"
 msgstr "Inicializando"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:157
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:167
 msgid "Settings"
 msgstr "Configuración"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:174
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:184
 msgid "All"
 msgstr "Todos"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:307
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:317
 msgid "Monitor:"
 msgstr "Monitor:"
