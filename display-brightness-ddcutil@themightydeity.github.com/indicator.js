@@ -181,8 +181,8 @@ var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends Popu
     _SliderChange() {
         this.clearTimeout();
         let brightness = this._SliderValueToBrightness(this.ValueSlider.value);
-        sliderItem.ValueLabel.text = brightness.toString();
         let sliderItem = this
+        sliderItem.ValueLabel.text = brightness.toString();
         this.timer = Convenience.setTimeout(() => {
             sliderItem.timer = null;
             sliderItem._onSliderChange(brightness)
