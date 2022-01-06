@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-07 00:24+0200\n"
+"POT-Creation-Date: 2022-01-07 13:45+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -50,36 +50,40 @@ msgstr ""
 msgid "System Menu"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:188
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:191
 msgid "Hide System Indicator"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:216
-msgid "Keyboard Shortcuts"
-msgstr ""
-
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:245
-msgid "Increase Brightness"
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:222
+msgid "Position in System Menu"
 msgstr ""
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:255
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:289
+msgid "Keyboard Shortcuts"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:284
+msgid "Increase Brightness"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:294
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:328
 msgid "Apply"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:279
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:318
 msgid "Decrease Brightness"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:308
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:347
 msgid "Advanced Settings"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:337
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:376
 msgid "Allow zero brightness"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:368
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:407
 msgid "Disable display state check"
 msgstr ""
 

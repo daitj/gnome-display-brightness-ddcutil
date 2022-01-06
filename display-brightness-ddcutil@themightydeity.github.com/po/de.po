@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-07 00:24+0200\n"
+"POT-Creation-Date: 2022-01-07 13:26+0100\n"
 "PO-Revision-Date: 2022-01-05 12:42+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -52,36 +52,41 @@ msgstr "Obere Leiste"
 msgid "System Menu"
 msgstr "System-Menü"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:188
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:191
 msgid "Hide System Indicator"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:216
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:222
+#, fuzzy
+msgid "Position in System Menu"
+msgstr "System-Menü"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:255
 msgid "Keyboard Shortcuts"
 msgstr "Tastaturkurzbefehle"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:245
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:284
 msgid "Increase Brightness"
 msgstr "Helligkeit erhöhen"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:255
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:289
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:294
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:328
 msgid "Apply"
 msgstr "Anwenden"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:279
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:318
 msgid "Decrease Brightness"
 msgstr "Helligkeit verringern"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:308
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:347
 msgid "Advanced Settings"
 msgstr "Erweiterte Einstellungen"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:337
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:376
 msgid "Allow zero brightness"
 msgstr "Vollständige Abdunkelung erlauben"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:368
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:407
 msgid "Disable display state check"
 msgstr "Status-Überprüfung deaktivieren"
 
@@ -100,7 +105,3 @@ msgstr "Alle"
 #: display-brightness-ddcutil@themightydeity.github.com/extension.js:317
 msgid "Monitor:"
 msgstr "Bildschirm:"
-
-#, fuzzy
-#~ msgid "Position in System Menu"
-#~ msgstr "System-Menü"

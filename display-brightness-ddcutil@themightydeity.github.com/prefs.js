@@ -15,6 +15,7 @@ const PrefsWidget = GObject.registerClass({
         'button_location_combo_button',
         'system_menu_revealer',
         'hide_system_indicator_switch',
+        'position_system_menu_spin_button',
         'increase_shortcut_entry',
         'decrease_shortcut_entry',
         'increase_shortcut_button',
@@ -63,6 +64,8 @@ const PrefsWidget = GObject.registerClass({
             Gio.SettingsBindFlags.DEFAULT
         );
 
+        this._position_system_menu_spin_button.value = this.settings.get_double('position-system-menu');
+
         this.settings.bind(
             'allow-zero-brightness',
             this._allow_zero_brightness_switch,
@@ -95,6 +98,10 @@ const PrefsWidget = GObject.registerClass({
         } else {
             this._system_menu_revealer.reveal_child = false;
         }
+    }
+
+    onValueChanged() {
+        this.settings.set_double('position-system-menu', this._position_system_menu_spin_button.value);
     }
 
 }

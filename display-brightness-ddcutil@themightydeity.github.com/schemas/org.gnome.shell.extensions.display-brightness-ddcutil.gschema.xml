@@ -29,6 +29,10 @@
       <default>false</default>
       <summary>Hides System Indicator</summary>
     </key>
+    <key type="d" name="position-system-menu">
+      <default>3</default>
+      <summary>Sets position in system menu</summary>
+    </key>
     <key type="as" name="increase-brightness-shortcut">
       <default><![CDATA[['<Ctrl><Alt><Shift>h']]]></default>
       <summary>Increase Brightness Shortcut</summary>
