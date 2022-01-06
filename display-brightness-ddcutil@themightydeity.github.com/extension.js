@@ -123,7 +123,7 @@ function BrightnessControl(set) {
             Convenience.clearTimeout(_reloadMenuWidgetsTimer);
         }
         displays.forEach(display=>{
-            display.slider.clearTimeout();
+            display.slider.destory();
         })
 
         /* clear variables */

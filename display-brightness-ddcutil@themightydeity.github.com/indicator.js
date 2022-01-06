@@ -99,6 +99,7 @@ var SystemMenuBrightnessMenu = GObject.registerClass({
             valueSliderMoveEvent(actor, -SLIDER_SCROLL_STEP)
             return Clutter.EVENT_STOP;
         });
+        this.connect('destroy', this._onDestroy.bind(this)); 
     }
     removeAllMenu() {
         this.menu.removeAll()
@@ -114,6 +115,9 @@ var SystemMenuBrightnessMenu = GObject.registerClass({
     }
     getStoredValueSliders(){
         return this._valueSliders;
+    }
+    _onDestroy() {
+        this.menu.destroy();
     }
 });
 
@@ -192,5 +196,8 @@ var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends Popu
         if (this.timer) {
             Convenience.clearTimeout(this.timer);
         }
+    }
+    destory(){
+        this.clearTimeout();
     }
 }
