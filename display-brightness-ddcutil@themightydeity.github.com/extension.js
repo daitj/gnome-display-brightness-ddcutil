@@ -100,9 +100,9 @@ function BrightnessControl(set) {
             Main.panel.addToStatusArea("DDCUtilBrightnessSlider", mainMenuButton, 0, "right");
         } else {
             brightnessLog("Adding to system menu");
-            mainMenuButton = new SystemMenuBrightnessMenu();
+            mainMenuButton = new SystemMenuBrightnessMenu(settings);
             AggregateMenu._indicators.add_child(mainMenuButton);
-            AggregateMenu.menu.addMenuItem(mainMenuButton.menu, 3);
+            AggregateMenu.menu.addMenuItem(mainMenuButton.menu, settings.get_double('position-system-menu'));
         }
         if (mainMenuButton !== null) {
             /* connect all signals */
@@ -365,8 +365,7 @@ function onMonitorChange() {
     }
     monitorChangeTimeout = Convenience.setTimeout(function () {
         monitorChangeTimeout = null;
-        BrightnessControl("disable");
-        BrightnessControl("enable");
+        reloadExtension();
     }, 5000);
 
 }
@@ -379,7 +378,9 @@ function connectSettingsSignals(settings) {
             onSettingsChange(settings)
         }),
         reload: settings.connect('changed::reload', reloadExtension),
-        indicator: settings.connect('changed::button-location', reloadExtension)
+        indicator: settings.connect('changed::button-location', reloadExtension),
+        hide_system_indicator: settings.connect('changed::hide-system-indicator', reloadExtension),
+        position_system_menu: settings.connect('changed::position-system-menu', reloadExtension)
     }
 }
 

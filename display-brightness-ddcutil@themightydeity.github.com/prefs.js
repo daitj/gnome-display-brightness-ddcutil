@@ -13,6 +13,9 @@ const PrefsWidget = GObject.registerClass({
         'show_value_label_switch',
         'show_display_name_switch',
         'button_location_combo_button',
+        'system_menu_revealer',
+        'hide_system_indicator_switch',
+        'position_system_menu_spin_button',
         'increase_shortcut_entry',
         'decrease_shortcut_entry',
         'increase_shortcut_button',
@@ -55,6 +58,15 @@ const PrefsWidget = GObject.registerClass({
         );
 
         this.settings.bind(
+            'hide-system-indicator',
+            this._hide_system_indicator_switch,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+
+        this._position_system_menu_spin_button.value = this.settings.get_double('position-system-menu');
+
+        this.settings.bind(
             'allow-zero-brightness',
             this._allow_zero_brightness_switch,
             'active',
@@ -78,6 +90,18 @@ const PrefsWidget = GObject.registerClass({
         this._decrease_shortcut_button.connect('clicked', widget => {
             this.settings.set_strv('decrease-brightness-shortcut', [this._decrease_shortcut_entry.text]);
         });
+    }
+
+    onButtonLocationChanged() {
+        if (this._button_location_combo_button.active_id == "menu") {
+            this._system_menu_revealer.reveal_child = true;
+        } else {
+            this._system_menu_revealer.reveal_child = false;
+        }
+    }
+
+    onValueChanged() {
+        this.settings.set_double('position-system-menu', this._position_system_menu_spin_button.value);
     }
 
 }
