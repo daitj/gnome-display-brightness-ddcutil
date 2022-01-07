@@ -14,8 +14,8 @@ A clear and concise description of what the bug is.
 Steps to reproduce the behavior:
 
 **Journal logs**
-`journalctl -b /usr/bin/gnome-shell`
 ```
+journalctl --no-pager -b /usr/bin/gnome-shell
 Run above command and paste the log here 
 ```
 **Screenshots**
