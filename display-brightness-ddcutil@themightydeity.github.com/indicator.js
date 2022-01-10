@@ -18,7 +18,7 @@ const Convenience = Me.imports.convenience;
 function decycle(obj, stack = []) {
     if (!obj || typeof obj !== 'object')
         return obj;
-    
+
     if (stack.includes(obj))
         return null;
 
@@ -32,12 +32,12 @@ function decycle(obj, stack = []) {
 }
 
 
-function valueSliderMoveEvent(actor, scroll_step){
+function valueSliderMoveEvent(actor, scroll_step) {
     actor.getStoredValueSliders().forEach(valueSlider => {
         valueSlider.value = Math.min(Math.max(0, valueSlider.value + scroll_step), valueSlider._maxValue);
     });
 }
-function valueSliderScrollEvent(actor, event){
+function valueSliderScrollEvent(actor, event) {
     actor.getStoredValueSliders().forEach(valueSlider => {
         valueSlider.emit('scroll-event', event);
     });
@@ -63,13 +63,13 @@ var StatusAreaBrightnessMenu = GObject.registerClass({
             return Clutter.EVENT_STOP;
         });
     }
-    clearStoredValueSliders(){
+    clearStoredValueSliders() {
         this._valueSliders = [];
     }
-    storeValueSliderForEvents(slider){
+    storeValueSliderForEvents(slider) {
         this._valueSliders.push(slider);
     }
-    getStoredValueSliders(){
+    getStoredValueSliders() {
         return this._valueSliders;
     }
     removeAllMenu() {
@@ -99,7 +99,7 @@ var SystemMenuBrightnessMenu = GObject.registerClass({
             valueSliderMoveEvent(actor, -SLIDER_SCROLL_STEP)
             return Clutter.EVENT_STOP;
         });
-        this.connect('destroy', this._onDestroy.bind(this)); 
+        this.connect('destroy', this._onDestroy.bind(this));
     }
     removeAllMenu() {
         this.menu.removeAll()
@@ -107,13 +107,13 @@ var SystemMenuBrightnessMenu = GObject.registerClass({
     addMenuItem(item, position = null) {
         this.menu.addMenuItem(item)
     }
-    clearStoredValueSliders(){
+    clearStoredValueSliders() {
         this._valueSliders = [];
     }
-    storeValueSliderForEvents(slider){
+    storeValueSliderForEvents(slider) {
         this._valueSliders.push(slider);
     }
-    getStoredValueSliders(){
+    getStoredValueSliders() {
         return this._valueSliders;
     }
     _onDestroy() {
@@ -129,7 +129,7 @@ var SingleMonitorMenuItem = GObject.registerClass({
         if (icon != null) {
             this.add_actor(icon);
         }
-        if(name != null && settings.get_boolean('show-display-name')){
+        if (name != null && settings.get_boolean('show-display-name')) {
             this.add_child(name);
         }
         this.add_child(slider);
@@ -151,17 +151,27 @@ var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends Popu
         this._init();
     }
     _init() {
-        this.NameContainer = new PopupMenu.PopupMenuItem(this._displayName, { hover: false, reactive: false, can_focus: false });
-
+        if(this._settings.get_string('button-location') == "panel"){
+            this.NameContainer = new PopupMenu.PopupMenuItem(this._displayName, {
+                hover: false,
+                reactive: false,
+                can_focus: false
+            });
+        }else{
+            this.NameContainer = new St.Label({
+                text: this._displayName,
+                style_class: 'display-brightness-ddcutil-monitor-name-system-menu'
+            });
+        }
+        
         this.ValueSlider = new Slider(this._currentValue);
         this.ValueSlider.connect('notify::value', this._SliderChange.bind(this));
 
         this.ValueLabel = new St.Label({ text: this._SliderValueToBrightness(this._currentValue).toString() });
 
-        this.NameContainer = new PopupMenu.PopupMenuItem(this._displayName, { hover: false, reactive: false, can_focus: false });
         if (this._settings.get_string('button-location') == "panel") {
             this.SliderContainer = new SingleMonitorMenuItem(this._settings, null, null, this.ValueSlider, this.ValueLabel);
-            if(this._settings.get_boolean('show-display-name')){
+            if (this._settings.get_boolean('show-display-name')) {
                 this.addMenuItem(this.NameContainer);
             }
         } else {
@@ -192,12 +202,12 @@ var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends Popu
             sliderItem._onSliderChange(brightness)
         }, 500)
     }
-    clearTimeout(){
+    clearTimeout() {
         if (this.timer) {
             Convenience.clearTimeout(this.timer);
         }
     }
-    destory(){
+    destory() {
         this.clearTimeout();
     }
 }
