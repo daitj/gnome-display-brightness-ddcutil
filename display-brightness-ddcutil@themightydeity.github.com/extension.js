@@ -132,7 +132,9 @@ function BrightnessControl(set) {
             Convenience.clearTimeout(_reloadMenuWidgetsTimer);
         }
         displays.forEach(display=>{
-            display.slider.destory();
+            if('slider' in display){
+                display.slider.destory();
+            }
         })
 
         /* clear variables */
@@ -314,7 +316,7 @@ function parseDisplaysInfoAndAddToPanel(settings, ddcutil_brief_info) {
             if (ddc_line.indexOf("Monitor:") !== -1) {
                 /* Monitor name comes second in the output,
                  so when that is detected fill the object and push it to list */
-                display_names[diplay_loop_id] = ddc_line.split(_("Monitor:"))[1].trim().split(":")[1].trim()
+                display_names[diplay_loop_id] = ddc_line.split("Monitor:")[1].trim().split(":")[1].trim()
                 diplay_loop_id++;
             }
         });
