@@ -9,6 +9,10 @@
       <default>false</default>
       <summary>Enables the All Slider</summary>
     </key>
+    <key type="b" name="only-all-slider">
+      <default>false</default>
+      <summary>Hides display list and uses only All Slider</summary>
+    </key>
     <key type="b" name="show-value-label">
       <default>false</default>
       <summary>Show Value Label</summary>

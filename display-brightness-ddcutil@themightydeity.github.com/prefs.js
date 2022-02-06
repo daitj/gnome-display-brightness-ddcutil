@@ -10,6 +10,8 @@ const PrefsWidget = GObject.registerClass({
     Template: Me.dir.get_child('./ui/prefs.ui').get_uri(),
     InternalChildren: [
         'show_all_slider_switch',
+        'only_all_slider_switch',
+        'only_all_slider_revealer',
         'show_value_label_switch',
         'show_display_name_switch',
         'button_location_combo_button',
@@ -35,7 +37,12 @@ const PrefsWidget = GObject.registerClass({
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
-
+        this.settings.bind(
+            'only-all-slider',
+            this._only_all_slider_switch,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
         this.settings.bind(
             'show-value-label',
             this._show_value_label_switch,
@@ -99,7 +106,13 @@ const PrefsWidget = GObject.registerClass({
             this._system_menu_revealer.reveal_child = false;
         }
     }
-
+    onShowAllSliderChanged() {
+        if (this._show_all_slider_switch.active) {
+            this._only_all_slider_revealer.reveal_child = true;
+        } else {
+            this._only_all_slider_revealer.reveal_child = false;
+        }
+    }
     onValueChanged() {
         this.settings.set_double('position-system-menu', this._position_system_menu_spin_button.value);
     }

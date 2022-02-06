@@ -131,8 +131,8 @@ function BrightnessControl(set) {
         if (_reloadMenuWidgetsTimer) {
             Convenience.clearTimeout(_reloadMenuWidgetsTimer);
         }
-        displays.forEach(display=>{
-            if('slider' in display){
+        displays.forEach(display => {
+            if ('slider' in display) {
                 display.slider.destory();
             }
         })
@@ -167,7 +167,7 @@ function setAllBrightness(settings, newValue) {
 
 function addSettingsItem() {
     let settingsItem = new PopupMenu.PopupMenuItem(_("Settings"));
-    settingsItem.connect('activate', ()=>{
+    settingsItem.connect('activate', () => {
         ExtensionUtils.openPrefs();
     });
     mainMenuButton.addMenuItem(settingsItem, 1);
@@ -196,7 +196,9 @@ function addDisplayToPanel(settings, display) {
     }
     let displaySlider = new SingleMonitorSliderAndValue(settings, display.name, display.current, onSliderChange);
     display.slider = displaySlider;
-    mainMenuButton.addMenuItem(displaySlider);
+    if (!(settings.get_boolean('show-all-slider') && settings.get_boolean('only-all-slider'))) {
+        mainMenuButton.addMenuItem(displaySlider);
+    }
 
     /* when "All" slider is shown we do not need to store each display's value slider */
     /* save slider in main menu, so that it can be accessed easily for different events */
@@ -237,7 +239,7 @@ function _reloadMenuWidgets(settings) {
     displays.forEach(display => {
         addDisplayToPanel(settings, display);
     });
-
+    
     if (settings.get_string('button-location') == "panel") {
         addSettingsItem();
     }
@@ -376,7 +378,7 @@ let settingsSignals = {};
 
 function connectSettingsSignals(settings) {
     settingsSignals = {
-        change: settings.connect('changed', ()=>{
+        change: settings.connect('changed', () => {
             onSettingsChange(settings)
         }),
         reload: settings.connect('changed::reload', reloadExtension),

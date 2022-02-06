@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface domain="display-brightness-ddcutil">
-  <requires lib="gtk" version="4.0"/>
+  <requires lib="gtk" version="4.0" />
   <template class="PrefsWidget" parent="GtkBox">
     <property name="orientation">vertical</property>
     <property name="hexpand">1</property>
@@ -26,7 +26,7 @@
                       <object class="GtkLabel">
                         <property name="label" translatable="yes">General</property>
                         <attributes>
-                          <attribute name="weight" value="bold"/>
+                          <attribute name="weight" value="bold" />
                         </attributes>
                       </object>
                     </child>
@@ -40,8 +40,8 @@
                         <property name="selection-mode">none</property>
                         <child>
                           <object class="GtkListBoxRow" id="show_all_slider_row">
-                              <child>
-                                <object class="GtkBox" id="show_all_slider_pref_box">
+                            <child>
+                              <object class="GtkBox" id="show_all_slider_pref_box">
                                 <property name="margin-start">12</property>
                                 <property name="margin-end">12</property>
                                 <property name="margin-top">12</property>
@@ -60,6 +60,7 @@
                                     </child>
                                     <child>
                                       <object class="GtkSwitch" id="show_all_slider_switch">
+                                        <signal name="notify::active" handler="onShowAllSliderChanged" swapped="no" />
                                         <property name="valign">center</property>
                                       </object>
                                     </child>
@@ -70,9 +71,47 @@
                           </object>
                         </child>
                         <child>
+                          <object class="GtkRevealer" id="only_all_slider_revealer">
+                            <property name="reveal-child" bind-source="show_all_slider_switch" bind-property="active" bind-flags="sync-create" />
+                            <child>
+                              <object class="GtkListBoxRow" id="only_all_slider_row">
+                                <child>
+                                  <object class="GtkBox" id="only_all_slider_pref_box">
+                                    <property name="margin-start">12</property>
+                                    <property name="margin-end">12</property>
+                                    <property name="margin-top">12</property>
+                                    <property name="margin-bottom">12</property>
+                                    <property name="orientation">vertical</property>
+                                    <child>
+                                      <object class="GtkBox" id="only_all_slider_box">
+                                        <property name="spacing">32</property>
+                                        <child>
+                                          <object class="GtkLabel">
+                                            <property name="valign">center</property>
+                                            <property name="label" translatable="yes">Use only "All" slider</property>
+                                            <property name="xalign">0</property>
+                                            <property name="hexpand">1</property>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkSwitch" id="only_all_slider_switch">
+                                            <property name="valign">center</property>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+
+
+                        </child>
+                        <child>
                           <object class="GtkListBoxRow" id="show_value_label_row">
-                              <child>
-                                <object class="GtkBox" id="value_label_pref_box">
+                            <child>
+                              <object class="GtkBox" id="value_label_pref_box">
                                 <property name="margin-start">12</property>
                                 <property name="margin-end">12</property>
                                 <property name="margin-top">12</property>
@@ -102,8 +141,8 @@
                         </child>
                         <child>
                           <object class="GtkListBoxRow" id="show_display_name_row">
-                              <child>
-                                <object class="GtkBox" id="show_display_name_pref_box">
+                            <child>
+                              <object class="GtkBox" id="show_display_name_pref_box">
                                 <property name="margin-start">12</property>
                                 <property name="margin-end">12</property>
                                 <property name="margin-top">12</property>
@@ -133,8 +172,8 @@
                         </child>
                         <child>
                           <object class="GtkListBoxRow" id="button_location_row">
-                              <child>
-                                <object class="GtkBox" id="button_location_pref_box">
+                            <child>
+                              <object class="GtkBox" id="button_location_pref_box">
                                 <property name="margin-start">12</property>
                                 <property name="margin-end">12</property>
                                 <property name="margin-top">12</property>
@@ -154,7 +193,7 @@
                                     <child>
                                       <object class="GtkComboBoxText" id="button_location_combo_button">
                                         <property name="active-id">panel</property>
-                                        <signal name="notify::active" handler="onButtonLocationChanged" swapped="no"/>
+                                        <signal name="notify::active" handler="onButtonLocationChanged" swapped="no" />
                                         <items>
                                           <item id="panel" translatable="yes">Top Bar</item>
                                           <item id="menu" translatable="yes">System Menu</item>
@@ -169,14 +208,14 @@
                         </child>
                         <child>
                           <object class="GtkRevealer" id="system_menu_revealer">
-                            <property name="reveal-child" bind-source="button_location_combo_button" bind-property="active-id" bind-flags="sync-create"/>
+                            <property name="reveal-child" bind-source="button_location_combo_button" bind-property="active-id" bind-flags="sync-create" />
                             <child>
                               <object class="GtkListBox" id="system_menu_listbox">
                                 <property name="selection-mode">none</property>
                                 <child>
                                   <object class="GtkListBoxRow" id="hide_system_indicator_row">
-                                      <child>
-                                        <object class="GtkBox" id="hide_system_indicator_pref_box">
+                                    <child>
+                                      <object class="GtkBox" id="hide_system_indicator_pref_box">
                                         <property name="margin-start">12</property>
                                         <property name="margin-end">12</property>
                                         <property name="margin-top">12</property>
@@ -206,8 +245,8 @@
                                 </child>
                                 <child>
                                   <object class="GtkListBoxRow" id="position_system_menu_row">
-                                      <child>
-                                        <object class="GtkBox" id="position_system_menu_pref_box">
+                                    <child>
+                                      <object class="GtkBox" id="position_system_menu_pref_box">
                                         <property name="margin-start">12</property>
                                         <property name="margin-end">12</property>
                                         <property name="margin-top">12</property>
@@ -229,7 +268,7 @@
                                                 <property name="valign">center</property>
                                                 <property name="numeric">True</property>
                                                 <property name="adjustment">position_system_menu_adjustment</property>
-                                                <signal name="value-changed" handler="onValueChanged" swapped="no"/>
+                                                <signal name="value-changed" handler="onValueChanged" swapped="no" />
                                               </object>
                                             </child>
                                           </object>
@@ -254,7 +293,7 @@
                       <object class="GtkLabel">
                         <property name="label" translatable="yes">Keyboard Shortcuts</property>
                         <attributes>
-                          <attribute name="weight" value="bold"/>
+                          <attribute name="weight" value="bold" />
                         </attributes>
                       </object>
                     </child>
@@ -268,8 +307,8 @@
                         <property name="selection-mode">none</property>
                         <child>
                           <object class="GtkListBoxRow" id="increase_shortcut_row">
-                              <child>
-                                <object class="GtkBox" id="increase_shortcut_pref_box">
+                            <child>
+                              <object class="GtkBox" id="increase_shortcut_pref_box">
                                 <property name="margin-start">12</property>
                                 <property name="margin-end">12</property>
                                 <property name="margin-top">12</property>
@@ -287,7 +326,7 @@
                                       </object>
                                     </child>
                                     <child>
-                                      <object class="GtkEntry" id="increase_shortcut_entry"/>
+                                      <object class="GtkEntry" id="increase_shortcut_entry" />
                                     </child>
                                     <child>
                                       <object class="GtkButton" id="increase_shortcut_button">
@@ -302,8 +341,8 @@
                         </child>
                         <child>
                           <object class="GtkListBoxRow" id="decrease_shortcut_row">
-                              <child>
-                                <object class="GtkBox" id="decrease_shortcut_pref_box">
+                            <child>
+                              <object class="GtkBox" id="decrease_shortcut_pref_box">
                                 <property name="margin-start">12</property>
                                 <property name="margin-end">12</property>
                                 <property name="margin-top">12</property>
@@ -321,7 +360,7 @@
                                       </object>
                                     </child>
                                     <child>
-                                      <object class="GtkEntry" id="decrease_shortcut_entry"/>
+                                      <object class="GtkEntry" id="decrease_shortcut_entry" />
                                     </child>
                                     <child>
                                       <object class="GtkButton" id="decrease_shortcut_button">
@@ -346,7 +385,7 @@
                       <object class="GtkLabel">
                         <property name="label" translatable="yes">Advanced Settings</property>
                         <attributes>
-                          <attribute name="weight" value="bold"/>
+                          <attribute name="weight" value="bold" />
                         </attributes>
                       </object>
                     </child>

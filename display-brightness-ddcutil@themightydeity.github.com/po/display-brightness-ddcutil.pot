@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-08 01:21+0200\n"
+"POT-Creation-Date: 2022-02-07 00:32+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,60 +30,64 @@ msgstr ""
 msgid "Enable \"All\" Slider"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:87
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:91
+msgid "Use only \"All\" slider"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:126
 msgid "Show Value Label"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:118
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:157
 msgid "Show Display Name"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:149
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:188
 msgid "Button Location"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:159
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:198
 msgid "Top Bar"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:160
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:199
 msgid "System Menu"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:191
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:230
 msgid "Hide System Indicator"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:222
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:261
 msgid "Position in System Menu"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:255
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:294
 msgid "Keyboard Shortcuts"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:284
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:323
 msgid "Increase Brightness"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:294
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:328
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:333
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:367
 msgid "Apply"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:318
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:357
 msgid "Decrease Brightness"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:347
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:386
 msgid "Advanced Settings"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:376
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:415
 msgid "Allow zero brightness"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:407
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:446
 msgid "Disable display state check"
 msgstr ""
 
