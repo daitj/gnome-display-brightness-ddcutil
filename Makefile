@@ -6,7 +6,6 @@ build: schemas
 		--force \
 		--extra-source=ui \
 		--extra-source=convenience.js \
-		--extra-source=headerbar.js \
 		--extra-source=indicator.js \
 		./display-brightness-ddcutil@themightydeity.github.com/ \
 		--out-dir=./dist

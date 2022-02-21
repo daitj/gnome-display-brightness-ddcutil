@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="display-brightness-ddcutil">
   <schema id="org.gnome.shell.extensions.display-brightness-ddcutil" path="/org/gnome/shell/extensions/display-brightness-ddcutil/">
-    <key type="b" name="reload">
-      <default>false</default>
-      <summary>Reloads the Extension</summary>
-    </key>
     <key type="b" name="show-all-slider">
       <default>false</default>
       <summary>Enables the All Slider</summary>

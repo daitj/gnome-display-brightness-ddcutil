@@ -3,8 +3,6 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Convenience = Me.imports.convenience;
 
-const { Headerbar } = Me.imports.headerbar;
-
 const PrefsWidget = GObject.registerClass({
     GTypeName: 'PrefsWidget',
     Template: Me.dir.get_child('./ui/prefs.ui').get_uri(),
@@ -137,11 +135,5 @@ function init() {
 }
 
 function buildPrefsWidget() {
-    const preferences = new PrefsWidget();
-    preferences.connect('notify::root', () => {
-        const window = preferences.get_root();
-        const headerbar = new Headerbar();
-        window.set_titlebar(headerbar);
-    });
-    return preferences;
+    return new PrefsWidget();
 }
