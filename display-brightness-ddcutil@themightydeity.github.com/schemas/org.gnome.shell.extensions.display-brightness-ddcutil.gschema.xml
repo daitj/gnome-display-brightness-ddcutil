@@ -21,12 +21,9 @@
       <default>true</default>
       <summary>Enables OSD</summary>
     </key>
-    <key type="s" name="button-location">
-      <choices>
-        <choice value="panel"/>
-        <choice value="menu"/>
-      </choices>
-      <default>"panel"</default>
+    <key type="i" name="button-location">
+      <default>0</default>
+      <range min="0" max="1"/>
       <summary>Brightness Button Location</summary>
     </key>
     <key type="b" name="hide-system-indicator">
