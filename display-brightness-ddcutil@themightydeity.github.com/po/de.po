@@ -7,16 +7,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-07 00:22+0200\n"
-"PO-Revision-Date: 2022-01-05 12:42+0100\n"
+"POT-Creation-Date: 2022-01-08 01:18+0200\n"
+"PO-Revision-Date: 2022-02-13 09:53+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 3.0\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.0.1\n"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/headerbar.ui:8
 #: display-brightness-ddcutil@themightydeity.github.com/extension.js:175
@@ -28,14 +28,12 @@ msgid "General"
 msgstr "Allgemein"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:56
-#, fuzzy
 msgid "Enable \"All\" Slider"
 msgstr "Gemeinsamen Schieberegler anzeigen"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:91
-#, fuzzy
 msgid "Use only \"All\" slider"
-msgstr ""
+msgstr "Nur gemeinsame Regler anzeigen"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:126
 msgid "Show Value Label"
@@ -59,12 +57,11 @@ msgstr "System-Menü"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:230
 msgid "Hide System Indicator"
-msgstr ""
+msgstr "Systemindikator verstecken"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:261
-#, fuzzy
 msgid "Position in System Menu"
-msgstr "System-Menü"
+msgstr "Position im System-Menü"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:294
 msgid "Keyboard Shortcuts"
