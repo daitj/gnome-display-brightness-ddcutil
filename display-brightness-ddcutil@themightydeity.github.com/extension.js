@@ -131,6 +131,9 @@ function BrightnessControl(set) {
         if (_reloadMenuWidgetsTimer) {
             Convenience.clearTimeout(_reloadMenuWidgetsTimer);
         }
+        if (_reloadExtensionTimer) {
+            Convenience.clearTimeout(_reloadExtensionTimer);
+        }
         displays.forEach(display => {
             if ('slider' in display) {
                 display.slider.destory();
