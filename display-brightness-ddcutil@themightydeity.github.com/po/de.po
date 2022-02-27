@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-27 13:23+0200\n"
+"POT-Creation-Date: 2022-02-28 00:04+0200\n"
 "PO-Revision-Date: 2022-02-13 09:53+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -19,7 +19,7 @@ msgstr ""
 "X-Generator: Poedit 3.0.1\n"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/headerbar.ui:8
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:175
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:178
 msgid "Reload"
 msgstr "Neu laden"
 
@@ -100,10 +100,10 @@ msgstr "Status-Überprüfung deaktivieren"
 msgid "Initializing"
 msgstr "Initialisiere"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:169
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:172
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:186
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:189
 msgid "All"
 msgstr "Alle"
