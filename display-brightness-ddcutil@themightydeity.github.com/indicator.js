@@ -7,7 +7,7 @@ const { GObject, St, Clutter } = imports.gi;
 const Panel = imports.ui.panel;
 const PanelMenu = imports.ui.panelMenu
 const PopupMenu = imports.ui.popupMenu;
-const { Slider, SLIDER_SCROLL_STEP } = imports.ui.slider;
+const { Slider } = imports.ui.slider;
 
 const {
     brightnessLog
@@ -48,18 +48,18 @@ var StatusAreaBrightnessMenu = GObject.registerClass({
     GType: 'StatusAreaBrightnessMenu',
     Signals: { 'value-up': {}, 'value-down': {} },
 }, class StatusAreaBrightnessMenu extends PanelMenu.Button {
-    _init() {
+    _init(settings) {
         this._valueSliders = [];
         super._init(0.0);
         let icon = new St.Icon({ icon_name: 'display-brightness-symbolic', style_class: 'system-status-icon' });
         this.add_actor(icon);
         this.connect('scroll-event', valueSliderScrollEvent);
         this.connect('value-up', (actor, event) => {
-            valueSliderMoveEvent(actor, SLIDER_SCROLL_STEP)
+            valueSliderMoveEvent(actor, settings.get_double('step-change-keyboard')/100)
             return Clutter.EVENT_STOP;
         });
         this.connect('value-down', (actor, event) => {
-            valueSliderMoveEvent(actor, -SLIDER_SCROLL_STEP)
+            valueSliderMoveEvent(actor, -settings.get_double('step-change-keyboard')/100)
             return Clutter.EVENT_STOP;
         });
     }
@@ -92,11 +92,11 @@ var SystemMenuBrightnessMenu = GObject.registerClass({
         this._indicator.visible = !settings.get_boolean('hide-system-indicator');
         this.connect('scroll-event', valueSliderScrollEvent);
         this.connect('value-up', (actor, event) => {
-            valueSliderMoveEvent(actor, SLIDER_SCROLL_STEP)
+            valueSliderMoveEvent(actor, settings.get_double('step-change-keyboard')/100)
             return Clutter.EVENT_STOP;
         });
         this.connect('value-down', (actor, event) => {
-            valueSliderMoveEvent(actor, -SLIDER_SCROLL_STEP)
+            valueSliderMoveEvent(actor, -settings.get_double('step-change-keyboard')/100)
             return Clutter.EVENT_STOP;
         });
         this.connect('destroy', this._onDestroy.bind(this));

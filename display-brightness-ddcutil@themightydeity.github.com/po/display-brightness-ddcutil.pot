@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-07 00:32+0200\n"
+"POT-Creation-Date: 2022-02-27 13:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -79,15 +79,19 @@ msgstr ""
 msgid "Decrease Brightness"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:386
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:391
+msgid "Step change % when using keyboard shortcut"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:420
 msgid "Advanced Settings"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:415
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:449
 msgid "Allow zero brightness"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:446
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:480
 msgid "Disable display state check"
 msgstr ""
 

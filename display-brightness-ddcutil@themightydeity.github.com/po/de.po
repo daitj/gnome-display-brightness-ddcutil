@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-08 01:18+0200\n"
+"POT-Creation-Date: 2022-02-27 13:23+0200\n"
 "PO-Revision-Date: 2022-02-13 09:53+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -80,15 +80,19 @@ msgstr "Anwenden"
 msgid "Decrease Brightness"
 msgstr "Helligkeit verringern"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:386
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:391
+msgid "Step change % when using keyboard shortcut"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:420
 msgid "Advanced Settings"
 msgstr "Erweiterte Einstellungen"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:415
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:449
 msgid "Allow zero brightness"
 msgstr "Vollständige Abdunkelung erlauben"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:446
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:480
 msgid "Disable display state check"
 msgstr "Status-Überprüfung deaktivieren"
 

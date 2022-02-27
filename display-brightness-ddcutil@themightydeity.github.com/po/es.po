@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-02-07 00:22+0200\n"
+"POT-Creation-Date: 2022-02-27 13:23+0200\n"
 "PO-Revision-Date: 2022-01-06 23:37+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -32,7 +32,6 @@ msgid "Enable \"All\" Slider"
 msgstr "Activar el deslizador para \"Todos\""
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:91
-#, fuzzy
 msgid "Use only \"All\" slider"
 msgstr ""
 
@@ -81,15 +80,19 @@ msgstr "Aplicar"
 msgid "Decrease Brightness"
 msgstr "Reducir brillo"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:386
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:391
+msgid "Step change % when using keyboard shortcut"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:420
 msgid "Advanced Settings"
 msgstr "Configuración avanzada"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:415
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:449
 msgid "Allow zero brightness"
 msgstr "Permitir brillo cero"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:446
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:480
 msgid "Disable display state check"
 msgstr "Desactivar la comprobación del estado de la pantalla"
 

@@ -96,7 +96,7 @@ function BrightnessControl(set) {
         displays = [];
         if (settings.get_string('button-location') == "panel") {
             brightnessLog("Adding to panel");
-            mainMenuButton = new StatusAreaBrightnessMenu();
+            mainMenuButton = new StatusAreaBrightnessMenu(settings);
             Main.panel.addToStatusArea("DDCUtilBrightnessSlider", mainMenuButton, 0, "right");
         } else {
             brightnessLog("Adding to system menu");
@@ -224,6 +224,12 @@ function reloadMenuWidgets(settings) {
 }
 
 function _reloadMenuWidgets(settings) {
+    if(reloadingExtension){
+        /* do nothing if extension is being reloaded */
+        brightnessLog("Skipping reloadMenuWidgets because extensions is reloading");
+        return;
+    }
+
     if (mainMenuButton === null) {
         return;
     }
@@ -245,11 +251,34 @@ function _reloadMenuWidgets(settings) {
     }
 }
 
+let _reloadExtensionTimer = null;
+let reloadingExtension = false;
+
+/* 
+   reloading extension being called many times caused some lag
+   and also reloading menu widgets when reload extension was already called
+   caused unecessary extra ddcutil calls.
+ */
 function reloadExtension() {
+    reloadingExtension = true;
+    if (_reloadExtensionTimer) {
+        Convenience.clearTimeout(_reloadExtensionTimer);
+    }
+    _reloadExtensionTimer = Convenience.setTimeout(() => {
+        _reloadExtensionTimer = null;
+        _reloadExtension();
+    }, 1000)
+}
+
+function _reloadExtension() {
     brightnessLog("Reload extension");
     BrightnessControl("disable");
     BrightnessControl("enable");
+    reloadingExtension = false;
 }
+
+
+
 
 function addTextItemToPanel(text) {
     if (mainMenuButton === null) return;
@@ -296,19 +325,23 @@ function parseDisplaysInfoAndAddToPanel(settings, ddcutil_brief_info) {
                         if (stateCheck) {
                             /* read the current and max brightness using getvcp 10 */
                             Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "10", "--bus", display_bus], function (vcpInfos) {
-                                let display = {};
+                                if (vcpInfos.indexOf("DDC communication failed") === -1) {
+                                    let vcpInfosArray = vcpInfos.trim().split(" ");
+                                    if(vcpInfosArray[2] != "ERR"){
+                                        let display = {};
 
-                                let vcpInfosArray = vcpInfos.trim().split(" ");
-                                let maxBrightness = vcpInfosArray[4];
-                                /* we need current brightness in the scale of 0 to 1 for slider*/
-                                let currentBrightness = vcpInfosArray[3] / vcpInfosArray[4];
-
-                                /* make display object */
-                                display = { "bus": display_bus, "max": maxBrightness, "current": currentBrightness, "name": display_names[display_id] };
-                                displays.push(display);
-
-                                /* cheap way of making reloading all display slider in the panel */
-                                reloadMenuWidgets(settings);
+                                        let maxBrightness = vcpInfosArray[4];
+                                        /* we need current brightness in the scale of 0 to 1 for slider*/
+                                        let currentBrightness = vcpInfosArray[3] / vcpInfosArray[4];
+    
+                                        /* make display object */
+                                        display = { "bus": display_bus, "max": maxBrightness, "current": currentBrightness, "name": display_names[display_id] };
+                                        displays.push(display);
+    
+                                        /* cheap way of making reloading all display slider in the panel */
+                                        reloadMenuWidgets(settings);
+                                    }
+                                }
                             });
                         }
                     }

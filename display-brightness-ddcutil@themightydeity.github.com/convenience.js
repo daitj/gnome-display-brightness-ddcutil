@@ -63,10 +63,14 @@ function spawnWithCallback(argv, callback) {
   let proc = Gio.Subprocess.new(argv, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
 
   proc.communicate_utf8_async(null, null, (proc, res) => {
-    let [ok, stdout, stderr] = proc.communicate_utf8_finish(res);
+    try{
+      let [, stdout,] = proc.communicate_utf8_finish(res);
 
-    if (proc.get_successful()) {
-      callback(stdout);
+      if (proc.get_successful()) {
+        callback(stdout);
+      }
+    }catch(e){
+      brightnessLog(e.message);
     }
   });
 }
