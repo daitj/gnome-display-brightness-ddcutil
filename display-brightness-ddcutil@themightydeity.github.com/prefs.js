@@ -85,7 +85,7 @@ const PrefsWidget = GObject.registerClass({
         this.settings.bind(
             'disable-display-state-check',
             this._disable_display_state_check_switch,
-            'active-id',
+            'active',
             Gio.SettingsBindFlags.DEFAULT
         );
 

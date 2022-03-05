@@ -411,8 +411,10 @@ function onMonitorChange() {
 }
 
 let settingsSignals = {};
+let oldSettings = null;
 
 function connectSettingsSignals(settings) {
+    oldSettings = settings;
     settingsSignals = {
         change: settings.connect('changed', () => {
             onSettingsChange(settings)
@@ -420,7 +422,8 @@ function connectSettingsSignals(settings) {
         reload: settings.connect('changed::reload', reloadExtension),
         indicator: settings.connect('changed::button-location', reloadExtension),
         hide_system_indicator: settings.connect('changed::hide-system-indicator', reloadExtension),
-        position_system_menu: settings.connect('changed::position-system-menu', reloadExtension)
+        position_system_menu: settings.connect('changed::position-system-menu', reloadExtension),
+        disable_display_state_check: settings.connect('changed::disable-display-state-check', reloadExtension)
     }
 }
 
@@ -432,8 +435,12 @@ function connectMonitorChangeSignals() {
     }
 }
 
-function disconnectSettingsSignals(settings) {
-    settings.disconnect(settingsSignals.change);
+function disconnectSettingsSignals() {
+    Object.values(settingsSignals).forEach(signal =>{
+        oldSettings.disconnect(signal);
+    });
+    settingsSignals = {};
+    oldSettings = null;
 }
 
 function disconnectMonitorSignals() {
