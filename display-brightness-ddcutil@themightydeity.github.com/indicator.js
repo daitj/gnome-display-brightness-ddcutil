@@ -1,9 +1,10 @@
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
-const { GObject, St, Clutter } = imports.gi;
+const { Gio, GObject, St, Clutter } = imports.gi;
 
 // menu items
+const Main = imports.ui.main;
 const Panel = imports.ui.panel;
 const PanelMenu = imports.ui.panelMenu
 const PopupMenu = imports.ui.popupMenu;
@@ -201,6 +202,10 @@ var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends Popu
             sliderItem.timer = null;
             sliderItem._onSliderChange(brightness)
         }, 500)
+
+        if (this._settings.get_boolean('show-osd')) {
+            Main.osdWindowManager.show(-1, new Gio.ThemedIcon({ name: 'display-brightness-symbolic' }), null, this.ValueSlider.value, 1);
+        }
     }
     clearTimeout() {
         if (this.timer) {

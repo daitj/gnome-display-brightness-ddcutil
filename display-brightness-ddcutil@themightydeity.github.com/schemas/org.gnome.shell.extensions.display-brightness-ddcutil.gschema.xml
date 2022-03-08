@@ -21,6 +21,10 @@
       <default>true</default>
       <summary>Show Display Name</summary>
     </key>
+    <key type="b" name="show-osd">
+      <default>true</default>
+      <summary>Enables OSD</summary>
+    </key>
     <key type="s" name="button-location">
       <choices>
         <choice value="panel"/>
