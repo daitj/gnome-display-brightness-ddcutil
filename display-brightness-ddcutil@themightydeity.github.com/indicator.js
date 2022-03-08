@@ -33,14 +33,18 @@ function decycle(obj, stack = []) {
 }
 
 
-function valueSliderMoveEvent(actor, scroll_step) {
-    actor.getStoredValueSliders().forEach(valueSlider => {
-        valueSlider.value = Math.min(Math.max(0, valueSlider.value + scroll_step), valueSlider._maxValue);
+function sliderKeyUpDownEvent(actor, scroll_step) {
+    actor.getStoredSliders().forEach(slider => {
+        slider.setShowOSD()
+        slider.ValueSlider.value = Math.min(Math.max(0, slider.ValueSlider.value + scroll_step), slider.ValueSlider._maxValue);
+        slider.setHideOSD()
     });
 }
-function valueSliderScrollEvent(actor, event) {
-    actor.getStoredValueSliders().forEach(valueSlider => {
-        valueSlider.emit('scroll-event', event);
+function sliderScrollEvent(actor, event) {
+    actor.getStoredSliders().forEach(slider => {
+        slider.setShowOSD()
+        slider.ValueSlider.emit('scroll-event', event);
+        slider.setHideOSD()
     });
     return Clutter.EVENT_STOP;
 }
@@ -50,28 +54,28 @@ var StatusAreaBrightnessMenu = GObject.registerClass({
     Signals: { 'value-up': {}, 'value-down': {} },
 }, class StatusAreaBrightnessMenu extends PanelMenu.Button {
     _init(settings) {
-        this._valueSliders = [];
+        this._sliders = [];
         super._init(0.0);
         let icon = new St.Icon({ icon_name: 'display-brightness-symbolic', style_class: 'system-status-icon' });
         this.add_actor(icon);
-        this.connect('scroll-event', valueSliderScrollEvent);
+        this.connect('scroll-event', sliderScrollEvent);
         this.connect('value-up', (actor, event) => {
-            valueSliderMoveEvent(actor, settings.get_double('step-change-keyboard')/100)
+            sliderKeyUpDownEvent(actor, settings.get_double('step-change-keyboard')/100)
             return Clutter.EVENT_STOP;
         });
         this.connect('value-down', (actor, event) => {
-            valueSliderMoveEvent(actor, -settings.get_double('step-change-keyboard')/100)
+            sliderKeyUpDownEvent(actor, -settings.get_double('step-change-keyboard')/100)
             return Clutter.EVENT_STOP;
         });
     }
-    clearStoredValueSliders() {
-        this._valueSliders = [];
+    clearStoredSliders() {
+        this._sliders = [];
     }
-    storeValueSliderForEvents(slider) {
-        this._valueSliders.push(slider);
+    storeSliderForEvents(slider) {
+        this._sliders.push(slider);
     }
-    getStoredValueSliders() {
-        return this._valueSliders;
+    getStoredSliders() {
+        return this._sliders;
     }
     removeAllMenu() {
         this.menu.removeAll();
@@ -87,17 +91,17 @@ var SystemMenuBrightnessMenu = GObject.registerClass({
 }, class SystemMenuBrightnessMenu extends PanelMenu.SystemIndicator {
     _init(settings) {
         super._init();
-        this._valueSliders = [];
+        this._sliders = [];
         this._indicator = this._addIndicator();
         this._indicator.icon_name = 'display-brightness-symbolic';
         this._indicator.visible = !settings.get_boolean('hide-system-indicator');
-        this.connect('scroll-event', valueSliderScrollEvent);
+        this.connect('scroll-event', sliderScrollEvent);
         this.connect('value-up', (actor, event) => {
-            valueSliderMoveEvent(actor, settings.get_double('step-change-keyboard')/100)
+            sliderKeyUpDownEvent(actor, settings.get_double('step-change-keyboard')/100)
             return Clutter.EVENT_STOP;
         });
         this.connect('value-down', (actor, event) => {
-            valueSliderMoveEvent(actor, -settings.get_double('step-change-keyboard')/100)
+            sliderKeyUpDownEvent(actor, -settings.get_double('step-change-keyboard')/100)
             return Clutter.EVENT_STOP;
         });
         this.connect('destroy', this._onDestroy.bind(this));
@@ -108,14 +112,14 @@ var SystemMenuBrightnessMenu = GObject.registerClass({
     addMenuItem(item, position = null) {
         this.menu.addMenuItem(item)
     }
-    clearStoredValueSliders() {
-        this._valueSliders = [];
+    clearStoredSliders() {
+        this._sliders = [];
     }
-    storeValueSliderForEvents(slider) {
-        this._valueSliders.push(slider);
+    storeSliderForEvents(slider) {
+        this._sliders.push(slider);
     }
-    getStoredValueSliders() {
-        return this._valueSliders;
+    getStoredSliders() {
+        return this._sliders;
     }
     _onDestroy() {
         this.menu.destroy();
@@ -149,6 +153,9 @@ var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends Popu
         this._displayName = displayName
         this._currentValue = currentValue
         this._onSliderChange = onSliderChange
+        /* OSD is never shown by default */
+        this._hideOSD = true
+        this.__hideOSDBackup = true;
         this._init();
     }
     _init() {
@@ -184,11 +191,19 @@ var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends Popu
             this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         }
     }
+    setHideOSD(){
+        this.__hideOSDBackup = this._hideOSD;
+        this._hideOSD = true;
+    }
+    setShowOSD(){
+        this.__hideOSDBackup = this._hideOSD;
+        this._hideOSD = false;
+    }
+    resetOSD(){
+        this._hideOSD = this.__hideOSDBackup;
+    }
     changeValue(newValue) {
         this.ValueSlider.value = newValue / 100;
-    }
-    getValueSlider() {
-        return this.ValueSlider;
     }
     _SliderValueToBrightness(sliderValue) {
         return Math.floor(sliderValue * 100);
@@ -202,9 +217,12 @@ var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends Popu
             sliderItem.timer = null;
             sliderItem._onSliderChange(brightness)
         }, 500)
-
-        if (this._settings.get_boolean('show-osd')) {
-            Main.osdWindowManager.show(-1, new Gio.ThemedIcon({ name: 'display-brightness-symbolic' }), null, this.ValueSlider.value, 1);
+        if (sliderItem._settings.get_boolean('show-osd') && !sliderItem._hideOSD) {
+            let displayName = null;
+            if(sliderItem._settings.get_boolean('show-display-name')){
+                displayName = sliderItem._displayName
+            }
+            Main.osdWindowManager.show(-1, new Gio.ThemedIcon({ name: 'display-brightness-symbolic' }), displayName, sliderItem.ValueSlider.value, 1);
         }
     }
     clearTimeout() {

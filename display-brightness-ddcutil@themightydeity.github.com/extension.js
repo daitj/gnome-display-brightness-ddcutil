@@ -163,8 +163,9 @@ function setBrightness(settings, display, newValue) {
 
 function setAllBrightness(settings, newValue) {
     displays.forEach(display => {
+        display.slider.setHideOSD()
         display.slider.changeValue(newValue);
-        setBrightness(settings, display, newValue);
+        display.slider.resetOSD()
     });
 }
 
@@ -190,12 +191,12 @@ function addAllSlider(settings) {
     mainMenuButton.addMenuItem(allslider)
 
     /* save slider in main menu, so that it can be accessed easily for different events */
-    mainMenuButton.storeValueSliderForEvents(allslider.getValueSlider())
+    mainMenuButton.storeSliderForEvents(allslider)
 }
 
 function addDisplayToPanel(settings, display) {
     let onSliderChange = function (newValue) {
-        setBrightness(settings, display, newValue)
+        setBrightness(settings, display, newValue);
     }
     let displaySlider = new SingleMonitorSliderAndValue(settings, display.name, display.current, onSliderChange);
     display.slider = displaySlider;
@@ -206,7 +207,7 @@ function addDisplayToPanel(settings, display) {
     /* when "All" slider is shown we do not need to store each display's value slider */
     /* save slider in main menu, so that it can be accessed easily for different events */
     if (!settings.get_boolean('show-all-slider')) {
-        mainMenuButton.storeValueSliderForEvents(displaySlider.getValueSlider())
+        mainMenuButton.storeSliderForEvents(displaySlider)
     }
 
 }
@@ -227,7 +228,7 @@ function reloadMenuWidgets(settings) {
 }
 
 function _reloadMenuWidgets(settings) {
-    if(reloadingExtension){
+    if (reloadingExtension) {
         /* do nothing if extension is being reloaded */
         brightnessLog("Skipping reloadMenuWidgets because extensions is reloading");
         return;
@@ -240,7 +241,7 @@ function _reloadMenuWidgets(settings) {
     brightnessLog("Reloading widgets");
 
     mainMenuButton.removeAllMenu();
-    mainMenuButton.clearStoredValueSliders();
+    mainMenuButton.clearStoredSliders();
 
     if (settings.get_boolean('show-all-slider')) {
         addAllSlider(settings);
@@ -248,7 +249,7 @@ function _reloadMenuWidgets(settings) {
     displays.forEach(display => {
         addDisplayToPanel(settings, display);
     });
-    
+
     if (settings.get_string('button-location') == "panel") {
         addSettingsItem();
     }
@@ -330,17 +331,17 @@ function parseDisplaysInfoAndAddToPanel(settings, ddcutil_brief_info) {
                             Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "10", "--bus", display_bus], function (vcpInfos) {
                                 if (vcpInfos.indexOf("DDC communication failed") === -1) {
                                     let vcpInfosArray = vcpInfos.trim().split(" ");
-                                    if(vcpInfosArray[2] != "ERR"){
+                                    if (vcpInfosArray[2] != "ERR") {
                                         let display = {};
 
                                         let maxBrightness = vcpInfosArray[4];
                                         /* we need current brightness in the scale of 0 to 1 for slider*/
                                         let currentBrightness = vcpInfosArray[3] / vcpInfosArray[4];
-    
+
                                         /* make display object */
                                         display = { "bus": display_bus, "max": maxBrightness, "current": currentBrightness, "name": display_names[display_id] };
                                         displays.push(display);
-    
+
                                         /* cheap way of making reloading all display slider in the panel */
                                         reloadMenuWidgets(settings);
                                     }
@@ -436,7 +437,7 @@ function connectMonitorChangeSignals() {
 }
 
 function disconnectSettingsSignals() {
-    Object.values(settingsSignals).forEach(signal =>{
+    Object.values(settingsSignals).forEach(signal => {
         oldSettings.disconnect(signal);
     });
     settingsSignals = {};
