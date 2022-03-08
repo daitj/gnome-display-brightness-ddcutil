@@ -1,6 +1,7 @@
 all: pot update-po build
 
 build: schemas
+	mkdir -p "./dist"
 	gnome-extensions pack \
 		--force \
 		--extra-source=ui \
