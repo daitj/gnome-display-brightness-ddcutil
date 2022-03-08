@@ -14,6 +14,7 @@ const PrefsWidget = GObject.registerClass({
         'only_all_slider_revealer',
         'show_value_label_switch',
         'show_display_name_switch',
+        'show_osd_switch',
         'button_location_combo_button',
         'system_menu_revealer',
         'hide_system_indicator_switch',
@@ -54,6 +55,13 @@ const PrefsWidget = GObject.registerClass({
         this.settings.bind(
             'show-display-name',
             this._show_display_name_switch,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+
+        this.settings.bind(
+            'show-osd',
+            this._show_osd_switch,
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
