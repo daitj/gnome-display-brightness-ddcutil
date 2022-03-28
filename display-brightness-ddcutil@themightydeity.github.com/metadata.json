@@ -7,8 +7,6 @@
     "gettext-domain": "display-brightness-ddcutil",
     "version": 30,
     "shell-version": [
-        "40",
-        "41",
         "42"
     ]
 }

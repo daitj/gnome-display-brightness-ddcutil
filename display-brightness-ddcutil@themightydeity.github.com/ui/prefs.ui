@@ -1,533 +1,194 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface domain="display-brightness-ddcutil">
-  <requires lib="gtk" version="4.0" />
-  <template class="PrefsWidget" parent="GtkBox">
-    <property name="orientation">vertical</property>
-    <property name="hexpand">1</property>
+  <template class="PrefsWidget" parent="AdwPreferencesPage">
     <child>
-      <object class="GtkScrolledWindow" id="items_container">
-        <property name="width-request">500</property>
-        <property name="height-request">700</property>
-        <property name="hscrollbar-policy">never</property>
-        <property name="vexpand">1</property>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">General</property>
         <child>
-          <object class="GtkViewport" id="main_prefs">
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Enable "All" Slider</property>
+            <property name="selectable">False</property>
+            <property name="focusable">False</property>
+            <property name="activatable-widget">show_all_slider_switch</property>
             <child>
-              <object class="GtkBox" id="main_prefs_box">
-                <property name="margin-start">36</property>
-                <property name="margin-end">36</property>
-                <property name="margin-top">36</property>
-                <property name="margin-bottom">36</property>
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkBox" id="general_title">
-                    <property name="margin-bottom">12</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label" translatable="yes">General</property>
-                        <attributes>
-                          <attribute name="weight" value="bold" />
-                        </attributes>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkFrame" id="general_frame">
-                    <property name="label-xalign">0</property>
-                    <child>
-                      <object class="GtkListBox" id="general_listbox">
-                        <property name="selection-mode">none</property>
-                        <child>
-                          <object class="GtkListBoxRow" id="show_all_slider_row">
-                            <child>
-                              <object class="GtkBox" id="show_all_slider_pref_box">
-                                <property name="margin-start">12</property>
-                                <property name="margin-end">12</property>
-                                <property name="margin-top">12</property>
-                                <property name="margin-bottom">12</property>
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="GtkBox" id="show_all_slider_box">
-                                    <property name="spacing">32</property>
-                                    <child>
-                                      <object class="GtkLabel">
-                                        <property name="valign">center</property>
-                                        <property name="label" translatable="yes">Enable "All" Slider</property>
-                                        <property name="xalign">0</property>
-                                        <property name="hexpand">1</property>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="GtkSwitch" id="show_all_slider_switch">
-                                        <signal name="notify::active" handler="onShowAllSliderChanged" swapped="no" />
-                                        <property name="valign">center</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkRevealer" id="only_all_slider_revealer">
-                            <property name="reveal-child" bind-source="show_all_slider_switch" bind-property="active" bind-flags="sync-create" />
-                            <child>
-                              <object class="GtkListBoxRow" id="only_all_slider_row">
-                                <child>
-                                  <object class="GtkBox" id="only_all_slider_pref_box">
-                                    <property name="margin-start">12</property>
-                                    <property name="margin-end">12</property>
-                                    <property name="margin-top">12</property>
-                                    <property name="margin-bottom">12</property>
-                                    <property name="orientation">vertical</property>
-                                    <child>
-                                      <object class="GtkBox" id="only_all_slider_box">
-                                        <property name="spacing">32</property>
-                                        <child>
-                                          <object class="GtkLabel">
-                                            <property name="valign">center</property>
-                                            <property name="label" translatable="yes">Use only "All" slider</property>
-                                            <property name="xalign">0</property>
-                                            <property name="hexpand">1</property>
-                                          </object>
-                                        </child>
-                                        <child>
-                                          <object class="GtkSwitch" id="only_all_slider_switch">
-                                            <property name="valign">center</property>
-                                          </object>
-                                        </child>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
-
-
-                        </child>
-                        <child>
-                          <object class="GtkListBoxRow" id="show_value_label_row">
-                            <child>
-                              <object class="GtkBox" id="value_label_pref_box">
-                                <property name="margin-start">12</property>
-                                <property name="margin-end">12</property>
-                                <property name="margin-top">12</property>
-                                <property name="margin-bottom">12</property>
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="GtkBox" id="show_value_label_box">
-                                    <property name="spacing">32</property>
-                                    <child>
-                                      <object class="GtkLabel">
-                                        <property name="valign">center</property>
-                                        <property name="label" translatable="yes">Show Value Label</property>
-                                        <property name="xalign">0</property>
-                                        <property name="hexpand">1</property>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="GtkSwitch" id="show_value_label_switch">
-                                        <property name="valign">center</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkListBoxRow" id="show_display_name_row">
-                            <child>
-                              <object class="GtkBox" id="show_display_name_pref_box">
-                                <property name="margin-start">12</property>
-                                <property name="margin-end">12</property>
-                                <property name="margin-top">12</property>
-                                <property name="margin-bottom">12</property>
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="GtkBox" id="show_display_name_box">
-                                    <property name="spacing">32</property>
-                                    <child>
-                                      <object class="GtkLabel">
-                                        <property name="valign">center</property>
-                                        <property name="label" translatable="yes">Show Display Name</property>
-                                        <property name="xalign">0</property>
-                                        <property name="hexpand">1</property>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="GtkSwitch" id="show_display_name_switch">
-                                        <property name="valign">center</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkListBoxRow" id="show_osd_row">
-                            <child>
-                              <object class="GtkBox" id="show_osd_pref_box">
-                                <property name="margin-start">12</property>
-                                <property name="margin-end">12</property>
-                                <property name="margin-top">12</property>
-                                <property name="margin-bottom">12</property>
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="GtkBox" id="show_osd_box">
-                                    <property name="spacing">32</property>
-                                    <child>
-                                      <object class="GtkLabel">
-                                        <property name="valign">center</property>
-                                        <property name="label" translatable="yes">Show OSD</property>
-                                        <property name="xalign">0</property>
-                                        <property name="hexpand">1</property>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="GtkSwitch" id="show_osd_switch">
-                                        <property name="valign">center</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkListBoxRow" id="button_location_row">
-                            <child>
-                              <object class="GtkBox" id="button_location_pref_box">
-                                <property name="margin-start">12</property>
-                                <property name="margin-end">12</property>
-                                <property name="margin-top">12</property>
-                                <property name="margin-bottom">12</property>
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="GtkBox" id="button_location_box">
-                                    <property name="spacing">32</property>
-                                    <child>
-                                      <object class="GtkLabel">
-                                        <property name="valign">center</property>
-                                        <property name="label" translatable="yes">Button Location</property>
-                                        <property name="xalign">0</property>
-                                        <property name="hexpand">1</property>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="GtkComboBoxText" id="button_location_combo_button">
-                                        <property name="active-id">panel</property>
-                                        <signal name="notify::active" handler="onButtonLocationChanged" swapped="no" />
-                                        <items>
-                                          <item id="panel" translatable="yes">Top Bar</item>
-                                          <item id="menu" translatable="yes">System Menu</item>
-                                        </items>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkRevealer" id="system_menu_revealer">
-                            <property name="reveal-child" bind-source="button_location_combo_button" bind-property="active-id" bind-flags="sync-create" />
-                            <child>
-                              <object class="GtkListBox" id="system_menu_listbox">
-                                <property name="selection-mode">none</property>
-                                <child>
-                                  <object class="GtkListBoxRow" id="hide_system_indicator_row">
-                                    <child>
-                                      <object class="GtkBox" id="hide_system_indicator_pref_box">
-                                        <property name="margin-start">12</property>
-                                        <property name="margin-end">12</property>
-                                        <property name="margin-top">12</property>
-                                        <property name="margin-bottom">12</property>
-                                        <property name="orientation">vertical</property>
-                                        <child>
-                                          <object class="GtkBox" id="hide_system_indicator_box">
-                                            <property name="spacing">32</property>
-                                            <child>
-                                              <object class="GtkLabel">
-                                                <property name="valign">center</property>
-                                                <property name="label" translatable="yes">Hide System Indicator</property>
-                                                <property name="xalign">0</property>
-                                                <property name="hexpand">1</property>
-                                              </object>
-                                            </child>
-                                            <child>
-                                              <object class="GtkSwitch" id="hide_system_indicator_switch">
-                                                <property name="valign">center</property>
-                                              </object>
-                                            </child>
-                                          </object>
-                                        </child>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkListBoxRow" id="position_system_menu_row">
-                                    <child>
-                                      <object class="GtkBox" id="position_system_menu_pref_box">
-                                        <property name="margin-start">12</property>
-                                        <property name="margin-end">12</property>
-                                        <property name="margin-top">12</property>
-                                        <property name="margin-bottom">12</property>
-                                        <property name="orientation">vertical</property>
-                                        <child>
-                                          <object class="GtkBox" id="position_system_menu_box">
-                                            <property name="spacing">32</property>
-                                            <child>
-                                              <object class="GtkLabel">
-                                                <property name="valign">center</property>
-                                                <property name="label" translatable="yes">Position in System Menu</property>
-                                                <property name="xalign">0</property>
-                                                <property name="hexpand">1</property>
-                                              </object>
-                                            </child>
-                                            <child>
-                                              <object class="GtkSpinButton" id="position_system_menu_spin_button">
-                                                <property name="valign">center</property>
-                                                <property name="numeric">True</property>
-                                                <property name="adjustment">position_system_menu_adjustment</property>
-                                                <signal name="value-changed" handler="onPositionValueChanged" swapped="no" />
-                                              </object>
-                                            </child>
-                                          </object>
-                                        </child>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkBox" id="keyboard_shortcuts_title">
-                    <property name="margin-top">36</property>
-                    <property name="margin-bottom">12</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label" translatable="yes">Keyboard Shortcuts</property>
-                        <attributes>
-                          <attribute name="weight" value="bold" />
-                        </attributes>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkFrame" id="shortcuts_frame">
-                    <property name="label-xalign">0</property>
-                    <child>
-                      <object class="GtkListBox" id="shortcuts_listbox">
-                        <property name="selection-mode">none</property>
-                        <child>
-                          <object class="GtkListBoxRow" id="increase_shortcut_row">
-                            <child>
-                              <object class="GtkBox" id="increase_shortcut_pref_box">
-                                <property name="margin-start">12</property>
-                                <property name="margin-end">12</property>
-                                <property name="margin-top">12</property>
-                                <property name="margin-bottom">12</property>
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="GtkBox" id="increase_shortcut_box">
-                                    <property name="spacing">32</property>
-                                    <child>
-                                      <object class="GtkLabel">
-                                        <property name="valign">center</property>
-                                        <property name="label" translatable="yes">Increase Brightness</property>
-                                        <property name="xalign">0</property>
-                                        <property name="hexpand">1</property>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="GtkEntry" id="increase_shortcut_entry" />
-                                    </child>
-                                    <child>
-                                      <object class="GtkButton" id="increase_shortcut_button">
-                                        <property name="label" translatable="yes">Apply</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkListBoxRow" id="decrease_shortcut_row">
-                            <child>
-                              <object class="GtkBox" id="decrease_shortcut_pref_box">
-                                <property name="margin-start">12</property>
-                                <property name="margin-end">12</property>
-                                <property name="margin-top">12</property>
-                                <property name="margin-bottom">12</property>
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="GtkBox" id="decrease_shortcut_box">
-                                    <property name="spacing">32</property>
-                                    <child>
-                                      <object class="GtkLabel">
-                                        <property name="valign">center</property>
-                                        <property name="label" translatable="yes">Decrease Brightness</property>
-                                        <property name="xalign">0</property>
-                                        <property name="hexpand">1</property>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="GtkEntry" id="decrease_shortcut_entry" />
-                                    </child>
-                                    <child>
-                                      <object class="GtkButton" id="decrease_shortcut_button">
-                                        <property name="label" translatable="yes">Apply</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkListBoxRow" id="step_keyboard_row">
-                            <child>
-                              <object class="GtkBox" id="step_keyboard_pref_box">
-                                <property name="margin-start">12</property>
-                                <property name="margin-end">12</property>
-                                <property name="margin-top">12</property>
-                                <property name="margin-bottom">12</property>
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="GtkBox" id="step_keyboard_box">
-                                    <property name="spacing">32</property>
-                                    <child>
-                                      <object class="GtkLabel">
-                                        <property name="valign">center</property>
-                                        <property name="label" translatable="yes">Step change % when using keyboard shortcut</property>
-                                        <property name="xalign">0</property>
-                                        <property name="hexpand">1</property>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="GtkSpinButton" id="step_keyboard_spin_button">
-                                        <property name="valign">center</property>
-                                        <property name="numeric">True</property>
-                                        <property name="adjustment">step_change</property>
-                                        <signal name="value-changed" handler="onStepKeyboardValueChanged" swapped="no" />
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkBox" id="advanced_settings_title">
-                    <property name="margin-top">36</property>
-                    <property name="margin-bottom">12</property>
-                    <child>
-                      <object class="GtkLabel">
-                        <property name="label" translatable="yes">Advanced Settings</property>
-                        <attributes>
-                          <attribute name="weight" value="bold" />
-                        </attributes>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkFrame" id="advanced_settings">
-                    <property name="label-xalign">0</property>
-                    <child>
-                      <object class="GtkListBox" id="advanced_settings_listbox">
-                        <property name="selection-mode">none</property>
-                        <child>
-                          <object class="GtkListBoxRow" id="allow_zero_brightness_row">
-                            <child>
-                              <object class="GtkBox" id="allow_zero_brightness_pref_box">
-                                <property name="margin-start">12</property>
-                                <property name="margin-end">12</property>
-                                <property name="margin-top">12</property>
-                                <property name="margin-bottom">12</property>
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="GtkBox" id="allow_zero_brightness_box">
-                                    <property name="spacing">32</property>
-                                    <child>
-                                      <object class="GtkLabel">
-                                        <property name="valign">center</property>
-                                        <property name="label" translatable="yes">Allow zero brightness</property>
-                                        <property name="xalign">0</property>
-                                        <property name="hexpand">1</property>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="GtkSwitch" id="allow_zero_brightness_switch">
-                                        <property name="valign">center</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkListBoxRow" id="disable_display_state_check_row">
-                            <child>
-                              <object class="GtkBox" id="disable_display_state_check_pref_box">
-                                <property name="margin-start">12</property>
-                                <property name="margin-end">12</property>
-                                <property name="margin-top">12</property>
-                                <property name="margin-bottom">12</property>
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="GtkBox" id="disable_display_state_check_box">
-                                    <property name="spacing">32</property>
-                                    <child>
-                                      <object class="GtkLabel">
-                                        <property name="valign">center</property>
-                                        <property name="label" translatable="yes">Disable display state check</property>
-                                        <property name="xalign">0</property>
-                                        <property name="hexpand">1</property>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="GtkSwitch" id="disable_display_state_check_switch">
-                                        <property name="valign">center</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
+              <object class="GtkSwitch" id="show_all_slider_switch">
+                <property name="valign">center</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Use Only "All" Slider</property>
+            <property name="selectable">False</property>
+            <property name="focusable">False</property>
+            <property name="activatable-widget">only_all_slider_switch</property>
+            <property name="sensitive" bind-source="show_all_slider_switch" bind-property="active" bind-flags="sync-create"/>
+            <child>
+              <object class="GtkSwitch" id="only_all_slider_switch">
+                <property name="valign">center</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Show Value Label</property>
+            <property name="selectable">False</property>
+            <property name="focusable">False</property>
+            <property name="activatable-widget">show_value_label_switch</property>
+            <child>
+              <object class="GtkSwitch" id="show_value_label_switch">
+                <property name="valign">center</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Show Display Name</property>
+            <property name="selectable">False</property>
+            <property name="focusable">False</property>
+            <property name="activatable-widget">show_display_name_switch</property>
+            <child>
+              <object class="GtkSwitch" id="show_display_name_switch">
+                <property name="valign">center</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Show OSD</property>
+            <property name="selectable">False</property>
+            <property name="focusable">False</property>
+            <property name="activatable-widget">show_osd_switch</property>
+            <child>
+              <object class="GtkSwitch" id="show_osd_switch">
+                <property name="valign">center</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwComboRow" id="button_location_combo_row">
+            <property name="title" translatable="yes">Button Location</property>
+            <property name="model">button_location_model</property>
+            <signal name="notify::selected" handler="onButtonLocationChanged" swapped="no" />
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow" id="hide_system_indicator_row">
+            <property name="title" translatable="yes">Hide System Indicator</property>
+            <property name="selectable">False</property>
+            <property name="focusable">False</property>
+            <property name="activatable-widget">hide_system_indicator_switch</property>
+            <child>
+              <object class="GtkSwitch" id="hide_system_indicator_switch">
+                <property name="valign">center</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow" id="position_system_menu_row">
+            <property name="title" translatable="yes">Position in System Menu</property>
+            <property name="selectable">False</property>
+            <property name="focusable">False</property>
+            <property name="activatable-widget">position_system_menu_spin_button</property>
+            <child>
+              <object class="GtkSpinButton" id="position_system_menu_spin_button">
+                <property name="valign">center</property>
+                <property name="numeric">True</property>
+                <property name="adjustment">position_system_menu_adjustment</property>
+                <signal name="value-changed" handler="onPositionValueChanged" swapped="no" />
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">Keyboard Shortcuts</property>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Increase Brightness</property>
+            <property name="selectable">False</property>
+            <property name="focusable">False</property>
+            <child>
+              <object class="GtkEntry" id="increase_shortcut_entry">
+                <property name="valign">center</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="increase_shortcut_button">
+                <property name="label" translatable="yes">Apply</property>
+                <property name="valign">center</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Decrease Brightness</property>
+            <property name="selectable">False</property>
+            <property name="focusable">False</property>
+            <child>
+              <object class="GtkEntry" id="decrease_shortcut_entry">
+                <property name="valign">center</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="decrease_shortcut_button">
+                <property name="label" translatable="yes">Apply</property>
+                <property name="valign">center</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow" id="step_keyboard_row">
+            <property name="title" translatable="yes">Step Change %</property>
+            <property name="selectable">False</property>
+            <property name="focusable">False</property>
+            <child>
+              <object class="GtkSpinButton" id="step_keyboard_spin_button">
+                <property name="valign">center</property>
+                <property name="numeric">True</property>
+                <property name="adjustment">step_change</property>
+                <signal name="value-changed" handler="onStepKeyboardValueChanged" swapped="no" />
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">Advanced Settings</property>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Allow Zero Brightness</property>
+            <property name="selectable">False</property>
+            <property name="focusable">False</property>
+            <property name="activatable-widget">allow_zero_brightness_switch</property>
+            <child>
+              <object class="GtkSwitch" id="allow_zero_brightness_switch">
+                <property name="valign">center</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwActionRow">
+            <property name="title" translatable="yes">Disable Display State Check</property>
+            <property name="selectable">False</property>
+            <property name="focusable">False</property>
+            <property name="activatable-widget">disable_display_state_check_switch</property>
+            <child>
+              <object class="GtkSwitch" id="disable_display_state_check_switch">
+                <property name="valign">center</property>
               </object>
             </child>
           </object>
@@ -535,6 +196,12 @@
       </object>
     </child>
   </template>
+  <object class="GtkStringList" id="button_location_model">
+    <items>
+      <item translatable="yes">Top Bar</item>
+      <item translatable="yes">System Menu</item>
+    </items>
+  </object>
   <object class="GtkAdjustment" id="position_system_menu_adjustment">
     <property name="lower">0</property>
     <property name="upper">13</property>

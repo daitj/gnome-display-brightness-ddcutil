@@ -1,9 +1,7 @@
-const { Gio, GObject, Gtk } = imports.gi;
+const { Adw, Gio, GObject } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Convenience = Me.imports.convenience;
-
-const { Headerbar } = Me.imports.headerbar;
 
 const PrefsWidget = GObject.registerClass({
     GTypeName: 'PrefsWidget',
@@ -11,12 +9,12 @@ const PrefsWidget = GObject.registerClass({
     InternalChildren: [
         'show_all_slider_switch',
         'only_all_slider_switch',
-        'only_all_slider_revealer',
         'show_value_label_switch',
         'show_display_name_switch',
         'show_osd_switch',
-        'button_location_combo_button',
-        'system_menu_revealer',
+        'button_location_combo_row',
+        'hide_system_indicator_row',
+        'position_system_menu_row',
         'hide_system_indicator_switch',
         'position_system_menu_spin_button',
         'increase_shortcut_entry',
@@ -27,7 +25,7 @@ const PrefsWidget = GObject.registerClass({
         'allow_zero_brightness_switch',
         'disable_display_state_check_switch'
     ],
-}, class PrefsWidget extends Gtk.Box {
+}, class PrefsWidget extends Adw.PreferencesPage {
 
     _init(params = {}) {
         super._init(params);
@@ -39,12 +37,14 @@ const PrefsWidget = GObject.registerClass({
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
+
         this.settings.bind(
             'only-all-slider',
             this._only_all_slider_switch,
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
+
         this.settings.bind(
             'show-value-label',
             this._show_value_label_switch,
@@ -66,12 +66,12 @@ const PrefsWidget = GObject.registerClass({
             Gio.SettingsBindFlags.DEFAULT
         );
 
-        this.settings.bind(
-            'button-location',
-            this._button_location_combo_button,
-            'active-id',
-            Gio.SettingsBindFlags.DEFAULT
-        );
+        this._button_location_combo_row.selected = this.settings.get_int('button-location');
+
+        if (this._button_location_combo_row.selected === 0) {
+            this._hide_system_indicator_row.sensitive = false;
+            this._position_system_menu_row.sensitive = false;
+        }
 
         this.settings.bind(
             'hide-system-indicator',
@@ -110,17 +110,13 @@ const PrefsWidget = GObject.registerClass({
     }
 
     onButtonLocationChanged() {
-        if (this._button_location_combo_button.active_id == "menu") {
-            this._system_menu_revealer.reveal_child = true;
+        this.settings.set_int('button-location', this._button_location_combo_row.selected);
+        if (this._button_location_combo_row.selected === 0) {
+            this._hide_system_indicator_row.sensitive = false;
+            this._position_system_menu_row.sensitive = false;
         } else {
-            this._system_menu_revealer.reveal_child = false;
-        }
-    }
-    onShowAllSliderChanged() {
-        if (this._show_all_slider_switch.active) {
-            this._only_all_slider_revealer.reveal_child = true;
-        } else {
-            this._only_all_slider_revealer.reveal_child = false;
+            this._hide_system_indicator_row.sensitive = true;
+            this._position_system_menu_row.sensitive = true;
         }
     }
     onPositionValueChanged() {
@@ -136,12 +132,9 @@ function init() {
     ExtensionUtils.initTranslations();
 }
 
-function buildPrefsWidget() {
-    const preferences = new PrefsWidget();
-    preferences.connect('notify::root', () => {
-        const window = preferences.get_root();
-        const headerbar = new Headerbar();
-        window.set_titlebar(headerbar);
-    });
-    return preferences;
+function fillPreferencesWindow(window) {
+    window.set_size_request(500, 700);
+    window.search_enabled = true;
+
+    window.add(new PrefsWidget());
 }
