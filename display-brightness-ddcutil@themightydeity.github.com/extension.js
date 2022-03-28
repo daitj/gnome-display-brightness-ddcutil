@@ -308,23 +308,23 @@ function parseDisplaysInfoAndAddToPanel(settings, ddcutil_brief_info) {
                 Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "D6", "--bus", display_bus], function (vcpPowerInfos) {
                     brightnessLog("ddcutil reading display status for bus: " + display_bus + " is: " + vcpPowerInfos)
                     /* only add display to list if ddc communication is supported with the bus*/
-                    if (vcpPowerInfos.indexOf("DDC communication failed") === -1) {
+                    if (vcpPowerInfos.indexOf("DDC communication failed") === -1 && vcpInfos.indexOf("No monitor detected") === -1) {
                         let vcpPowerInfosArray = vcpPowerInfos.trim().split(" ");
 
-                        let stateCheck = (vcpPowerInfosArray.length >= 4);
+                        let displayInGoodState = true;
                         if (!settings.get_boolean('disable-display-state-check')) {
                             /*
                              D6 = Power mode
                              x01 = DPM: On,  DPMS: Off
                             */
-                            stateCheck = (stateCheck && vcpPowerInfosArray[3] == "x01")
+                             displayInGoodState = (vcpPowerInfosArray.length >= 4 && vcpPowerInfosArray[3] == "x01")
                         }
-                        if (stateCheck) {
+                        if (displayInGoodState) {
                             /* read the current and max brightness using getvcp 10 */
                             Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "10", "--bus", display_bus], function (vcpInfos) {
-                                if (vcpInfos.indexOf("DDC communication failed") === -1) {
+                                if (vcpInfos.indexOf("DDC communication failed") === -1 && vcpInfos.indexOf("No monitor detected") === -1) {
                                     let vcpInfosArray = vcpInfos.trim().split(" ");
-                                    if (vcpInfosArray[2] != "ERR") {
+                                    if (vcpInfosArray[2] != "ERR" && vcpInfosArray.length >= 5) {
                                         let display = {};
 
                                         let maxBrightness = vcpInfosArray[4];
