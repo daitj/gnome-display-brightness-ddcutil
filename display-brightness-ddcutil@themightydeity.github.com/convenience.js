@@ -57,17 +57,24 @@ function clearTimeout(id) {
   GLib.source_remove(id);
 };
 
-/* extra for this brightness extension added by github.com/themightydeity */
-
 function spawnWithCallback(argv, callback) {
   let proc = Gio.Subprocess.new(argv, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
 
   proc.communicate_utf8_async(null, null, (proc, res) => {
     try{
-      let [, stdout,] = proc.communicate_utf8_finish(res);
-
+      let [, stdout, stderr] = proc.communicate_utf8_finish(res);
       if (proc.get_successful()) {
         callback(stdout);
+      }else{
+        /* 
+        errors from ddcutil (like monitor not found) were actually in stdout
+        only the process return code was 1
+        */
+        if(stderr){
+          callback(stderr);
+        }else if(stdout){
+          callback(stdout);
+        }
       }
     }catch(e){
       brightnessLog(e.message);
