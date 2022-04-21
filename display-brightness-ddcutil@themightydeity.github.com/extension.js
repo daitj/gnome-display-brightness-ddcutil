@@ -23,15 +23,8 @@ const { GLib, Gio, Meta, Shell, St } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
-
 // i18n
-/*
-//some Pop_OS users started getting _ is not a function error with the line below
 const _ = ExtensionUtils.gettext;
-//so I had to use the old code instead
-*/
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const _ = Gettext.gettext;
 
 const Convenience = Me.imports.convenience;
 
@@ -94,7 +87,7 @@ function BrightnessControl(set) {
     let settings = ExtensionUtils.getSettings();
     if (set == "enable") {
         displays = [];
-        if (settings.get_string('button-location') == "panel") {
+        if (settings.get_int('button-location') === 0) {
             brightnessLog("Adding to panel");
             mainMenuButton = new StatusAreaBrightnessMenu(settings);
             Main.panel.addToStatusArea("DDCUtilBrightnessSlider", mainMenuButton, 0, "right");
@@ -111,7 +104,7 @@ function BrightnessControl(set) {
 
             addKeyboardShortcuts(settings);
 
-            if (settings.get_string('button-location') == "panel") {
+            if (settings.get_int('button-location') === 0) {
                 addTextItemToPanel(_("Initializing"));
                 addSettingsItem();
             }
@@ -249,8 +242,8 @@ function _reloadMenuWidgets(settings) {
     displays.forEach(display => {
         addDisplayToPanel(settings, display);
     });
-
-    if (settings.get_string('button-location') == "panel") {
+    
+    if (settings.get_int('button-location') === 0) {
         addSettingsItem();
     }
 }

@@ -159,7 +159,7 @@ var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends Popu
         this._init();
     }
     _init() {
-        if(this._settings.get_string('button-location') == "panel"){
+        if(this._settings.get_int('button-location') === 0){
             this.NameContainer = new PopupMenu.PopupMenuItem(this._displayName, {
                 hover: false,
                 reactive: false,
@@ -177,7 +177,7 @@ var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends Popu
 
         this.ValueLabel = new St.Label({ text: this._SliderValueToBrightness(this._currentValue).toString() });
 
-        if (this._settings.get_string('button-location') == "panel") {
+        if (this._settings.get_int('button-location') === 0) {
             this.SliderContainer = new SingleMonitorMenuItem(this._settings, null, null, this.ValueSlider, this.ValueLabel);
             if (this._settings.get_boolean('show-display-name')) {
                 this.addMenuItem(this.NameContainer);
@@ -187,7 +187,7 @@ var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends Popu
             this.SliderContainer = new SingleMonitorMenuItem(this._settings, icon, this.NameContainer, this.ValueSlider, this.ValueLabel);
         }
         this.addMenuItem(this.SliderContainer);
-        if (this._settings.get_string('button-location') == "panel") {
+        if (this._settings.get_int('button-location') === 0) {
             this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         }
     }
