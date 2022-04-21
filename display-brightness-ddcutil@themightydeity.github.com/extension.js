@@ -315,7 +315,7 @@ function parseDisplaysInfoAndAddToPanel(settings, ddcutil_brief_info) {
                 Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "D6", "--bus", display_bus], function (vcpPowerInfos) {
                     brightnessLog("ddcutil reading display status for bus: " + display_bus + " is: " + vcpPowerInfos)
                     /* only add display to list if ddc communication is supported with the bus*/
-                    if (vcpPowerInfos.indexOf("DDC communication failed") === -1 && vcpInfos.indexOf("No monitor detected") === -1) {
+                    if (vcpPowerInfos.indexOf("DDC communication failed") === -1 && vcpPowerInfos.indexOf("No monitor detected") === -1) {
                         let vcpPowerInfosArray = vcpPowerInfos.trim().split(" ");
 
                         let displayInGoodState = true;
