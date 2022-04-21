@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-03-28 14:13+0300\n"
-"PO-Revision-Date: 2022-03-09 14:10+0100\n"
+"PO-Revision-Date: 2022-03-28 14:19+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
@@ -27,7 +27,6 @@ msgid "Enable \"All\" Slider"
 msgstr "Activar el deslizador para \"Todos\""
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:22
-#, fuzzy
 msgid "Use Only \"All\" Slider"
 msgstr "Usar sólo el deslizador \"Todos\""
 
@@ -74,19 +73,17 @@ msgstr "Reducir brillo"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:152
 msgid "Step Change %"
-msgstr ""
+msgstr "Porcentaje de variación"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:169
 msgid "Advanced Settings"
 msgstr "Configuración avanzada"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:172
-#, fuzzy
 msgid "Allow Zero Brightness"
 msgstr "Permitir brillo cero"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:185
-#, fuzzy
 msgid "Disable Display State Check"
 msgstr "Desactivar la comprobación del estado de la pantalla"
 
@@ -113,6 +110,3 @@ msgstr "Recargar"
 #: display-brightness-ddcutil@themightydeity.github.com/extension.js:183
 msgid "All"
 msgstr "Todos"
-
-#~ msgid "Step change % when using keyboard shortcut"
-#~ msgstr "Porcentaje de cambio cuando se usa el atajo del teclado"
