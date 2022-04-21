@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="display-brightness-ddcutil">
   <schema id="org.gnome.shell.extensions.display-brightness-ddcutil" path="/org/gnome/shell/extensions/display-brightness-ddcutil/">
-    <key type="b" name="reload">
-      <default>false</default>
-      <summary>Reloads the Extension</summary>
-    </key>
     <key type="b" name="show-all-slider">
       <default>false</default>
       <summary>Enables the All Slider</summary>
@@ -25,12 +21,9 @@
       <default>true</default>
       <summary>Enables OSD</summary>
     </key>
-    <key type="s" name="button-location">
-      <choices>
-        <choice value="panel"/>
-        <choice value="menu"/>
-      </choices>
-      <default>"panel"</default>
+    <key type="i" name="button-location">
+      <default>0</default>
+      <range min="0" max="1"/>
       <summary>Brightness Button Location</summary>
     </key>
     <key type="b" name="hide-system-indicator">
