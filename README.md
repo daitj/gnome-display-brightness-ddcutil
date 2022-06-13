@@ -102,7 +102,7 @@ ddcutil --brief detect > $XDG_CACHE_HOME/ddcutil_detect
 
 ## Credits
 
-This extension is developed and maintained by [@datij](https://github.com/datij)
+This extension is developed and maintained by [@daitj](https://github.com/daitj)
 
 #### Thanks to the following people for contributing via pull requests:
 - @oscfdezdz for adding new settings ui, keyboard shortcuts and ability to set icon location
