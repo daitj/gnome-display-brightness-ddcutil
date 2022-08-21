@@ -106,3 +106,6 @@ This extension is developed and maintained by [@daitj](https://github.com/daitj)
 
 #### Thanks to the following people for contributing via pull requests:
 - @oscfdezdz for adding new settings ui, keyboard shortcuts and ability to set icon location
+
+#### Thanks to the following extensions for the inspiration:
+- [Night Theme Switcher](https://extensions.gnome.org/extension/2236/night-theme-switcher/)
