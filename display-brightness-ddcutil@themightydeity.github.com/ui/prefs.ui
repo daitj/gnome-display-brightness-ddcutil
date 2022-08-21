@@ -95,7 +95,6 @@
             <property name="title" translatable="yes">Position in System Menu</property>
             <property name="selectable">False</property>
             <property name="focusable">False</property>
-            <property name="activatable-widget">position_system_menu_spin_button</property>
             <child>
               <object class="GtkSpinButton" id="position_system_menu_spin_button">
                 <property name="valign">center</property>
@@ -117,13 +116,7 @@
             <property name="selectable">False</property>
             <property name="focusable">False</property>
             <child>
-              <object class="GtkEntry" id="increase_shortcut_entry">
-                <property name="valign">center</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkButton" id="increase_shortcut_button">
-                <property name="label" translatable="yes">Apply</property>
+              <object class="ShortcutWidget" id="increase_shortcut_button">
                 <property name="valign">center</property>
               </object>
             </child>
@@ -135,13 +128,7 @@
             <property name="selectable">False</property>
             <property name="focusable">False</property>
             <child>
-              <object class="GtkEntry" id="decrease_shortcut_entry">
-                <property name="valign">center</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkButton" id="decrease_shortcut_button">
-                <property name="label" translatable="yes">Apply</property>
+              <object class="ShortcutWidget" id="decrease_shortcut_button">
                 <property name="valign">center</property>
               </object>
             </child>

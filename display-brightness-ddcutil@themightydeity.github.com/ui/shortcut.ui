@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface domain="display-brightness-ddcutil">
+  <template class="ShortcutWidget" parent="GtkStack">
+    <property name="hhomogeneous">False</property>
+    <signal name="notify::keybinding" handler="onKeybindingChanged" swapped="no"/>
+    <child>
+      <object class="GtkStackPage">
+        <property name="name">set</property>
+        <property name="child">
+          <object class="GtkButton" id="set_button">
+            <property name="label" translatable="yes">Set Shortcut…</property>
+            <signal name="clicked" handler="onSetButtonClicked" swapped="no"/>
+          </object>
+        </property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkStackPage">
+        <property name="name">edit</property>
+        <property name="child">
+          <object class="GtkBox">
+            <property name="orientation">horizontal</property>
+            <property name="spacing">12</property>
+            <child>
+              <object class="GtkShortcutLabel">
+                <property name="accelerator" bind-source="ShortcutWidget" bind-property="keybinding"/>
+                <style>
+                  <class name="flat"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="clear_button">
+                <property name="icon-name">edit-clear-symbolic</property>
+                <signal name="clicked" handler="onClearButtonClicked" swapped="no"/>
+                <style>
+                  <class name="flat"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </property>
+      </object>
+    </child>
+  </template>
+  <object class="AdwWindow" id="dialog">
+    <property name="modal">True</property>
+    <property name="hide-on-close">True</property>
+    <property name="default-width">400</property>
+    <property name="content">
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="AdwHeaderBar">
+            <property name="show-start-title-buttons">False</property>
+            <property name="show-end-title-buttons">False</property>
+            <child type="title">
+              <object class="AdwWindowTitle">
+                <property name="title" translatable="yes">Add Custom Shortcut</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <property name="margin-top">12</property>
+            <property name="margin-bottom">12</property>
+            <property name="spacing">12</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Enter the new shortcut</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkImage">
+                <property name="icon-name">input-keyboard-symbolic</property>
+                <property name="pixel-size">128</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="label" translatable="yes">Press Esc to cancel the keyboard shortcut.</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </property>
+    <child>
+      <object class="GtkEventControllerKey">
+        <signal name="key-pressed" handler="onKeyPressed" swapped="no"/>
+      </object>
+    </child>
+  </object>
+</interface>
