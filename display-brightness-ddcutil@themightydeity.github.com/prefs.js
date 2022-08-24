@@ -1,7 +1,9 @@
 const { Adw, Gio, GObject } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
+
 const Convenience = Me.imports.convenience;
+const ShortcutWidget = Me.imports.shortcut;
 
 const PrefsWidget = GObject.registerClass({
     GTypeName: 'PrefsWidget',
@@ -17,8 +19,6 @@ const PrefsWidget = GObject.registerClass({
         'position_system_menu_row',
         'hide_system_indicator_switch',
         'position_system_menu_spin_button',
-        'increase_shortcut_entry',
-        'decrease_shortcut_entry',
         'increase_shortcut_button',
         'decrease_shortcut_button',
         'step_keyboard_spin_button',
@@ -97,16 +97,21 @@ const PrefsWidget = GObject.registerClass({
             Gio.SettingsBindFlags.DEFAULT
         );
 
-        this._increase_shortcut_entry.text = this.settings.get_strv('increase-brightness-shortcut')[0];
-        this._decrease_shortcut_entry.text = this.settings.get_strv('decrease-brightness-shortcut')[0];
-
-        this._increase_shortcut_button.connect('clicked', widget => {
-            this.settings.set_strv('increase-brightness-shortcut', [this._increase_shortcut_entry.text]);
+        this.settings.connect('changed::increase-brightness-shortcut', () => {
+            this._increase_shortcut_button.keybinding = this.settings.get_strv('increase-brightness-shortcut')[0];
         });
-
-        this._decrease_shortcut_button.connect('clicked', widget => {
-            this.settings.set_strv('decrease-brightness-shortcut', [this._decrease_shortcut_entry.text]);
+        this._increase_shortcut_button.connect('notify::keybinding', () => {
+            this.settings.set_strv('increase-brightness-shortcut', [this._increase_shortcut_button.keybinding]);
         });
+        this._increase_shortcut_button.keybinding = this.settings.get_strv('increase-brightness-shortcut')[0];
+
+        this.settings.connect('changed::decrease-brightness-shortcut', () => {
+            this._decrease_shortcut_button.keybinding = this.settings.get_strv('decrease-brightness-shortcut')[0];
+        });
+        this._decrease_shortcut_button.connect('notify::keybinding', () => {
+            this.settings.set_strv('decrease-brightness-shortcut', [this._decrease_shortcut_button.keybinding]);
+        });
+        this._decrease_shortcut_button.keybinding = this.settings.get_strv('decrease-brightness-shortcut')[0];
     }
 
     onButtonLocationChanged() {
