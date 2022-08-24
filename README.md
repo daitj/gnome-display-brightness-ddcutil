@@ -10,6 +10,7 @@ Display Brightness Slider for Gnome Shell
   - [Screen hangs/locks on first startup](#screen-hangslocks-on-first-startup)
 - [Credits](#credits)
     - [Thanks to the following people for contributing via pull requests:](#thanks-to-the-following-people-for-contributing-via-pull-requests)
+    - [Thanks to the following extensions for the inspiration](#thanks-to-the-following-extensions-for-the-inspiration)
 ## Setup ddcutil
 
 1. install `ddcutil`
@@ -107,5 +108,5 @@ This extension is developed and maintained by [@daitj](https://github.com/daitj)
 #### Thanks to the following people for contributing via pull requests:
 - @oscfdezdz for adding new settings ui, keyboard shortcuts and ability to set icon location
 
-#### Thanks to the following extensions for the inspiration:
-- [Night Theme Switcher](https://extensions.gnome.org/extension/2236/night-theme-switcher/)
+#### Thanks to the following extensions for the inspiration
+- [Night Theme Switcher](https://extensions.gnome.org/extension/2236/night-theme-switcher/) for keyboard shortcut UI.
