@@ -22,7 +22,7 @@
             <property name="orientation">horizontal</property>
             <property name="spacing">12</property>
             <child>
-              <object class="GtkShortcutLabel">
+              <object class="GtkShortcutLabel" id="shortcut_label">
                 <property name="accelerator" bind-source="ShortcutWidget" bind-property="keybinding"/>
                 <style>
                   <class name="flat"/>
@@ -30,9 +30,24 @@
               </object>
             </child>
             <child>
+              <object class="GtkEntry" id="shortcut_entry">
+                <property name="visible">False</property>
+                <property name="hexpand">True</property>
+              </object>
+            </child>
+            <child>
               <object class="GtkButton" id="clear_button">
                 <property name="icon-name">edit-clear-symbolic</property>
                 <signal name="clicked" handler="onClearButtonClicked" swapped="no"/>
+                <style>
+                  <class name="flat"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkToggleButton" id="edit_button">
+                <property name="icon-name">document-edit-symbolic</property>
+                <signal name="toggled" handler="onEditButtonToggled" swapped="no"/>
                 <style>
                   <class name="flat"/>
                 </style>

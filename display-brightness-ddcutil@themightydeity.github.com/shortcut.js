@@ -9,7 +9,10 @@ const ShortcutWidget = GObject.registerClass({
     Template: Me.dir.get_child('./ui/shortcut.ui').get_uri(),
     InternalChildren: [
         'set_button',
+        'shortcut_label',
+        'shortcut_entry',
         'clear_button',
+        'edit_button',
         'dialog'
     ],
     Properties: {
@@ -34,6 +37,20 @@ const ShortcutWidget = GObject.registerClass({
 
     onClearButtonClicked(_button) {
         this.keybinding = '';
+    }
+
+    onEditButtonToggled(_button) {
+        if (this._shortcut_label.visible) {
+            this._shortcut_entry.get_buffer().set_text(this._shortcut_label.get_accelerator(), -1);
+            this.keybinding = this._shortcut_entry.get_buffer().get_text();
+        } else {
+            this._shortcut_label.set_accelerator(this._shortcut_entry.get_buffer().get_text());
+            this.keybinding = this._shortcut_label.get_accelerator();
+        }
+
+        this._shortcut_label.visible = !this._shortcut_label.visible;
+        this._shortcut_entry.visible = !this._shortcut_entry.visible;
+        this._clear_button.visible = !this._clear_button.visible;
     }
 
     onKeyPressed(_widget, keyval, keycode, state) {
