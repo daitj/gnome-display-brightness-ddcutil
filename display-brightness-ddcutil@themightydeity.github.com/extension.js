@@ -36,7 +36,8 @@ const {
 } = Me.imports.indicator;
 
 const PopupMenu = imports.ui.popupMenu;
-const AggregateMenu = Main.panel.statusArea.aggregateMenu;
+const QuickSettings = imports.ui.quickSettings;
+const QuickSettingsMenu = Main.panel.statusArea.quickSettings
 
 const {
     brightnessLog
@@ -94,8 +95,8 @@ function BrightnessControl(set) {
         } else {
             brightnessLog("Adding to system menu");
             mainMenuButton = new SystemMenuBrightnessMenu(settings);
-            AggregateMenu._indicators.add_child(mainMenuButton);
-            AggregateMenu.menu.addMenuItem(mainMenuButton.menu, settings.get_double('position-system-menu'));
+            QuickSettingsMenu._indicators.add_child(mainMenuButton);
+            QuickSettingsMenu.menu.addMenuItem(mainMenuButton.menu, settings.get_double('position-system-menu'));
         }
         if (mainMenuButton !== null) {
             /* connect all signals */
