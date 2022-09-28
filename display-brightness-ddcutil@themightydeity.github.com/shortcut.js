@@ -51,6 +51,11 @@ const ShortcutWidget = GObject.registerClass({
         this._shortcut_label.visible = !this._shortcut_label.visible;
         this._shortcut_entry.visible = !this._shortcut_entry.visible;
         this._clear_button.visible = !this._clear_button.visible;
+        if(this._edit_button.iconName == "document-edit-symbolic"){
+            this._edit_button.iconName = "document-save-symbolic";
+        }else{
+            this._edit_button.iconName = "document-edit-symbolic";
+        }
     }
 
     onKeyPressed(_widget, keyval, keycode, state) {
