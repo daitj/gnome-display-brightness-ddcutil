@@ -36,11 +36,11 @@
       <summary>Sets position in system menu</summary>
     </key>
     <key type="as" name="increase-brightness-shortcut">
-      <default><![CDATA[['<Ctrl><Alt><Shift>h']]]></default>
+      <default><![CDATA[['<Control>XF86MonBrightnessUp']]]></default>
       <summary>Increase Brightness Shortcut</summary>
     </key>
     <key type="as" name="decrease-brightness-shortcut">
-      <default><![CDATA[['<Ctrl><Alt><Shift>g']]]></default>
+      <default><![CDATA[['<Control>XF86MonBrightnessDown']]]></default>
       <summary>Decrease Brightness Shortcut</summary>
     </key>
     <key type="d" name="step-change-keyboard">
