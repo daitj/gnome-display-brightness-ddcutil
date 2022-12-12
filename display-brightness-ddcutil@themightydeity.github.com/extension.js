@@ -48,9 +48,6 @@ const {
 */
 const minBrightness = 1;
 
-/* when should min brightness value should be used */
-const minBrightnessThreshold = 5;
-
 let displays = [];
 
 let mainMenuButton = null;
@@ -144,10 +141,8 @@ function BrightnessControl(set) {
 
 function setBrightness(settings, display, newValue) {
     let newBrightness = parseInt((newValue / 100) * display.max);
-    if (newBrightness <= minBrightnessThreshold) {
-        if (settings.get_boolean('allow-zero-brightness')) {
-            newBrightness = 0;
-        } else {
+    if (newBrightness == 0) {
+        if (!settings.get_boolean('allow-zero-brightness')) {
             newBrightness = minBrightness;
         }
     }
