@@ -302,6 +302,7 @@ function parseDisplaysInfoAndAddToPanel(settings, ddcutil_brief_info) {
         */
         let diplay_loop_id = 0;
         brightnessLog("ddcutil brief info:\n" + ddcutil_brief_info);
+        const sleepMultiplier = (settings.get_double('ddcutil-sleep-multiplier'))/40;
         ddcutil_brief_info.split('\n').map(ddc_line => {
             if (ddc_line.indexOf("/dev/i2c-") !== -1) {
                 brightnessLog("ddcutil brief info found bus line:\n" + " " + ddc_line)
@@ -311,7 +312,7 @@ function parseDisplaysInfoAndAddToPanel(settings, ddcutil_brief_info) {
                 const display_id = diplay_loop_id;
                 /* check if display is on or not */
                 brightnessLog("ddcutil reading display state for bus: " + display_bus)
-                Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "D6", "--bus", display_bus], function (vcpPowerInfos) {
+                Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "D6", "--bus", display_bus, "--sleep-multiplier", sleepMultiplier], function (vcpPowerInfos) {
                     brightnessLog("ddcutil reading display status for bus: " + display_bus + " is: " + vcpPowerInfos)
                     /* only add display to list if ddc communication is supported with the bus*/
                     if (vcpPowerInfos.indexOf("DDC communication failed") === -1 && vcpPowerInfos.indexOf("No monitor detected") === -1) {
@@ -327,7 +328,7 @@ function parseDisplaysInfoAndAddToPanel(settings, ddcutil_brief_info) {
                         }
                         if (displayInGoodState) {
                             /* read the current and max brightness using getvcp 10 */
-                            Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "10", "--bus", display_bus], function (vcpInfos) {
+                            Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "10", "--bus", display_bus, "--sleep-multiplier", sleepMultiplier], function (vcpInfos) {
                                 if (vcpInfos.indexOf("DDC communication failed") === -1 && vcpInfos.indexOf("No monitor detected") === -1) {
                                     let vcpInfosArray = vcpInfos.trim().split(" ");
                                     if (vcpInfosArray[2] != "ERR" && vcpInfosArray.length >= 5) {
