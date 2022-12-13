@@ -92,7 +92,7 @@ function BrightnessControl(set) {
         } else {
             brightnessLog("Adding to system menu");
             mainMenuButton = new SystemMenuBrightnessMenu(settings);
-            QuickSettingsMenu._indicators.add_child(mainMenuButton);
+            QuickSettingsMenu._indicators.insert_child_at_index(mainMenuButton, settings.get_double('position-system-indicator'));
             QuickSettingsMenu.menu.addMenuItem(mainMenuButton.menu, settings.get_double('position-system-menu'));
         }
         if (mainMenuButton !== null) {
@@ -146,8 +146,9 @@ function setBrightness(settings, display, newValue) {
             newBrightness = minBrightness;
         }
     }
+    const sleepMultiplier = (settings.get_double('ddcutil-sleep-multiplier'))/40;
     //brightnessLog(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus}`)
-    GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus}`)
+    GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier}`)
 }
 
 function setAllBrightness(settings, newValue) {
@@ -232,15 +233,20 @@ function _reloadMenuWidgets(settings) {
     mainMenuButton.removeAllMenu();
     mainMenuButton.clearStoredSliders();
 
-    if (settings.get_boolean('show-all-slider')) {
-        addAllSlider(settings);
-    }
-    displays.forEach(display => {
-        addDisplayToPanel(settings, display);
-    });
-    
-    if (settings.get_int('button-location') === 0) {
-        addSettingsItem();
+    if(displays.length == 0){
+        mainMenuButton.indicatorVisibility(false);
+    }else{
+        mainMenuButton.indicatorVisibility(true);
+        if (settings.get_boolean('show-all-slider')) {
+            addAllSlider(settings);
+        }
+        displays.forEach(display => {
+            addDisplayToPanel(settings, display);
+        });
+        
+        if (settings.get_int('button-location') === 0) {
+            addSettingsItem();
+        }
     }
 }
 
@@ -270,7 +276,11 @@ function _reloadExtension() {
     reloadingExtension = false;
 }
 
-
+function moveIndicator(settings){
+    brightnessLog("System indicator moved");
+    if (mainMenuButton === null) return;
+    QuickSettingsMenu._indicators.set_child_at_index(mainMenuButton, settings.get_double('position-system-indicator')); 
+}
 
 
 function addTextItemToPanel(text) {
@@ -412,6 +422,9 @@ function connectSettingsSignals(settings) {
         reload: settings.connect('changed::reload', reloadExtension),
         indicator: settings.connect('changed::button-location', reloadExtension),
         hide_system_indicator: settings.connect('changed::hide-system-indicator', reloadExtension),
+        position_system_indicator: settings.connect('changed::position-system-indicator', function(settings){
+            moveIndicator(settings);
+        }),
         position_system_menu: settings.connect('changed::position-system-menu', reloadExtension),
         disable_display_state_check: settings.connect('changed::disable-display-state-check', reloadExtension)
     }
