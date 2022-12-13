@@ -16,12 +16,15 @@ const PrefsWidget = GObject.registerClass({
         'show_osd_switch',
         'button_location_combo_row',
         'hide_system_indicator_row',
-        'position_system_menu_row',
         'hide_system_indicator_switch',
+        'position_system_indicator_row',
+        'position_system_indicator_spin_button',
+        'position_system_menu_row',
         'position_system_menu_spin_button',
         'increase_shortcut_button',
         'decrease_shortcut_button',
         'step_keyboard_spin_button',
+        'sleep_multiplier_spin_button',
         'allow_zero_brightness_switch',
         'disable_display_state_check_switch'
     ],
@@ -30,7 +33,6 @@ const PrefsWidget = GObject.registerClass({
     _init(params = {}) {
         super._init(params);
         this.settings = ExtensionUtils.getSettings();
-
         this.settings.bind(
             'show-all-slider',
             this._show_all_slider_switch,
@@ -80,9 +82,11 @@ const PrefsWidget = GObject.registerClass({
             Gio.SettingsBindFlags.DEFAULT
         );
 
+        this._position_system_indicator_spin_button.value = this.settings.get_double('position-system-indicator');
         this._position_system_menu_spin_button.value = this.settings.get_double('position-system-menu');
         this._step_keyboard_spin_button.value = this.settings.get_double('step-change-keyboard');
-
+        this._sleep_multiplier_spin_button.value = this.settings.get_double('ddcutil-sleep-multiplier');
+        
         this.settings.bind(
             'allow-zero-brightness',
             this._allow_zero_brightness_switch,
@@ -112,23 +116,37 @@ const PrefsWidget = GObject.registerClass({
             this.settings.set_strv('decrease-brightness-shortcut', [this._decrease_shortcut_button.keybinding]);
         });
         this._decrease_shortcut_button.keybinding = this.settings.get_strv('decrease-brightness-shortcut')[0];
+
+        this._position_system_indicator_row.sensitive = !this.settings.get_boolean('hide-system-indicator');
+        this.settings.connect('changed::hide-system-indicator', () => {
+            this._position_system_indicator_row.sensitive = !this.settings.get_boolean('hide-system-indicator');
+        });
     }
 
     onButtonLocationChanged() {
         this.settings.set_int('button-location', this._button_location_combo_row.selected);
         if (this._button_location_combo_row.selected === 0) {
             this._hide_system_indicator_row.sensitive = false;
+            this._position_system_indicator_row.sensitive = false;
             this._position_system_menu_row.sensitive = false;
         } else {
             this._hide_system_indicator_row.sensitive = true;
             this._position_system_menu_row.sensitive = true;
+            this._position_system_indicator_row.sensitive = !this.settings.get_boolean('hide-system-indicator');
         }
     }
-    onPositionValueChanged() {
+    onMenuPositionValueChanged() {
         this.settings.set_double('position-system-menu', this._position_system_menu_spin_button.value);
+    }
+
+    onIndicatorPositionValueChanged() {
+        this.settings.set_double('position-system-indicator', this._position_system_indicator_spin_button.value);
     }
     onStepKeyboardValueChanged() {
         this.settings.set_double('step-change-keyboard', this._step_keyboard_spin_button.value);
+    }
+    onSleepMultiplierValueChanged() {
+        this.settings.set_double('ddcutil-sleep-multiplier', this._sleep_multiplier_spin_button.value);
     }
 }
 );

@@ -56,8 +56,9 @@ var StatusAreaBrightnessMenu = GObject.registerClass({
     _init(settings) {
         this._sliders = [];
         super._init(0.0);
-        let icon = new St.Icon({ icon_name: 'display-brightness-symbolic', style_class: 'system-status-icon' });
-        this.add_actor(icon);
+        this._icon = new St.Icon({ icon_name: 'display-brightness-symbolic', style_class: 'system-status-icon' });
+        this._iconVisible = true;
+        this.add_child(this._icon);
         this.connect('scroll-event', sliderScrollEvent);
         this.connect('value-up', (actor, event) => {
             sliderKeyUpDownEvent(actor, settings.get_double('step-change-keyboard')/100)
@@ -67,6 +68,15 @@ var StatusAreaBrightnessMenu = GObject.registerClass({
             sliderKeyUpDownEvent(actor, -settings.get_double('step-change-keyboard')/100)
             return Clutter.EVENT_STOP;
         });
+    }
+    indicatorVisibility(visible){
+        if(!visible && this._iconVisible){
+            this.remove_child(this._icon);
+            this._iconVisible = false;
+        }else if(visible && !this._iconVisible){
+            this.add_child(this._icon);
+            this._iconVisible = true;
+        }
     }
     clearStoredSliders() {
         this._sliders = [];
@@ -105,6 +115,9 @@ var SystemMenuBrightnessMenu = GObject.registerClass({
             return Clutter.EVENT_STOP;
         });
         this.connect('destroy', this._onDestroy.bind(this));
+    }
+    indicatorVisibility(visible){
+        this._indicator.visible = visible;
     }
     removeAllMenu() {
         this.menu.removeAll()

@@ -30,6 +30,11 @@
       <default>false</default>
       <summary>Hides System Indicator</summary>
     </key>
+    <key type="d" name="position-system-indicator">
+      <range min="0" max="15" />
+      <default>0</default>
+      <summary>Sets position of icon in system indicator</summary>
+    </key>
     <key type="d" name="position-system-menu">
       <range min="0" max="13" />
       <default>3</default>
@@ -47,6 +52,11 @@
       <range min="1" max="100" />
       <default>2</default>
       <summary>Step change % when using keyboard shortcut</summary>
+    </key>
+    <key type="d" name="ddcutil-sleep-multiplier">
+      <range min="4" max="200" />
+      <default>40</default>
+      <summary>`ddcutil` sleep multiplier in ms, tweak it around to make brightness update faster.</summary>
     </key>
     <key type="b" name="allow-zero-brightness">
       <default>false</default>
