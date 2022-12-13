@@ -1,6 +1,6 @@
 {
     "name": "Brightness control using ddcutil",
-    "description": "Brightness control for all the monitors detected by ddcutil\nThis tool uses ddcutil as backend for communication with your display.\n\nUpdated 2022-Jan-05: There are multiple ways of listing the control sliders, either in top bar or in system menu, with or without value labels.\n\nRead setup instructions from: https://github.com/daitj/gnome-display-brightness-ddcutil/blob/master/README.md",
+    "description": "Brightness control for all the monitors detected by ddcutil\nThis tool uses ddcutil as backend for communication with your display.\n\nRead setup instructions from: https://github.com/daitj/gnome-display-brightness-ddcutil/blob/master/README.md",
     "uuid": "display-brightness-ddcutil@themightydeity.github.com",
     "url": "https://github.com/daitj/gnome-display-brightness-ddcutil",
     "settings-schema": "org.gnome.shell.extensions.display-brightness-ddcutil",
