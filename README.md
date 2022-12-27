@@ -19,7 +19,7 @@ Display Brightness Slider for Gnome Shell
 
 ```sh
 
-modprobe i2c-dev
+sudo modprobe i2c-dev
 
 ```
 
@@ -27,7 +27,7 @@ modprobe i2c-dev
 
 ```sh
 
-ddcutil capabilities | grep "Feature: 10"
+sudo ddcutil capabilities | grep "Feature: 10"
 
 ```
 
