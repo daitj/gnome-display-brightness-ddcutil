@@ -62,8 +62,6 @@ let mainMenuButton = null;
 const cache_dir = GLib.get_user_cache_dir()
 const ddcutil_detect_cache_file = `${cache_dir}/ddcutil_detect`;
 
-const ddcutil_path = "/usr/bin/ddcutil";
-
 class DDCUtilBrightnessControlExtension {
     constructor() { }
     enable() {
@@ -146,6 +144,7 @@ function setBrightness(settings, display, newValue) {
             newBrightness = minBrightness;
         }
     }
+    const ddcutil_path = settings.get_string('ddcutil-binary-path')
     const sleepMultiplier = (settings.get_double('ddcutil-sleep-multiplier'))/40;
     //brightnessLog(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus}`)
     GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier}`)
@@ -293,6 +292,7 @@ function addTextItemToPanel(text) {
 
 function parseDisplaysInfoAndAddToPanel(settings, ddcutil_brief_info) {
     try {
+        const ddcutil_path = settings.get_string('ddcutil-binary-path')
         let display_names = [];
         /*
         due to spawnWithCallback fetching faster information for second display in list before first one
@@ -365,6 +365,7 @@ function parseDisplaysInfoAndAddToPanel(settings, ddcutil_brief_info) {
 }
 
 function getDisplaysInfoAsync(settings) {
+    const ddcutil_path = settings.get_string('ddcutil-binary-path')
     Convenience.spawnWithCallback([ddcutil_path, "detect", "--brief"], function (stdout) {
         parseDisplaysInfoAndAddToPanel(settings, stdout);
     });

@@ -24,6 +24,7 @@ const PrefsWidget = GObject.registerClass({
         'increase_shortcut_button',
         'decrease_shortcut_button',
         'step_keyboard_spin_button',
+        'ddcutil_binary_path_entry',
         'sleep_multiplier_spin_button',
         'allow_zero_brightness_switch',
         'disable_display_state_check_switch'
@@ -85,6 +86,7 @@ const PrefsWidget = GObject.registerClass({
         this._position_system_indicator_spin_button.value = this.settings.get_double('position-system-indicator');
         this._position_system_menu_spin_button.value = this.settings.get_double('position-system-menu');
         this._step_keyboard_spin_button.value = this.settings.get_double('step-change-keyboard');
+        this._ddcutil_binary_path_entry.set_text(this.settings.get_string('ddcutil-binary-path'))
         this._sleep_multiplier_spin_button.value = this.settings.get_double('ddcutil-sleep-multiplier');
         
         this.settings.bind(
@@ -144,6 +146,9 @@ const PrefsWidget = GObject.registerClass({
     }
     onStepKeyboardValueChanged() {
         this.settings.set_double('step-change-keyboard', this._step_keyboard_spin_button.value);
+    }
+    onDdcutilBinaryPathChanged() {
+        this.settings.set_string('ddcutil-binary-path', this._ddcutil_binary_path_entry.get_text());
     }
     onSleepMultiplierValueChanged() {
         this.settings.set_double('ddcutil-sleep-multiplier', this._sleep_multiplier_spin_button.value);

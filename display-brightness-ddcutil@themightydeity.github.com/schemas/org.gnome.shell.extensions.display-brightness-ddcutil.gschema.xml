@@ -53,6 +53,10 @@
       <default>2</default>
       <summary>Step change % when using keyboard shortcut</summary>
     </key>
+    <key type="s" name="ddcutil-binary-path">
+      <default><![CDATA['/usr/bin/ddcutil']]></default>
+      <summary>Location of the ddcutil binary to use</summary>
+    </key>
     <key type="d" name="ddcutil-sleep-multiplier">
       <range min="4" max="200" />
       <default>40</default>
