@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-30 00:29+1000\n"
+"POT-Creation-Date: 2023-03-07 23:51+0200\n"
 "PO-Revision-Date: 2022-02-13 09:53+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -98,11 +98,15 @@ msgstr "Vollständige Abdunkelung erlauben"
 msgid "Disable Display State Check"
 msgstr "Status-Überprüfung deaktivieren"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:231
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:228
+msgid "Verbose debugging"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:244
 msgid "Top Bar"
 msgstr "Obere Leiste"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:232
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:245
 msgid "System Menu"
 msgstr "System-Menü"
 
@@ -123,19 +127,19 @@ msgstr ""
 msgid "Press Esc to cancel the keyboard shortcut."
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:104
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:105
 msgid "Initializing"
 msgstr "Initialisiere"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:162
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:163
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:168
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:169
 msgid "Reload"
 msgstr "Neu laden"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:179
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:180
 msgid "All"
 msgstr "Alle"
 

@@ -9,6 +9,8 @@ const Panel = imports.ui.panel;
 const PanelMenu = imports.ui.panelMenu
 const PopupMenu = imports.ui.popupMenu;
 const { Slider } = imports.ui.slider;
+const QuickSettings = imports.ui.quickSettings;
+const QuickSettingsMenu = Main.panel.statusArea.quickSettings
 
 const {
     brightnessLog
@@ -98,7 +100,7 @@ var StatusAreaBrightnessMenu = GObject.registerClass({
 var SystemMenuBrightnessMenu = GObject.registerClass({
     GType: 'SystemMenuBrightnessMenu',
     Signals: { 'value-up': {}, 'value-down': {} },
-}, class SystemMenuBrightnessMenu extends PanelMenu.SystemIndicator {
+}, class SystemMenuBrightnessMenu extends QuickSettings.SystemIndicator {
     _init(settings) {
         super._init();
         this._sliders = [];
@@ -115,15 +117,17 @@ var SystemMenuBrightnessMenu = GObject.registerClass({
             return Clutter.EVENT_STOP;
         });
         this.connect('destroy', this._onDestroy.bind(this));
+        this._settings=settings;
     }
     indicatorVisibility(visible){
         this._indicator.visible = visible;
     }
     removeAllMenu() {
-        this.menu.removeAll()
+        //this.quickSettingsItems=[];
     }
     addMenuItem(item, position = null) {
-        this.menu.addMenuItem(item)
+        this.quickSettingsItems.push(item);
+        QuickSettingsMenu._addItems(this.quickSettingsItems, this._settings.get_double('position-system-menu'));
     }
     clearStoredSliders() {
         this._sliders = [];
@@ -135,7 +139,7 @@ var SystemMenuBrightnessMenu = GObject.registerClass({
         return this._sliders;
     }
     _onDestroy() {
-        this.menu.destroy();
+        this.quickSettingsItems.forEach(item => item.destroy());
     }
 });
 

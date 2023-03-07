@@ -91,7 +91,8 @@ function BrightnessControl(set) {
             brightnessLog("Adding to system menu");
             mainMenuButton = new SystemMenuBrightnessMenu(settings);
             QuickSettingsMenu._indicators.insert_child_at_index(mainMenuButton, settings.get_double('position-system-indicator'));
-            QuickSettingsMenu.menu.addMenuItem(mainMenuButton.menu, settings.get_double('position-system-menu'));
+            brightnessLog(mainMenuButton.quickSettingsItems);
+            QuickSettingsMenu._addItems(mainMenuButton.quickSettingsItems, settings.get_double('position-system-menu'));
         }
         if (mainMenuButton !== null) {
             /* connect all signals */
