@@ -31,7 +31,10 @@ const { Gdk, Gio, GLib, Gtk } = imports.gi;
 const ExtensionUtils = imports.misc.extensionUtils;
 
 function brightnessLog(str) {
-  log("display-brightness-ddcutil extension:\n" + str);
+  let settings = ExtensionUtils.getSettings();
+  if (settings.get_boolean('verbose-debugging')) {
+    log("display-brightness-ddcutil extension:\n" + str);
+  }
 }
 
 //timer

@@ -27,7 +27,8 @@ const PrefsWidget = GObject.registerClass({
         'ddcutil_binary_path_entry',
         'sleep_multiplier_spin_button',
         'allow_zero_brightness_switch',
-        'disable_display_state_check_switch'
+        'disable_display_state_check_switch',
+        'verbose_debugging_switch'
     ],
 }, class PrefsWidget extends Adw.PreferencesPage {
 
@@ -102,6 +103,14 @@ const PrefsWidget = GObject.registerClass({
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
+
+        this.settings.bind(
+            'verbose-debugging',
+            this._verbose_debugging_switch,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+        
 
         this.settings.connect('changed::increase-brightness-shortcut', () => {
             this._increase_shortcut_button.keybinding = this.settings.get_strv('increase-brightness-shortcut')[0];

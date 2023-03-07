@@ -428,7 +428,8 @@ function connectSettingsSignals(settings) {
             moveIndicator(settings);
         }),
         position_system_menu: settings.connect('changed::position-system-menu', reloadExtension),
-        disable_display_state_check: settings.connect('changed::disable-display-state-check', reloadExtension)
+        disable_display_state_check: settings.connect('changed::disable-display-state-check', reloadExtension),
+        verbose_debugging: settings.connect('changed::verbose-debugging', reloadExtension)
     }
 }
 

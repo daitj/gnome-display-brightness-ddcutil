@@ -19,7 +19,7 @@ Display Brightness Slider for Gnome Shell
 
 ```sh
 
-modprobe i2c-dev
+sudo modprobe i2c-dev
 
 ```
 
@@ -53,9 +53,9 @@ sudo usermod $USER -aG i2c
 
 ```sh
 
-touch /etc/modules-load.d/i2c.conf
+sudo touch /etc/modules-load.d/i2c.conf
 
-echo "i2c-dev" >> /etc/modules-load.d/i2c.conf
+sudo sh -c 'echo "i2c-dev" >> /etc/modules-load.d/i2c.conf'
 
 ```
 
@@ -106,7 +106,7 @@ ddcutil --brief detect > $XDG_CACHE_HOME/ddcutil_detect
 This extension is developed and maintained by [@daitj](https://github.com/daitj)
 
 #### Thanks to the following people for contributing via pull requests:
-- @oscfdezdz for adding new settings ui, keyboard shortcuts and ability to set icon location
+- @oscfdezdz for adding new settings UI, keyboard shortcuts and ability to set icon location
 
 #### Thanks to the following extensions for the inspiration
 - [Night Theme Switcher](https://extensions.gnome.org/extension/2236/night-theme-switcher/) for keyboard shortcut UI.
