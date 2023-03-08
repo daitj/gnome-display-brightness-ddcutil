@@ -17,6 +17,7 @@ Steps to reproduce the behavior:
 Delete `$XDG_CACHE_HOME/ddcutil_detect` which generally is `~/.cache/ddcutil_detect` and try to run extension again.
 
 **Journal logs**
+You need to enable `Verbose debugging` from this extension's settings and then reload this extension first.
 ```
 journalctl --no-pager -b /usr/bin/gnome-shell
 Run above command and paste the log here 
