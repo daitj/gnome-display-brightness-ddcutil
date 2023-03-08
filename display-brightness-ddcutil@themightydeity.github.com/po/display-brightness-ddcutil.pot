@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-07 23:56+0200\n"
+"POT-Creation-Date: 2023-03-08 03:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -121,18 +121,20 @@ msgstr ""
 msgid "Press Esc to cancel the keyboard shortcut."
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:105
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:104
 msgid "Initializing"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:163
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:162
 msgid "Settings"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:169
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:168
 msgid "Reload"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:180
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:181
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:183
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:187
 msgid "All"
 msgstr ""

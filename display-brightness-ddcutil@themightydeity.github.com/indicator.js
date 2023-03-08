@@ -1,7 +1,7 @@
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
-const { Gio, GObject, St, Clutter } = imports.gi;
+const { GLib, Gio, GObject, St, Clutter } = imports.gi;
 
 // menu items
 const Main = imports.ui.main;
@@ -10,7 +10,6 @@ const PanelMenu = imports.ui.panelMenu
 const PopupMenu = imports.ui.popupMenu;
 const { Slider } = imports.ui.slider;
 const QuickSettings = imports.ui.quickSettings;
-const QuickSettingsMenu = Main.panel.statusArea.quickSettings
 
 const {
     brightnessLog
@@ -50,10 +49,30 @@ function sliderScrollEvent(actor, event) {
     });
     return Clutter.EVENT_STOP;
 }
-
+function sliderValueChangeCommon(item){
+    item.clearTimeout();
+    let brightness = item._SliderValueToBrightness(item.ValueSlider.value);
+    let sliderItem = item
+    sliderItem.ValueLabel.text = brightness.toString();
+    item.timer = Convenience.setTimeout(() => {
+        sliderItem.timer = null;
+        item.emit('slider-change', brightness);
+    }, 500)
+    if (sliderItem._settings.get_boolean('show-osd') && !sliderItem._hideOSD) {
+        let displayName = null;
+        if(sliderItem._settings.get_boolean('show-display-name')){
+            displayName = sliderItem.displayName
+        }
+        let osdLabel = displayName;
+        if(sliderItem._settings.get_boolean('show-value-label')){
+            osdLabel = `${displayName} ${brightness}`
+        }
+        Main.osdWindowManager.show(-1, new Gio.ThemedIcon({ name: 'display-brightness-symbolic' }), osdLabel, sliderItem.ValueSlider.value, 1);
+    }
+}
 var StatusAreaBrightnessMenu = GObject.registerClass({
     GType: 'StatusAreaBrightnessMenu',
-    Signals: { 'value-up': {}, 'value-down': {} },
+    Signals: { 'value-up': {}, 'value-down': {}},
 }, class StatusAreaBrightnessMenu extends PanelMenu.Button {
     _init(settings) {
         this._sliders = [];
@@ -123,11 +142,12 @@ var SystemMenuBrightnessMenu = GObject.registerClass({
         this._indicator.visible = visible;
     }
     removeAllMenu() {
-        //this.quickSettingsItems=[];
+        /* Remove all quick settings items by destroying */
+        this.quickSettingsItems.forEach(item => item.destroy());
+        this.quickSettingsItems=[];
     }
     addMenuItem(item, position = null) {
         this.quickSettingsItems.push(item);
-        QuickSettingsMenu._addItems(this.quickSettingsItems, this._settings.get_double('position-system-menu'));
     }
     clearStoredSliders() {
         this._sliders = [];
@@ -139,6 +159,7 @@ var SystemMenuBrightnessMenu = GObject.registerClass({
         return this._sliders;
     }
     _onDestroy() {
+        brightnessLog("Destroy all quick settings items");
         this.quickSettingsItems.forEach(item => item.destroy());
     }
 });
@@ -162,7 +183,7 @@ var SingleMonitorMenuItem = GObject.registerClass({
     }
 });
 
-var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends PopupMenu.PopupMenuSection {
+var SingleMonitorSliderAndValueForStatusAreaMenu = class SingleMonitorSliderAndValue extends PopupMenu.PopupMenuSection {
     constructor(settings, displayName, currentValue, onSliderChange) {
         super();
         this._settings = settings;
@@ -176,37 +197,21 @@ var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends Popu
         this._init();
     }
     _init() {
-        if(this._settings.get_int('button-location') === 0){
-            this.NameContainer = new PopupMenu.PopupMenuItem(this._displayName, {
-                hover: false,
-                reactive: false,
-                can_focus: false
-            });
-        }else{
-            this.NameContainer = new St.Label({
-                text: this._displayName,
-                style_class: 'display-brightness-ddcutil-monitor-name-system-menu'
-            });
-        }
-        
+        this.NameContainer = new PopupMenu.PopupMenuItem(this._displayName, {
+            hover: false,
+            reactive: false,
+            can_focus: false
+        });
         this.ValueSlider = new Slider(this._currentValue);
         this.ValueSlider.connect('notify::value', this._SliderChange.bind(this));
 
         this.ValueLabel = new St.Label({ text: this._SliderValueToBrightness(this._currentValue).toString() });
-
-        if (this._settings.get_int('button-location') === 0) {
-            this.SliderContainer = new SingleMonitorMenuItem(this._settings, null, null, this.ValueSlider, this.ValueLabel);
-            if (this._settings.get_boolean('show-display-name')) {
-                this.addMenuItem(this.NameContainer);
-            }
-        } else {
-            let icon = new St.Icon({ icon_name: 'display-brightness-symbolic', style_class: 'popup-menu-icon' });
-            this.SliderContainer = new SingleMonitorMenuItem(this._settings, icon, this.NameContainer, this.ValueSlider, this.ValueLabel);
+        this.SliderContainer = new SingleMonitorMenuItem(this._settings, null, null, this.ValueSlider, this.ValueLabel);
+        if (this._settings.get_boolean('show-display-name')) {
+            this.addMenuItem(this.NameContainer);
         }
         this.addMenuItem(this.SliderContainer);
-        if (this._settings.get_int('button-location') === 0) {
-            this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        }
+        this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
     }
     setHideOSD(){
         this.__hideOSDBackup = this._hideOSD;
@@ -226,21 +231,7 @@ var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends Popu
         return Math.floor(sliderValue * 100);
     }
     _SliderChange() {
-        this.clearTimeout();
-        let brightness = this._SliderValueToBrightness(this.ValueSlider.value);
-        let sliderItem = this
-        sliderItem.ValueLabel.text = brightness.toString();
-        this.timer = Convenience.setTimeout(() => {
-            sliderItem.timer = null;
-            sliderItem._onSliderChange(brightness)
-        }, 500)
-        if (sliderItem._settings.get_boolean('show-osd') && !sliderItem._hideOSD) {
-            let displayName = null;
-            if(sliderItem._settings.get_boolean('show-display-name')){
-                displayName = sliderItem._displayName
-            }
-            Main.osdWindowManager.show(-1, new Gio.ThemedIcon({ name: 'display-brightness-symbolic' }), displayName, sliderItem.ValueSlider.value, 1);
-        }
+        sliderValueChangeCommon(this);
     }
     clearTimeout() {
         if (this.timer) {
@@ -251,3 +242,78 @@ var SingleMonitorSliderAndValue = class SingleMonitorSliderAndValue extends Popu
         this.clearTimeout();
     }
 }
+
+
+var SingleMonitorSliderAndValueForQuickSettings = GObject.registerClass({
+    GType: 'SingleMonitorSliderAndValueForQuickSettings',
+    Properties: {
+        'settings': GObject.ParamSpec.object('settings', 'settings', 'settings',
+            GObject.ParamFlags.READWRITE,
+            Gio.Settings),
+        'display-name': GObject.ParamSpec.string('display-name', 'display-name', 'display-name',
+            GObject.ParamFlags.READWRITE,
+            ''),
+        'current-value': GObject.ParamSpec.double('current-value', 'current-value', 'current-value',
+            GObject.ParamFlags.READWRITE,
+            0, 1, 0)
+    },
+    Signals: {
+        'slider-change': {
+            param_types: [GObject.TYPE_DOUBLE],
+        },
+    },
+}, class SingleMonitorSliderAndValueForQuickSettings extends QuickSettings.QuickSlider {
+    _init(params) {
+        super._init({
+            ...params,
+            iconName: 'display-brightness-symbolic',
+        });
+        this._timer = null
+
+        /* OSD is never shown by default */
+        this._hideOSD = true
+        this.__hideOSDBackup = true;
+
+        this.slider.value = this.current_value;
+        this.slider.connect('notify::value', this._SliderChange.bind(this));
+        this.slider.accessible_name = this.display_name;
+        this.NameContainer = new St.Label({
+            text: this.display_name,
+            style_class: 'display-brightness-ddcutil-monitor-name-system-menu'
+        });
+        this.ValueLabel = new St.Label({ text: this._SliderValueToBrightness(this.current_value).toString() });
+        /* for compatibility in other places */
+        this.ValueSlider = this.slider;
+        this._settings = this.settings;
+        this.displayName = this.display_name;
+    }
+    setHideOSD(){
+        this.__hideOSDBackup = this._hideOSD;
+        this._hideOSD = true;
+    }
+    setShowOSD(){
+        this.__hideOSDBackup = this._hideOSD;
+        this._hideOSD = false;
+    }
+    resetOSD(){
+        this._hideOSD = this.__hideOSDBackup;
+    }
+    changeValue(newValue) {
+        this.slider.value = newValue / 100;
+    }
+    _SliderValueToBrightness(sliderValue) {
+        return Math.floor(sliderValue * 100);
+    }
+    _SliderChange() {
+        sliderValueChangeCommon(this);
+    }
+    clearTimeout() {
+        if (this.timer) {
+            Convenience.clearTimeout(this.timer);
+        }
+    }
+    destory() {
+        brightnessLog("Destory quick settings single slider item");
+        this.clearTimeout();
+    }
+});

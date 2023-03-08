@@ -32,12 +32,13 @@ const Convenience = Me.imports.convenience;
 const {
     StatusAreaBrightnessMenu,
     SystemMenuBrightnessMenu,
-    SingleMonitorSliderAndValue
+    SingleMonitorSliderAndValueForStatusAreaMenu,
+    SingleMonitorSliderAndValueForQuickSettings
 } = Me.imports.indicator;
 
 const PopupMenu = imports.ui.popupMenu;
 const QuickSettings = imports.ui.quickSettings;
-const QuickSettingsMenu = Main.panel.statusArea.quickSettings
+const QuickSettingsPanelMenuButton = Main.panel.statusArea.quickSettings
 
 const {
     brightnessLog
@@ -90,9 +91,7 @@ function BrightnessControl(set) {
         } else {
             brightnessLog("Adding to system menu");
             mainMenuButton = new SystemMenuBrightnessMenu(settings);
-            QuickSettingsMenu._indicators.insert_child_at_index(mainMenuButton, settings.get_double('position-system-indicator'));
-            brightnessLog(mainMenuButton.quickSettingsItems);
-            QuickSettingsMenu._addItems(mainMenuButton.quickSettingsItems, settings.get_double('position-system-menu'));
+            QuickSettingsPanelMenuButton._indicators.insert_child_at_index(mainMenuButton, settings.get_double('position-system-indicator'));
         }
         if (mainMenuButton !== null) {
             /* connect all signals */
@@ -177,7 +176,19 @@ function addAllSlider(settings) {
     let onAllSliderChange = function (newValue) {
         setAllBrightness(settings, newValue);
     }
-    let allslider = new SingleMonitorSliderAndValue(settings, _("All"), displays[0].current, onAllSliderChange);
+    let allslider = null;
+    if (settings.get_int('button-location') === 0) {
+        allslider = new SingleMonitorSliderAndValueForStatusAreaMenu(settings, _("All"), displays[0].current, onAllSliderChange);
+    }else{
+        allslider = new SingleMonitorSliderAndValueForQuickSettings(settings, _("All"), displays[0].current, onAllSliderChange);
+        brightnessLog(`Quick settings slider create all display slider with current value ${display.current}`)
+        displaySlider = new SingleMonitorSliderAndValueForQuickSettings({
+            settings: settings,
+            'display-name': _("All"),
+            'current-value': displays[0].current
+        });
+        displaySlider.connect('slider-change', onAllSliderChange);
+    }
     mainMenuButton.addMenuItem(allslider)
 
     /* save slider in main menu, so that it can be accessed easily for different events */
@@ -185,10 +196,21 @@ function addAllSlider(settings) {
 }
 
 function addDisplayToPanel(settings, display) {
-    let onSliderChange = function (newValue) {
+    let onSliderChange = function (quickSettingsSlider, newValue) {
         setBrightness(settings, display, newValue);
     }
-    let displaySlider = new SingleMonitorSliderAndValue(settings, display.name, display.current, onSliderChange);
+    let displaySlider = null;
+    if (settings.get_int('button-location') === 0) {
+        displaySlider = new SingleMonitorSliderAndValueForStatusAreaMenu(settings, display.name, display.current, onSliderChange);
+    }else{
+        displaySlider = new SingleMonitorSliderAndValueForQuickSettings({
+            settings: settings,
+            'display-name': display.name,
+            'current-value': display.current
+        });
+        displaySlider.connect('slider-change', onSliderChange);
+    }
+    
     display.slider = displaySlider;
     if (!(settings.get_boolean('show-all-slider') && settings.get_boolean('only-all-slider'))) {
         mainMenuButton.addMenuItem(displaySlider);
@@ -246,6 +268,33 @@ function _reloadMenuWidgets(settings) {
         
         if (settings.get_int('button-location') === 0) {
             addSettingsItem();
+        }else{
+            /* in case of quick settings we need to add items after all the sliders were created */
+
+            /*  easiest way to add sliders to panel area is :
+                QuickSettingsPanelMenuButton._addItems(mainMenuButton.quickSettingsItems, 2);
+                we need something more though.
+            */
+            const _grid = QuickSettingsPanelMenuButton.menu._grid;
+            /*
+                but we want custom positioning, this is bit of a hack to access 
+                _grid (St.Widget) directly and add items there, 
+            */
+            mainMenuButton.quickSettingsItems.forEach((item)=>{
+                /*
+                also for Label and Name we are accessing slider's parent's parent
+                Slider->Parent(St.Bin)->Parent(St.BoxLayout)
+                */
+                const _box = item.slider.get_parent().get_parent();
+                if(settings.get_boolean('show-display-name')){
+                    _box.insert_child_at_index(item.NameContainer, 1);
+                }
+                _grid.insert_child_at_index(item, settings.get_double('position-system-menu'));
+                _grid.layout_manager.child_set_property(_grid, item, 'column-span', 2)
+                if(settings.get_boolean('show-value-label')){
+                    _box.insert_child_at_index(item.ValueLabel, 3);
+                }
+            })
         }
     }
 }
@@ -279,7 +328,7 @@ function _reloadExtension() {
 function moveIndicator(settings){
     brightnessLog("System indicator moved");
     if (mainMenuButton === null) return;
-    QuickSettingsMenu._indicators.set_child_at_index(mainMenuButton, settings.get_double('position-system-indicator')); 
+    QuickSettingsPanelMenuButton._indicators.set_child_at_index(mainMenuButton, settings.get_double('position-system-indicator'));
 }
 
 
