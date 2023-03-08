@@ -13,6 +13,9 @@ A clear and concise description of what the bug is.
 **To Reproduce**
 Steps to reproduce the behavior:
 
+**Delete cache file if it exists and try again**
+Delete `$XDG_CACHE_HOME/ddcutil_detect` which generally is `~/.cache/ddcutil_detect` and try to run extension again.
+
 **Journal logs**
 ```
 journalctl --no-pager -b /usr/bin/gnome-shell

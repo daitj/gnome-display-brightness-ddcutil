@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-30 00:29+1000\n"
+"POT-Creation-Date: 2023-03-08 03:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -93,11 +93,15 @@ msgstr ""
 msgid "Disable Display State Check"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:231
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:228
+msgid "Verbose debugging"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:244
 msgid "Top Bar"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:232
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:245
 msgid "System Menu"
 msgstr ""
 
@@ -129,6 +133,8 @@ msgstr ""
 msgid "Reload"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:179
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:181
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:183
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:187
 msgid "All"
 msgstr ""
