@@ -173,21 +173,19 @@ function addSettingsItem() {
 }
 
 function addAllSlider(settings) {
-    let onAllSliderChange = function (newValue) {
+    let onAllSliderChange = function (quickSettingsSlider, newValue) {
         setAllBrightness(settings, newValue);
     }
     let allslider = null;
     if (settings.get_int('button-location') === 0) {
         allslider = new SingleMonitorSliderAndValueForStatusAreaMenu(settings, _("All"), displays[0].current, onAllSliderChange);
     }else{
-        allslider = new SingleMonitorSliderAndValueForQuickSettings(settings, _("All"), displays[0].current, onAllSliderChange);
-        brightnessLog(`Quick settings slider create all display slider with current value ${display.current}`)
-        displaySlider = new SingleMonitorSliderAndValueForQuickSettings({
+        allslider = new SingleMonitorSliderAndValueForQuickSettings({
             settings: settings,
             'display-name': _("All"),
             'current-value': displays[0].current
         });
-        displaySlider.connect('slider-change', onAllSliderChange);
+        allslider.connect('slider-change', onAllSliderChange);
     }
     mainMenuButton.addMenuItem(allslider)
 
