@@ -56,7 +56,10 @@ function sliderValueChangeCommon(item){
     sliderItem.ValueLabel.text = brightness.toString();
     item.timer = Convenience.setTimeout(() => {
         sliderItem.timer = null;
-        item.emit('slider-change', brightness);
+        sliderItem.emit('slider-change', brightness);
+        if(sliderItem._onSliderChange){
+            sliderItem._onSliderChange(sliderItem, brightness)
+        }
     }, 500)
     if (sliderItem._settings.get_boolean('show-osd') && !sliderItem._hideOSD) {
         let displayName = null;
