@@ -49,9 +49,11 @@ const {
 */
 const minBrightness = 1;
 
-let displays = [];
+let displays = null;
 
 let mainMenuButton = null;
+
+let writeCollection = null;
 
 /*
     instead of reading i2c bus everytime during startup,
@@ -84,6 +86,7 @@ function BrightnessControl(set) {
     let settings = ExtensionUtils.getSettings();
     if (set == "enable") {
         displays = [];
+        writeCollection = {};
         if (settings.get_int('button-location') === 0) {
             brightnessLog("Adding to panel");
             mainMenuButton = new StatusAreaBrightnessMenu(settings);
@@ -107,7 +110,6 @@ function BrightnessControl(set) {
 
             addAllDisplaysToPanel(settings);
         }
-
     } else if (set == "disable") {
         /* disconnect all signals */
         disconnectSettingsSignals(settings);
@@ -123,6 +125,12 @@ function BrightnessControl(set) {
         if (_reloadExtensionTimer) {
             Convenience.clearTimeout(_reloadExtensionTimer);
         }
+        Object.keys(writeCollection).forEach((bus)=>{
+            if(writeCollection[bus].interval !== null){
+                Convenience.clearInterval(writeCollection[bus].interval);
+            }
+        });
+
         displays.forEach(display => {
             if ('slider' in display) {
                 display.slider.destory();
@@ -134,9 +142,48 @@ function BrightnessControl(set) {
         mainMenuButton = null;
         displays = null;
         settings = null;
+        writeCollection = null;
+
     }
 }
 
+function ddcWriteInQueue(){
+    Object.keys(writeCollection).forEach((display_bus)=>{
+        if(writeCollection[display_bus].interval == null){
+            writeCollection[display_bus].interval = Convenience.setInterval(()=>{
+                if(writeCollection[display_bus].countdown == 0){
+                    brightnessLog(`Write in queue countdown over for ${display_bus}`);
+                    writeCollection[display_bus].writer();
+                    Convenience.clearInterval(writeCollection[display_bus].interval);
+                    writeCollection[display_bus].interval = null;
+                    writeCollection[display_bus].countdown = 125;
+                    /* 45 ms ddcutil delay,
+                       85 ms waiting after write to i2c controller, 
+                       check #74 for details*/
+                }else{
+                    writeCollection[display_bus].countdown = writeCollection[display_bus].countdown - 1;
+                }
+            }, 1);
+        }
+    })
+}
+function ddcWriteCollector(display_bus, writer){
+    if(display_bus in writeCollection){
+        /* by setting writer to latest one, 
+        when waiting is over latest writer will run */
+        writeCollection[display_bus].writer = writer;
+        brightnessLog(`Write collector update, current countdown is ${writeCollection[display_bus].countdown} for ${display_bus}`);
+    }else{
+        brightnessLog(`Write collector defining new display ${display_bus} and adding it to queue`);
+        /* display query is not defined yet */
+        writeCollection[display_bus] = {
+            countdown: 0,
+            interval: null,
+            writer: writer
+        }
+    }
+    ddcWriteInQueue();
+}
 function setBrightness(settings, display, newValue) {
     let newBrightness = parseInt((newValue / 100) * display.max);
     if (newBrightness == 0) {
@@ -146,8 +193,12 @@ function setBrightness(settings, display, newValue) {
     }
     const ddcutil_path = settings.get_string('ddcutil-binary-path')
     const sleepMultiplier = (settings.get_double('ddcutil-sleep-multiplier'))/40;
-    //brightnessLog(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus}`)
-    GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier}`)
+    const writer = ()=>{
+        brightnessLog(`async ${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier}`);
+        GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier}`)
+        display.current = newBrightness;
+    }
+    ddcWriteCollector(display.bus, writer);
 }
 
 function setAllBrightness(settings, newValue) {
@@ -240,7 +291,7 @@ function reloadMenuWidgets(settings) {
 function _reloadMenuWidgets(settings) {
     if (reloadingExtension) {
         /* do nothing if extension is being reloaded */
-        brightnessLog("Skipping reloadMenuWidgets because extensions is reloading");
+        brightnessLog("Skipping reloadMenuWidgets because extensions is reloading, timer ref: " + _reloadExtensionTimer);
         return;
     }
 

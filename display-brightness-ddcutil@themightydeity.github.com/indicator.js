@@ -50,27 +50,27 @@ function sliderScrollEvent(actor, event) {
     return Clutter.EVENT_STOP;
 }
 function sliderValueChangeCommon(item){
-    item.clearTimeout();
     let brightness = item._SliderValueToBrightness(item.ValueSlider.value);
-    let sliderItem = item
-    sliderItem.ValueLabel.text = brightness.toString();
-    item.timer = Convenience.setTimeout(() => {
-        sliderItem.timer = null;
-        sliderItem.emit('slider-change', brightness);
-        if(sliderItem._onSliderChange){
-            sliderItem._onSliderChange(sliderItem, brightness)
-        }
-    }, 500)
-    if (sliderItem._settings.get_boolean('show-osd') && !sliderItem._hideOSD) {
+    item.ValueLabel.text = brightness.toString();
+    item.emit('slider-change', brightness);
+    if(item._onSliderChange){
+        item._wroteBrightness = brightness;
+        item._onSliderChange(item, brightness);
+    }
+    if (item._settings.get_boolean('show-osd') && !item._hideOSD) {
         let displayName = null;
-        if(sliderItem._settings.get_boolean('show-display-name')){
-            displayName = sliderItem.displayName
+        if(item._settings.get_boolean('show-display-name')){
+            displayName = item.displayName
         }
         let osdLabel = displayName;
-        if(sliderItem._settings.get_boolean('show-value-label')){
-            osdLabel = `${displayName} ${brightness}`
+        if(item._settings.get_boolean('show-value-label')){
+            if(displayName !== null){
+                osdLabel = `${displayName} ${brightness}`
+            }else{
+                osdLabel = `${brightness}`
+            }
         }
-        Main.osdWindowManager.show(-1, new Gio.ThemedIcon({ name: 'display-brightness-symbolic' }), osdLabel, sliderItem.ValueSlider.value, 1);
+        Main.osdWindowManager.show(-1, new Gio.ThemedIcon({ name: 'display-brightness-symbolic' }), osdLabel, item.ValueSlider.value, 1);
     }
 }
 var StatusAreaBrightnessMenu = GObject.registerClass({
@@ -190,7 +190,8 @@ var SingleMonitorSliderAndValueForStatusAreaMenu = class SingleMonitorSliderAndV
     constructor(settings, displayName, currentValue, onSliderChange) {
         super();
         this._settings = settings;
-        this._timer = null
+        this._timer = null;
+        this._wroteBrightness = null;
         this._displayName = displayName
         this._currentValue = currentValue
         this._onSliderChange = onSliderChange
@@ -237,8 +238,8 @@ var SingleMonitorSliderAndValueForStatusAreaMenu = class SingleMonitorSliderAndV
         sliderValueChangeCommon(this);
     }
     clearTimeout() {
-        if (this.timer) {
-            Convenience.clearTimeout(this.timer);
+        if (this._timer) {
+            Convenience.clearTimeout(this._timer);
         }
     }
     destory() {
@@ -271,8 +272,8 @@ var SingleMonitorSliderAndValueForQuickSettings = GObject.registerClass({
             ...params,
             iconName: 'display-brightness-symbolic',
         });
-        this._timer = null
-
+        this._timer = null;
+        this._wroteBrightness = null;
         /* OSD is never shown by default */
         this._hideOSD = true
         this.__hideOSDBackup = true;
@@ -311,8 +312,8 @@ var SingleMonitorSliderAndValueForQuickSettings = GObject.registerClass({
         sliderValueChangeCommon(this);
     }
     clearTimeout() {
-        if (this.timer) {
-            Convenience.clearTimeout(this.timer);
+        if (this._timer) {
+            Convenience.clearTimeout(this._timer);
         }
     }
     destory() {

@@ -60,6 +60,29 @@ function clearTimeout(id) {
   GLib.source_remove(id);
 };
 
+
+function setInterval(func, millis /* , ... args */) {
+
+  let args = [];
+  if (arguments.length > 2) {
+      args = args.slice.call(arguments, 2);
+  }
+  brightnessLog(`setInterval called ${millis}`);
+
+  let id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, millis, () => {
+    func.apply(null, args);
+    return GLib.SOURCE_CONTINUE;; // Repeat
+  });
+
+  brightnessLog(`setInterval set ${millis}`);
+
+  return id;
+};
+
+function clearInterval(id) {
+  GLib.source_remove(id);
+};
+
 function spawnWithCallback(argv, callback) {
   let proc = Gio.Subprocess.new(argv, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
 
