@@ -506,8 +506,9 @@ function onSettingsChange(settings) {
     removeKeyboardShortcuts()
     addKeyboardShortcuts(settings)
     reloadMenuWidgets(settings)
+    const writeCollectorWaitMs = parseInt(settings.get_double('ddcutil-queue-ms'))
     Object.keys(writeCollection).forEach((display_bus)=>{
-        writeCollection[display_bus].countdown = 0
+        writeCollection[display_bus].countdown = writeCollectorWaitMs;
         if(writeCollection[display_bus].interval !== null){
             Convenience.clearInterval(writeCollection[display_bus].interval)
         }
