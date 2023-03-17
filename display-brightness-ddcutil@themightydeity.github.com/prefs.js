@@ -26,6 +26,7 @@ const PrefsWidget = GObject.registerClass({
         'step_keyboard_spin_button',
         'ddcutil_binary_path_entry',
         'sleep_multiplier_spin_button',
+        'queue_ms_spin_button',
         'allow_zero_brightness_switch',
         'disable_display_state_check_switch',
         'verbose_debugging_switch'
@@ -89,6 +90,7 @@ const PrefsWidget = GObject.registerClass({
         this._step_keyboard_spin_button.value = this.settings.get_double('step-change-keyboard');
         this._ddcutil_binary_path_entry.set_text(this.settings.get_string('ddcutil-binary-path'))
         this._sleep_multiplier_spin_button.value = this.settings.get_double('ddcutil-sleep-multiplier');
+        this._queue_ms_spin_button.value = this.settings.get_double('ddcutil-queue-ms');
         
         this.settings.bind(
             'allow-zero-brightness',
@@ -161,6 +163,9 @@ const PrefsWidget = GObject.registerClass({
     }
     onSleepMultiplierValueChanged() {
         this.settings.set_double('ddcutil-sleep-multiplier', this._sleep_multiplier_spin_button.value);
+    }
+    onQueueMsValueChanged() {
+        this.settings.set_double('ddcutil-queue-ms', this._queue_ms_spin_button.value);
     }
 }
 );

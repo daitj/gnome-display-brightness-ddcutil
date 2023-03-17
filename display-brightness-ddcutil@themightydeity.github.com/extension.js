@@ -44,7 +44,8 @@ const {
     brightnessLog
 } = Me.imports.convenience;
 
-/* lowest possible value for brightness
+/* 
+    lowest possible value for brightness
     this is skipped if allow-zero-brightness is set
 */
 const minBrightness = 1;
@@ -55,6 +56,8 @@ let mainMenuButton = null;
 
 let writeCollection = null;
 
+
+
 /*
     instead of reading i2c bus everytime during startup,
     as it is unlikely that bus number changes, we can read
@@ -64,6 +67,7 @@ let writeCollection = null;
 */
 const cache_dir = GLib.get_user_cache_dir()
 const ddcutil_detect_cache_file = `${cache_dir}/ddcutil_detect`;
+
 
 class DDCUtilBrightnessControlExtension {
     constructor() { }
@@ -147,32 +151,35 @@ function BrightnessControl(set) {
     }
 }
 
-function ddcWriteInQueue(){
-    Object.keys(writeCollection).forEach((display_bus)=>{
-        if(writeCollection[display_bus].interval == null){
-            writeCollection[display_bus].interval = Convenience.setInterval(()=>{
-                if(writeCollection[display_bus].countdown == 0){
-                    brightnessLog(`Write in queue countdown over for ${display_bus}`);
-                    writeCollection[display_bus].writer();
-                    Convenience.clearInterval(writeCollection[display_bus].interval);
-                    writeCollection[display_bus].interval = null;
-                    writeCollection[display_bus].countdown = 125;
-                    /* 45 ms ddcutil delay,
-                       85 ms waiting after write to i2c controller, 
-                       check #74 for details*/
-                }else{
-                    writeCollection[display_bus].countdown = writeCollection[display_bus].countdown - 1;
-                }
-            }, 1);
-        }
-    })
+function ddcWriteInQueue(settings, display_bus){
+    if(writeCollection[display_bus].interval == null){
+        writeCollection[display_bus].interval = Convenience.setInterval(()=>{
+            if(writeCollection[display_bus].countdown == 0){
+                brightnessLog(`Write in queue countdown over for ${display_bus}`);
+                writeCollection[display_bus].writer();
+                Convenience.clearInterval(writeCollection[display_bus].interval);
+                writeCollection[display_bus].interval = null;
+                const writeCollectorWaitMs = parseInt(settings.get_double('ddcutil-queue-ms'))
+                writeCollection[display_bus].countdown = writeCollectorWaitMs;
+
+            }else{
+                writeCollection[display_bus].countdown = writeCollection[display_bus].countdown - 1;
+            }
+        }, 1);
+    }
 }
-function ddcWriteCollector(display_bus, writer){
+function ddcWriteCollector(settings, display_bus, writer){
     if(display_bus in writeCollection){
         /* by setting writer to latest one, 
         when waiting is over latest writer will run */
         writeCollection[display_bus].writer = writer;
         brightnessLog(`Write collector update, current countdown is ${writeCollection[display_bus].countdown} for ${display_bus}`);
+        /* countdown is over, meaning update process for this display can be added to the queue */
+        const writeCollectorWaitMs = parseInt(settings.get_double('ddcutil-queue-ms'))
+        if(writeCollection[display_bus].countdown == writeCollectorWaitMs){
+            brightnessLog(`Write collector update, trigger queue again`);
+            ddcWriteInQueue(settings, display_bus);
+        }
     }else{
         brightnessLog(`Write collector defining new display ${display_bus} and adding it to queue`);
         /* display query is not defined yet */
@@ -181,8 +188,9 @@ function ddcWriteCollector(display_bus, writer){
             interval: null,
             writer: writer
         }
+        ddcWriteInQueue(settings, display_bus);
     }
-    ddcWriteInQueue();
+    
 }
 function setBrightness(settings, display, newValue) {
     let newBrightness = parseInt((newValue / 100) * display.max);
@@ -196,9 +204,17 @@ function setBrightness(settings, display, newValue) {
     const writer = ()=>{
         brightnessLog(`async ${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier}`);
         GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier}`)
-        display.current = newBrightness;
     }
-    ddcWriteCollector(display.bus, writer);
+    display.current = newBrightness;
+
+/* 
+    Lowest value for writeCollectorWaitMs is 130ms
+    45 ms ddcutil delay,
+    85 ms waiting after write to i2c controller, 
+    check #74 for details
+*/
+
+    ddcWriteCollector(settings, display.bus, writer);
 }
 
 function setAllBrightness(settings, newValue) {
@@ -489,6 +505,13 @@ function onSettingsChange(settings) {
     removeKeyboardShortcuts()
     addKeyboardShortcuts(settings)
     reloadMenuWidgets(settings)
+    Object.keys(writeCollection).forEach((display_bus)=>{
+        writeCollection[display_bus].countdown = 0
+        if(writeCollection[display_bus].interval !== null){
+            Convenience.clearInterval(writeCollection[display_bus].interval)
+        }
+        writeCollection[display_bus].interval = null
+    })
 }
 
 let monitorChangeTimeout = null;

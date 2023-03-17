@@ -198,6 +198,21 @@
           </object>
         </child>
         <child>
+          <object class="AdwActionRow" id="queue_ms_row">
+            <property name="title" translatable="yes">`ddcutil` Queue ms</property>
+            <property name="selectable">False</property>
+            <property name="focusable">False</property>
+            <child>
+              <object class="GtkSpinButton" id="queue_ms_spin_button">
+                <property name="valign">center</property>
+                <property name="numeric">True</property>
+                <property name="adjustment">queue_ms_adjustment</property>
+                <signal name="value-changed" handler="onQueueMsValueChanged" swapped="no" />
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
           <object class="AdwActionRow">
             <property name="title" translatable="yes">Allow Zero Brightness</property>
             <property name="selectable">False</property>
@@ -249,6 +264,11 @@
     <property name="lower">4</property>
     <property name="upper">200</property>
     <property name="step-increment">4</property>
+  </object>
+  <object class="GtkAdjustment" id="queue_ms_adjustment">
+    <property name="lower">130</property>
+    <property name="upper">1000</property>
+    <property name="step-increment">10</property>
   </object>
   <object class="GtkAdjustment" id="position_system_indicator_adjustment">
     <property name="lower">0</property>
