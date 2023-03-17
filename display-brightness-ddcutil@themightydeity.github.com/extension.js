@@ -205,7 +205,8 @@ function setBrightness(settings, display, newValue) {
         brightnessLog(`async ${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier}`);
         GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier}`)
     }
-    display.current = newBrightness;
+    brightnessLog(`display ${display.name}, current: ${display.current} => ${newValue/100}, new brightness: ${newBrightness}, new value: ${newValue}`);
+    display.current = newValue/100
 
 /* 
     Lowest value for writeCollectorWaitMs is 130ms

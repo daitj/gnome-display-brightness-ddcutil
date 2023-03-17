@@ -257,7 +257,7 @@ var SingleMonitorSliderAndValueForQuickSettings = GObject.registerClass({
             ''),
         'current-value': GObject.ParamSpec.double('current-value', 'current-value', 'current-value',
             GObject.ParamFlags.READWRITE,
-            0, 1, 0)
+            0, 1, 1)
     },
     Signals: {
         'slider-change': {
