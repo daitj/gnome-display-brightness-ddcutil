@@ -54,7 +54,6 @@ function sliderValueChangeCommon(item){
     item.ValueLabel.text = brightness.toString();
     item.emit('slider-change', brightness);
     if(item._onSliderChange){
-        item._wroteBrightness = brightness;
         item._onSliderChange(item, brightness);
     }
     if (item._settings.get_boolean('show-osd') && !item._hideOSD) {
@@ -191,7 +190,6 @@ var SingleMonitorSliderAndValueForStatusAreaMenu = class SingleMonitorSliderAndV
         super();
         this._settings = settings;
         this._timer = null;
-        this._wroteBrightness = null;
         this._displayName = displayName
         this._currentValue = currentValue
         this._onSliderChange = onSliderChange
@@ -273,7 +271,6 @@ var SingleMonitorSliderAndValueForQuickSettings = GObject.registerClass({
             iconName: 'display-brightness-symbolic',
         });
         this._timer = null;
-        this._wroteBrightness = null;
         /* OSD is never shown by default */
         this._hideOSD = true
         this.__hideOSDBackup = true;
