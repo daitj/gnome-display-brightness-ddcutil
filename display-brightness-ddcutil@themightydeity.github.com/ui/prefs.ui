@@ -183,6 +183,19 @@
           </object>
         </child>
         <child>
+          <object class="AdwActionRow" id="ddcutil_addional_args_row">
+            <property name="title" translatable="yes">`ddcutil` Additional Arguments</property>
+            <property name="selectable">False</property>
+            <property name="focusable">False</property>
+            <child>
+              <object class="GtkEntry" id="ddcutil_additional_args_entry">
+                <property name="valign">center</property>
+                <signal name="changed" handler="onDdcutilAdditionalArgsChanged" swapped="no" />
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
           <object class="AdwActionRow" id="sleep_multiplier_row">
             <property name="title" translatable="yes">`ddcutil` Sleep Multiplier ms</property>
             <property name="selectable">False</property>
