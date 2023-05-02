@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-display-brightness-ddcutil\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-03-17 04:49+0200\n"
+"POT-Creation-Date: 2023-05-03 01:06+0300\n"
 "PO-Revision-Date: 2022-08-24 12:05+0200\n"
 "Last-Translator: Óscar Fernández Díaz <oscfdezdz@tuta.io>\n"
 "Language-Team: \n"
@@ -84,30 +84,34 @@ msgid "`ddcutil` Binary Path"
 msgstr ""
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:187
+msgid "`ddcutil` Additional Arguments"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:200
 msgid "`ddcutil` Sleep Multiplier ms"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:202
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:215
 msgid "`ddcutil` Queue ms"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:217
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:230
 msgid "Allow Zero Brightness"
 msgstr "Permitir brillo cero"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:230
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:243
 msgid "Disable Display State Check"
 msgstr "Desactivar la comprobación del estado de la pantalla"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:243
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:256
 msgid "Verbose debugging"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:259
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:272
 msgid "Top Bar"
 msgstr "Barra superior"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:260
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:273
 msgid "System Menu"
 msgstr "Menú del sistema"
 
@@ -131,15 +135,15 @@ msgstr "Pulse Esc para cancelar el atajo del teclado."
 msgid "Initializing"
 msgstr "Inicializando"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:230
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:231
 msgid "Settings"
 msgstr "Configuración"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:236
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:237
 msgid "Reload"
 msgstr "Recargar"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:249
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:253
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:250
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:254
 msgid "All"
 msgstr "Todos"
