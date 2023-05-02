@@ -199,11 +199,12 @@ function setBrightness(settings, display, newValue) {
             newBrightness = minBrightness;
         }
     }
-    const ddcutil_path = settings.get_string('ddcutil-binary-path')
+    const ddcutilPath = settings.get_string('ddcutil-binary-path');
+    const ddcutilAdditionalArgs = settings.get_string('ddcutil-additional-args');
     const sleepMultiplier = (settings.get_double('ddcutil-sleep-multiplier'))/40;
     const writer = ()=>{
-        brightnessLog(`async ${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier}`);
-        GLib.spawn_command_line_async(`${ddcutil_path} setvcp 10 ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier}`)
+        brightnessLog(`async ${ddcutilPath} setvcp 10 ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`);
+        GLib.spawn_command_line_async(`${ddcutilPath} setvcp 10 ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`)
     }
     brightnessLog(`display ${display.name}, current: ${display.current} => ${newValue/100}, new brightness: ${newBrightness}, new value: ${newValue}`);
     display.current = newValue/100
