@@ -410,72 +410,93 @@ function addTextItemToPanel(text) {
 function parseDisplaysInfoAndAddToPanel(settings, ddcutil_brief_info) {
     try {
         const ddcutil_path = settings.get_string('ddcutil-binary-path')
-        let display_names = [];
-        /*
-        due to spawnWithCallback fetching faster information for second display in list before first one
-        there is a situation where name is displayed for first device but controls second device.
-
-        To fix that, we define our own id inside the loop, which is used to detect right device.
-        */
-        let diplay_loop_id = 0;
         brightnessLog("ddcutil brief info:\n" + ddcutil_brief_info);
         const sleepMultiplier = (settings.get_double('ddcutil-sleep-multiplier'))/40;
+        let potential_monitors = [];
+        let potential_display = null;
         ddcutil_brief_info.split('\n').map(ddc_line => {
             if (ddc_line.indexOf("/dev/i2c-") !== -1) {
                 brightnessLog("ddcutil brief info found bus line:\n" + " " + ddc_line)
                 /* I2C bus comes first, so when that is detect start a new display object */
                 let display_bus = ddc_line.split("/dev/i2c-")[1].trim();
                 /* save diplay_loop_id as a const for rest of the async calls below here*/
-                const display_id = diplay_loop_id;
-                /* check if display is on or not */
-                brightnessLog("ddcutil reading display state for bus: " + display_bus)
-                Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "D6", "--bus", display_bus, "--sleep-multiplier", sleepMultiplier.toString()], function (vcpPowerInfos) {
-                    brightnessLog("ddcutil reading display status for bus: " + display_bus + " is: " + vcpPowerInfos)
-                    /* only add display to list if ddc communication is supported with the bus*/
-                    if (vcpPowerInfos.indexOf("DDC communication failed") === -1 && vcpPowerInfos.indexOf("No monitor detected") === -1) {
-                        let vcpPowerInfosArray = vcpPowerInfos.trim().split(" ");
-
-                        let displayInGoodState = true;
-                        if (!settings.get_boolean('disable-display-state-check')) {
-                            /*
-                             D6 = Power mode
-                             x01 = DPM: On,  DPMS: Off
-                            */
-                             displayInGoodState = (vcpPowerInfosArray.length >= 4 && vcpPowerInfosArray[3] == "x01")
-                        }
-                        if (displayInGoodState) {
-                            /* read the current and max brightness using getvcp 10 */
-                            Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "10", "--bus", display_bus, "--sleep-multiplier", sleepMultiplier.toString()], function (vcpInfos) {
-                                if (vcpInfos.indexOf("DDC communication failed") === -1 && vcpInfos.indexOf("No monitor detected") === -1) {
-                                    let vcpInfosArray = vcpInfos.trim().split(" ");
-                                    if (vcpInfosArray[2] != "ERR" && vcpInfosArray.length >= 5) {
-                                        let display = {};
-
-                                        let maxBrightness = vcpInfosArray[4];
-                                        /* we need current brightness in the scale of 0 to 1 for slider*/
-                                        let currentBrightness = vcpInfosArray[3] / vcpInfosArray[4];
-
-                                        /* make display object */
-                                        display = { "bus": display_bus, "max": maxBrightness, "current": currentBrightness, "name": display_names[display_id] };
-                                        displays.push(display);
-
-                                        /* cheap way of making reloading all display slider in the panel */
-                                        reloadMenuWidgets(settings);
-                                    }
-                                }
-                            });
-                        }
-                    }
-                });
-
+                potential_display = { "bus": display_bus }
             }
             if (ddc_line.indexOf("Monitor:") !== -1) {
                 /* Monitor name comes second in the output,
-                 so when that is detected fill the object and push it to list */
-                display_names[diplay_loop_id] = ddc_line.split("Monitor:")[1].trim().split(":")[1].trim()
-                diplay_loop_id++;
+                   so when that is detected fill the object and push it to list */
+                if (potential_display !== null) {
+                    potential_display["name"] = ddc_line.split("Monitor:")[1].trim().split(":")[1].trim()
+                    potential_monitors.push(potential_display)
+                    potential_display = null
+                }
             }
         });
+        const RELOAD_SETTINGS = {}
+        let loop = function(check_list) {
+            if (!check_list)
+                return      /* Finished checking */
+
+            let current_display = check_list.shift()
+            if (current_display === RELOAD_SETTINGS) {
+                /* cheap way of making reloading all display slider in the panel */
+                reloadMenuWidgets(settings)
+                loop(check_list)
+                return
+            }
+            let display_bus = current_display["bus"]
+
+            /* check if display is on or not */
+            brightnessLog("ddcutil reading display state for bus: " + display_bus)
+            Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "D6", "--bus", display_bus, "--sleep-multiplier", sleepMultiplier.toString()], function (vcpPowerInfos) {
+                brightnessLog("ddcutil reading display status for bus: " + display_bus + " is: " + vcpPowerInfos)
+                /* only add display to list if ddc communication is supported with the bus*/
+                let error = false
+                if (vcpPowerInfos.indexOf("DDC communication failed") === -1 && vcpPowerInfos.indexOf("No monitor detected") === -1) {
+                    let vcpPowerInfosArray = vcpPowerInfos.trim().split(" ");
+
+                    let displayInGoodState = true;
+                    if (!settings.get_boolean('disable-display-state-check')) {
+                        /*
+                          D6 = Power mode
+                          x01 = DPM: On,  DPMS: Off
+                        */
+                        displayInGoodState = (vcpPowerInfosArray.length >= 4 && vcpPowerInfosArray[3] == "x01")
+                    }
+                    if (displayInGoodState) {
+                        /* read the current and max brightness using getvcp 10 */
+                        Convenience.spawnWithCallback([ddcutil_path, "getvcp", "--brief", "10", "--bus", display_bus, "--sleep-multiplier", sleepMultiplier.toString()], function (vcpInfos) {
+                            if (vcpInfos.indexOf("DDC communication failed") === -1 && vcpInfos.indexOf("No monitor detected") === -1) {
+                                let vcpInfosArray = vcpInfos.trim().split(" ");
+                                if (vcpInfosArray[2] != "ERR" && vcpInfosArray.length >= 5) {
+                                    let maxBrightness = vcpInfosArray[4];
+                                    /* we need current brightness in the scale of 0 to 1 for slider*/
+                                    let currentBrightness = vcpInfosArray[3] / vcpInfosArray[4];
+
+                                    /* complete display object */
+                                    current_display["current"] = currentBrightness
+                                    current_display["max"] = maxBrightness
+                                    displays.push(current_display)
+                                }
+                            }
+
+                            /* Process next monitor */
+                            loop(check_list)
+                        });
+                    } else {
+                        error = true
+                    }
+                } else {
+                    error = true
+                }
+
+                if (error) { /* Process next monitor, otherwise the next monitor was processed in the good case */
+                    loop(check_list)
+                }
+            });
+        }
+        potential_monitors.push(RELOAD_SETTINGS)
+        loop(potential_monitors)
     } catch (err) {
         brightnessLog(err);
     }
