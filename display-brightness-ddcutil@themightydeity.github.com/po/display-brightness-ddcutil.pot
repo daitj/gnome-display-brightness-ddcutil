@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-03 01:06+0300\n"
+"POT-Creation-Date: 2023-08-18 10:27+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -122,6 +122,7 @@ msgid "Add Custom Shortcut"
 msgstr ""
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/shortcut.ui:87
+#: display-brightness-ddcutil@themightydeity.github.com/shortcut.js:36
 msgid "Enter the new shortcut"
 msgstr ""
 
@@ -144,4 +145,8 @@ msgstr ""
 #: display-brightness-ddcutil@themightydeity.github.com/extension.js:250
 #: display-brightness-ddcutil@themightydeity.github.com/extension.js:254
 msgid "All"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/shortcut.js:77
+msgid "Reserved or invalid binding"
 msgstr ""

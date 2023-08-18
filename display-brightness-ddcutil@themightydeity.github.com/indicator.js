@@ -141,7 +141,11 @@ var SystemMenuBrightnessMenu = GObject.registerClass({
         this._settings=settings;
     }
     indicatorVisibility(visible){
-        this._indicator.visible = visible;
+        if(!this._settings.get_boolean('hide-system-indicator')){
+            this._indicator.visible = visible;
+        }else{
+            this._indicator.visible = false;
+        }
     }
     removeAllMenu() {
         /* Remove all quick settings items by destroying */

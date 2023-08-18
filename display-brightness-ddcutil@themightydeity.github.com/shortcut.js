@@ -3,6 +3,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const Convenience = Me.imports.convenience;
+const _ = ExtensionUtils.gettext;
 
 const ShortcutWidget = GObject.registerClass({
     GTypeName: 'ShortcutWidget',
@@ -13,7 +14,8 @@ const ShortcutWidget = GObject.registerClass({
         'shortcut_entry',
         'clear_button',
         'edit_button',
-        'dialog'
+        'dialog',
+        "shortcut_info_label"
     ],
     Properties: {
         keybinding: GObject.ParamSpec.string(
@@ -31,6 +33,7 @@ const ShortcutWidget = GObject.registerClass({
     }
 
     onSetButtonClicked(_button) {
+        this._shortcut_info_label.set_text(_("Enter the new shortcut"))
         this._dialog.transient_for = this.get_root();
         this._dialog.present();
     }
@@ -62,7 +65,7 @@ const ShortcutWidget = GObject.registerClass({
         let mask = state & Gtk.accelerator_get_default_mod_mask();
         mask &= ~Gdk.ModifierType.LOCK_MASK;
 
-        if (mask === 0 && keyval === Gdk.KEY_Escape) {
+        if (keyval === Gdk.KEY_Escape) {
             this._dialog.close();
             return Gdk.EVENT_STOP;
         }
@@ -70,8 +73,10 @@ const ShortcutWidget = GObject.registerClass({
         if (
             !Convenience.isBindingValid({ mask, keycode, keyval }) ||
             !Convenience.isAccelValid({ mask, keyval })
-        )
+        ){
+            this._shortcut_info_label.set_text(_("Reserved or invalid binding"))
             return Gdk.EVENT_STOP;
+        }
 
         this.keybinding = Gtk.accelerator_name_with_keycode(
             null,

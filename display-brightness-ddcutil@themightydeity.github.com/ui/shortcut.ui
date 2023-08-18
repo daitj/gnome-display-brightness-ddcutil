@@ -83,7 +83,7 @@
             <property name="margin-bottom">12</property>
             <property name="spacing">12</property>
             <child>
-              <object class="GtkLabel">
+              <object class="GtkLabel" id="shortcut_info_label">
                 <property name="label" translatable="yes">Enter the new shortcut</property>
               </object>
             </child>

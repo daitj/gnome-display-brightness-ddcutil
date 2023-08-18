@@ -501,12 +501,37 @@ function getCachedDisplayInfoAsync(settings) {
     });
     Convenience.spawnWithCallback(["cat", ddcutil_detect_cache_file], function (stdout) { });
 }
-
+function settingsToJSObject(settings){
+    const out = {
+        "allow-zero-brightness":settings.get_boolean('allow-zero-brightness'),
+        "disable-display-state-check":settings.get_boolean('disable-display-state-check'),
+        "hide-system-indicator":settings.get_boolean('hide-system-indicator'),
+        "only-all-slider":settings.get_boolean('only-all-slider'),
+        "show-all-slider":settings.get_boolean('show-all-slider'),
+        "show-display-name":settings.get_boolean('show-display-name'),
+        "show-value-label":settings.get_boolean('show-value-label'),
+        "verbose-debugging":settings.get_boolean('verbose-debugging'),
+        "ddcutil-queue-ms":settings.get_double('ddcutil-queue-ms'),
+        "ddcutil-sleep-multiplier":settings.get_double('ddcutil-sleep-multiplier'),
+        "position-system-indicator":settings.get_double('position-system-indicator'),
+        "position-system-menu":settings.get_double('position-system-menu'),
+        "step-change-keyboard":settings.get_double('step-change-keyboard'),
+        "button-location":settings.get_int('button-location'),
+        "ddcutil-additional-args":settings.get_string('ddcutil-additional-args'),
+        "ddcutil-binary-path":settings.get_string('ddcutil-binary-path'),
+        "decrease-brightness-shortcut":settings.get_strv('decrease-brightness-shortcut'),
+        "increase-brightness-shortcut":settings.get_strv('increase-brightness-shortcut')
+    }
+    return out
+}
 function onSettingsChange(settings) {
     brightnessLog("Settings change detected, reloading widgets")
     removeKeyboardShortcuts()
     addKeyboardShortcuts(settings)
     reloadMenuWidgets(settings)
+    if(settings.get_boolean('verbose-debugging')){
+        brightnessLog(JSON.stringify(settingsToJSObject(settings)))
+    }
     const writeCollectorWaitMs = parseInt(settings.get_double('ddcutil-queue-ms'))
     Object.keys(writeCollection).forEach((display_bus)=>{
         writeCollection[display_bus].countdown = writeCollectorWaitMs;

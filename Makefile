@@ -21,7 +21,9 @@ pot:
 	xgettext \
 		--from-code=UTF-8 \
 		--output="./display-brightness-ddcutil@themightydeity.github.com/po/display-brightness-ddcutil.pot" \
-		"./display-brightness-ddcutil@themightydeity.github.com/ui/"* "./display-brightness-ddcutil@themightydeity.github.com/extension.js"
+		"./display-brightness-ddcutil@themightydeity.github.com/ui/"* \
+		"./display-brightness-ddcutil@themightydeity.github.com/extension.js" \
+		"./display-brightness-ddcutil@themightydeity.github.com/shortcut.js"
 
 update-po:
 	for po_file in "./display-brightness-ddcutil@themightydeity.github.com/po/"*.po; do \

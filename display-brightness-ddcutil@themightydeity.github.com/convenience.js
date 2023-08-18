@@ -127,6 +127,7 @@ function spawnWithCallback(argv, callback) {
       Gdk.KEY_Tab,
       Gdk.KEY_KP_Enter,
       Gdk.KEY_Return,
+      Gdk.KEY_BackSpace,
       Gdk.KEY_Mode_switch,
   ];
   return forbiddenKeyvals.includes(keyval);
