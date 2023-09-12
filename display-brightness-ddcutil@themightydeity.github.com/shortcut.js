@@ -1,13 +1,14 @@
-const { Gdk, GLib, GObject, Gtk } = imports.gi;
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
+import Gdk from 'gi://Gdk';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Gtk from 'gi://Gtk';
+import {gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-const Convenience = Me.imports.convenience;
-const _ = ExtensionUtils.gettext;
+import * as Convenience from './convenience.js';
 
 const ShortcutWidget = GObject.registerClass({
     GTypeName: 'ShortcutWidget',
-    Template: Me.dir.get_child('./ui/shortcut.ui').get_uri(),
+    Template: GLib.Uri.resolve_relative(import.meta.url, './ui/shortcut.ui', GLib.UriFlags.NONE),
     InternalChildren: [
         'set_button',
         'shortcut_label',

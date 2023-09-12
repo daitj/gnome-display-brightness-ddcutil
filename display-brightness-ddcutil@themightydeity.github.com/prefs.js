@@ -1,13 +1,14 @@
-const { Adw, Gio, GObject } = imports.gi;
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
+import Adw from 'gi://Adw';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-const Convenience = Me.imports.convenience;
-const ShortcutWidget = Me.imports.shortcut;
+import * as ShortcutWidget from './shortcut.js';
 
 const PrefsWidget = GObject.registerClass({
     GTypeName: 'PrefsWidget',
-    Template: Me.dir.get_child('./ui/prefs.ui').get_uri(),
+    Template: GLib.Uri.resolve_relative(import.meta.url, './ui/prefs.ui', GLib.UriFlags.NONE),
     InternalChildren: [
         'show_all_slider_switch',
         'only_all_slider_switch',
@@ -33,10 +34,9 @@ const PrefsWidget = GObject.registerClass({
         'verbose_debugging_switch'
     ],
 }, class PrefsWidget extends Adw.PreferencesPage {
-
-    _init(params = {}) {
+    _init(settings, params = {}) {
         super._init(params);
-        this.settings = ExtensionUtils.getSettings();
+        this.settings = settings;
         this.settings.bind(
             'show-all-slider',
             this._show_all_slider_switch,
@@ -175,13 +175,12 @@ const PrefsWidget = GObject.registerClass({
 }
 );
 
-function init() {
-    ExtensionUtils.initTranslations();
-}
+export default class DDCUtilBrightnessControlExtensionPrefs extends ExtensionPreferences {
+    fillPreferencesWindow(window) {
+        const settings = this.getSettings();
+        window.set_size_request(500, 700);
+        window.search_enabled = true;
 
-function fillPreferencesWindow(window) {
-    window.set_size_request(500, 700);
-    window.search_enabled = true;
-
-    window.add(new PrefsWidget());
+        window.add(new PrefsWidget(settings));
+    }
 }

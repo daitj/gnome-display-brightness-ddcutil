@@ -1,21 +1,21 @@
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-
-const { GLib, Gio, GObject, St, Clutter } = imports.gi;
+import Gio from 'gi://Gio';
+import GObject from 'gi://GObject';
+import St from 'gi://St';
+import Clutter from 'gi://Clutter';
 
 // menu items
-const Main = imports.ui.main;
-const Panel = imports.ui.panel;
-const PanelMenu = imports.ui.panelMenu
-const PopupMenu = imports.ui.popupMenu;
-const { Slider } = imports.ui.slider;
-const QuickSettings = imports.ui.quickSettings;
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
+import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
+import * as QuickSettings from 'resource:///org/gnome/shell/ui/quickSettings.js';
+import {Slider} from 'resource:///org/gnome/shell/ui/slider.js';
+
+import * as Convenience from './convenience.js';
 
 const {
-    brightnessLog
-} = Me.imports.convenience;
-
-const Convenience = Me.imports.convenience;
+    brightnessLog,
+    clearTimeout,
+} = Convenience;
 
 function decycle(obj, stack = []) {
     if (!obj || typeof obj !== 'object')
@@ -72,7 +72,7 @@ function sliderValueChangeCommon(item){
         Main.osdWindowManager.show(-1, new Gio.ThemedIcon({ name: 'display-brightness-symbolic' }), osdLabel, item.ValueSlider.value, 1);
     }
 }
-var StatusAreaBrightnessMenu = GObject.registerClass({
+export const StatusAreaBrightnessMenu = GObject.registerClass({
     GType: 'StatusAreaBrightnessMenu',
     Signals: { 'value-up': {}, 'value-down': {}},
 }, class StatusAreaBrightnessMenu extends PanelMenu.Button {
@@ -118,7 +118,7 @@ var StatusAreaBrightnessMenu = GObject.registerClass({
     }
 });
 
-var SystemMenuBrightnessMenu = GObject.registerClass({
+export const SystemMenuBrightnessMenu = GObject.registerClass({
     GType: 'SystemMenuBrightnessMenu',
     Signals: { 'value-up': {}, 'value-down': {} },
 }, class SystemMenuBrightnessMenu extends QuickSettings.SystemIndicator {
@@ -165,12 +165,12 @@ var SystemMenuBrightnessMenu = GObject.registerClass({
         return this._sliders;
     }
     _onDestroy() {
-        brightnessLog("Destroy all quick settings items");
+        brightnessLog(this._settings, "Destroy all quick settings items");
         this.quickSettingsItems.forEach(item => item.destroy());
     }
 });
 
-var SingleMonitorMenuItem = GObject.registerClass({
+export const SingleMonitorMenuItem = GObject.registerClass({
     GType: 'SingleMonitorMenuItem'
 }, class SingleMonitorMenuItem extends PopupMenu.PopupBaseMenuItem {
     _init(settings, icon, name, slider, label) {
@@ -189,7 +189,7 @@ var SingleMonitorMenuItem = GObject.registerClass({
     }
 });
 
-var SingleMonitorSliderAndValueForStatusAreaMenu = class SingleMonitorSliderAndValue extends PopupMenu.PopupMenuSection {
+export const SingleMonitorSliderAndValueForStatusAreaMenu = class SingleMonitorSliderAndValue extends PopupMenu.PopupMenuSection {
     constructor(settings, displayName, currentValue, onSliderChange) {
         super();
         this._settings = settings;
@@ -241,7 +241,7 @@ var SingleMonitorSliderAndValueForStatusAreaMenu = class SingleMonitorSliderAndV
     }
     clearTimeout() {
         if (this._timer) {
-            Convenience.clearTimeout(this._timer);
+            clearTimeout(this._timer);
         }
     }
     destory() {
@@ -250,7 +250,7 @@ var SingleMonitorSliderAndValueForStatusAreaMenu = class SingleMonitorSliderAndV
 }
 
 
-var SingleMonitorSliderAndValueForQuickSettings = GObject.registerClass({
+export const SingleMonitorSliderAndValueForQuickSettings = GObject.registerClass({
     GType: 'SingleMonitorSliderAndValueForQuickSettings',
     Properties: {
         'settings': GObject.ParamSpec.object('settings', 'settings', 'settings',
@@ -314,11 +314,11 @@ var SingleMonitorSliderAndValueForQuickSettings = GObject.registerClass({
     }
     clearTimeout() {
         if (this._timer) {
-            Convenience.clearTimeout(this._timer);
+            clearTimeout(this._timer);
         }
     }
     destory() {
-        brightnessLog("Destory quick settings single slider item");
+        brightnessLog(this.settings, "Destory quick settings single slider item");
         this.clearTimeout();
     }
 });

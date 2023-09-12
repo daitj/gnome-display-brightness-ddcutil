@@ -25,13 +25,13 @@
   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-const Gettext = imports.gettext;
-const { Gdk, Gio, GLib, Gtk } = imports.gi;
+import Gdk from 'gi://Gdk';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import Gtk from 'gi://Gtk';
 
-const ExtensionUtils = imports.misc.extensionUtils;
 
-function brightnessLog(str) {
-  let settings = ExtensionUtils.getSettings();
+export function brightnessLog(settings, str) {
   if (settings.get_boolean('verbose-debugging')) {
     log("display-brightness-ddcutil extension:\n" + str);
   }
@@ -41,7 +41,7 @@ function brightnessLog(str) {
 /**
  * Taken from: https://github.com/optimisme/gjs-examples/blob/master/assets/timers.js
  */
-function setTimeout(func, millis /* , ... args */) {
+export function setTimeout(func, millis /* , ... args */) {
 
   let args = [];
   if (arguments.length > 2) {
@@ -56,34 +56,34 @@ function setTimeout(func, millis /* , ... args */) {
   return id;
 };
 
-function clearTimeout(id) {
+export function clearTimeout(id) {
   GLib.source_remove(id);
 };
 
 
-function setInterval(func, millis /* , ... args */) {
+export function setInterval(settings, func, millis /* , ... args */) {
 
   let args = [];
   if (arguments.length > 2) {
       args = args.slice.call(arguments, 2);
   }
-  brightnessLog(`setInterval called ${millis}`);
+  brightnessLog(settings, `setInterval called ${millis}`);
 
   let id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, millis, () => {
     func.apply(null, args);
     return GLib.SOURCE_CONTINUE;; // Repeat
   });
 
-  brightnessLog(`setInterval set ${millis}`);
+  brightnessLog(settings, `setInterval set ${millis}`);
 
   return id;
 };
 
-function clearInterval(id) {
+export function clearInterval(id) {
   GLib.source_remove(id);
 };
 
-function spawnWithCallback(argv, callback) {
+export function spawnWithCallback(settings, argv, callback) {
   let proc = Gio.Subprocess.new(argv, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
 
   proc.communicate_utf8_async(null, null, (proc, res) => {
@@ -103,7 +103,7 @@ function spawnWithCallback(argv, callback) {
         }
       }
     }catch(e){
-      brightnessLog(e.message);
+      brightnessLog(settings, e.message);
     }
   });
 }
@@ -114,7 +114,7 @@ function spawnWithCallback(argv, callback) {
  * @param {number} keyval The keyval number.
  * @returns {boolean} `true` if the keyval is forbidden.
  */
- function isKeyvalForbidden(keyval) {
+ export function isKeyvalForbidden(keyval) {
   const forbiddenKeyvals = [
       Gdk.KEY_Home,
       Gdk.KEY_Left,
@@ -140,7 +140,7 @@ function spawnWithCallback(argv, callback) {
  * representing the key combo.
  * @returns {boolean} `true` if the key combo is a valid binding.
  */
- function isBindingValid({ mask, keycode, keyval }) {
+ export function isBindingValid({ mask, keycode, keyval }) {
   if ((mask === 0 || mask === Gdk.SHIFT_MASK) && keycode !== 0) {
       if (
           (keyval >= Gdk.KEY_a && keyval <= Gdk.KEY_z) ||
@@ -168,6 +168,6 @@ function spawnWithCallback(argv, callback) {
 * combo.
 * @returns {boolean} `true` if the key combo is a valid accelerator.
 */
-function isAccelValid({ mask, keyval }) {
+export function isAccelValid({ mask, keyval }) {
   return Gtk.accelerator_valid(keyval, mask) || (keyval === Gdk.KEY_Tab && mask !== 0);
 }
