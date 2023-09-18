@@ -310,10 +310,12 @@ export const SingleMonitorSliderAndValueForQuickSettings = GObject.registerClass
         this.NameContainer = new St.Label({
             y_align: Clutter.ActorAlign.CENTER,
             text: this.display_name,
+            style: 'font-size: 12px; font-weight: normal;',
             style_class: 'display-brightness-ddcutil-monitor-name-system-menu',
         });
         this.ValueLabel = new St.Label({
             y_align: Clutter.ActorAlign.CENTER,
+            style: 'font-size: 12px; font-weight: normal;',
             text: this._SliderValueToBrightness(this.current_value).toString(),
         });
         /* for compatibility in other places */
