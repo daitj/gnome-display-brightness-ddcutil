@@ -25,7 +25,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import {Extension,  gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
-import * as Convenience from './convenience.js';
+import * as Convenience from './convenienceExt.js';
 import * as Indicator from './indicator.js';
 
 // for ui stuff of this extension

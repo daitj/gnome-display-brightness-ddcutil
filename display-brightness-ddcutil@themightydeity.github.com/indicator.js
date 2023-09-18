@@ -10,7 +10,7 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import * as QuickSettings from 'resource:///org/gnome/shell/ui/quickSettings.js';
 import {Slider} from 'resource:///org/gnome/shell/ui/slider.js';
 
-import * as Convenience from './convenience.js';
+import * as Convenience from './convenienceExt.js';
 
 const {
     brightnessLog,

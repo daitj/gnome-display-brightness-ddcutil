@@ -5,7 +5,8 @@ build: schemas
 	gnome-extensions pack \
 		--force \
 		--extra-source=ui \
-		--extra-source=convenience.js \
+		--extra-source=convenienceExt.js \
+		--extra-source=conveniencePref.js \
 		--extra-source=indicator.js \
 		--extra-source=shortcut.js \
 		./display-brightness-ddcutil@themightydeity.github.com/ \

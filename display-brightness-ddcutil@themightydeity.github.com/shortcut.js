@@ -4,7 +4,7 @@ import GObject from 'gi://GObject';
 import Gtk from 'gi://Gtk';
 import {gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-import * as Convenience from './convenience.js';
+import * as Convenience from './conveniencePref.js';
 
 const ShortcutWidget = GObject.registerClass({
     GTypeName: 'ShortcutWidget',
