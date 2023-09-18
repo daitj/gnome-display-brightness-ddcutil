@@ -210,9 +210,16 @@ export const SingleMonitorSliderAndValueForStatusAreaMenu = class SingleMonitorS
         });
         this.ValueSlider = new Slider(this._currentValue);
         this.ValueSlider.connect('notify::value', this._SliderChange.bind(this));
-
         this.ValueLabel = new St.Label({ text: this._SliderValueToBrightness(this._currentValue).toString() });
-        this.SliderContainer = new SingleMonitorMenuItem(this._settings, null, null, this.ValueSlider, this.ValueLabel);
+        const valueSliderBin = new St.Bin({
+            style_class: 'display-brightness-ddcutil-monitor-slider-bin-system-menu',
+            child: this.ValueSlider,
+            reactive: true,
+            can_focus: true,
+            x_expand: true,
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+        this.SliderContainer = new SingleMonitorMenuItem(this._settings, null, null, valueSliderBin, this.ValueLabel);
         if (this._settings.get_boolean('show-display-name')) {
             this.addMenuItem(this.NameContainer);
         }
