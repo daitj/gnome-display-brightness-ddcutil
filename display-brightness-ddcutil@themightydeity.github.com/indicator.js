@@ -308,10 +308,14 @@ export const SingleMonitorSliderAndValueForQuickSettings = GObject.registerClass
         this.slider.connect('notify::value', this._SliderChange.bind(this));
         this.slider.accessible_name = this.display_name;
         this.NameContainer = new St.Label({
+            y_align: Clutter.ActorAlign.CENTER,
             text: this.display_name,
             style_class: 'display-brightness-ddcutil-monitor-name-system-menu',
         });
-        this.ValueLabel = new St.Label({text: this._SliderValueToBrightness(this.current_value).toString()});
+        this.ValueLabel = new St.Label({
+            y_align: Clutter.ActorAlign.CENTER,
+            text: this._SliderValueToBrightness(this.current_value).toString(),
+        });
         /* for compatibility in other places */
         this.ValueSlider = this.slider;
         this._settings = this.settings;
