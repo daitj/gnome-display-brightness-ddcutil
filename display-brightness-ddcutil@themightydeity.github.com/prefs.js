@@ -1,13 +1,14 @@
-const { Adw, Gio, GObject } = imports.gi;
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
+import Adw from 'gi://Adw';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-const Convenience = Me.imports.convenience;
-const ShortcutWidget = Me.imports.shortcut;
+import * as ShortcutWidget from './shortcut.js';
 
 const PrefsWidget = GObject.registerClass({
     GTypeName: 'PrefsWidget',
-    Template: Me.dir.get_child('./ui/prefs.ui').get_uri(),
+    Template: GLib.Uri.resolve_relative(import.meta.url, './ui/prefs.ui', GLib.UriFlags.NONE),
     InternalChildren: [
         'show_all_slider_switch',
         'only_all_slider_switch',
@@ -30,13 +31,12 @@ const PrefsWidget = GObject.registerClass({
         'ddcutil_additional_args_entry',
         'allow_zero_brightness_switch',
         'disable_display_state_check_switch',
-        'verbose_debugging_switch'
+        'verbose_debugging_switch',
     ],
 }, class PrefsWidget extends Adw.PreferencesPage {
-
-    _init(params = {}) {
+    _init(settings, params = {}) {
         super._init(params);
-        this.settings = ExtensionUtils.getSettings();
+        this.settings = settings;
         this.settings.bind(
             'show-all-slider',
             this._show_all_slider_switch,
@@ -89,11 +89,11 @@ const PrefsWidget = GObject.registerClass({
         this._position_system_indicator_spin_button.value = this.settings.get_double('position-system-indicator');
         this._position_system_menu_spin_button.value = this.settings.get_double('position-system-menu');
         this._step_keyboard_spin_button.value = this.settings.get_double('step-change-keyboard');
-        this._ddcutil_binary_path_entry.set_text(this.settings.get_string('ddcutil-binary-path'))
+        this._ddcutil_binary_path_entry.set_text(this.settings.get_string('ddcutil-binary-path'));
         this._ddcutil_additional_args_entry.set_text(this.settings.get_string('ddcutil-additional-args'));
         this._sleep_multiplier_spin_button.value = this.settings.get_double('ddcutil-sleep-multiplier');
         this._queue_ms_spin_button.value = this.settings.get_double('ddcutil-queue-ms');
-        
+
         this.settings.bind(
             'allow-zero-brightness',
             this._allow_zero_brightness_switch,
@@ -114,7 +114,7 @@ const PrefsWidget = GObject.registerClass({
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
-        
+
 
         this.settings.connect('changed::increase-brightness-shortcut', () => {
             this._increase_shortcut_button.keybinding = this.settings.get_strv('increase-brightness-shortcut')[0];
@@ -150,6 +150,7 @@ const PrefsWidget = GObject.registerClass({
             this._position_system_indicator_row.sensitive = !this.settings.get_boolean('hide-system-indicator');
         }
     }
+
     onMenuPositionValueChanged() {
         this.settings.set_double('position-system-menu', this._position_system_menu_spin_button.value);
     }
@@ -157,31 +158,35 @@ const PrefsWidget = GObject.registerClass({
     onIndicatorPositionValueChanged() {
         this.settings.set_double('position-system-indicator', this._position_system_indicator_spin_button.value);
     }
+
     onStepKeyboardValueChanged() {
         this.settings.set_double('step-change-keyboard', this._step_keyboard_spin_button.value);
     }
+
     onDdcutilBinaryPathChanged() {
         this.settings.set_string('ddcutil-binary-path', this._ddcutil_binary_path_entry.get_text());
     }
+
     onDdcutilAdditionalArgsChanged() {
         this.settings.set_string('ddcutil-additional-args', this._ddcutil_additional_args_entry.get_text());
     }
+
     onSleepMultiplierValueChanged() {
         this.settings.set_double('ddcutil-sleep-multiplier', this._sleep_multiplier_spin_button.value);
     }
+
     onQueueMsValueChanged() {
         this.settings.set_double('ddcutil-queue-ms', this._queue_ms_spin_button.value);
     }
 }
 );
 
-function init() {
-    ExtensionUtils.initTranslations();
-}
+export default class DDCUtilBrightnessControlExtensionPrefs extends ExtensionPreferences {
+    fillPreferencesWindow(window) {
+        const settings = this.getSettings();
+        window.set_size_request(500, 700);
+        window.search_enabled = true;
 
-function fillPreferencesWindow(window) {
-    window.set_size_request(500, 700);
-    window.search_enabled = true;
-
-    window.add(new PrefsWidget());
+        window.add(new PrefsWidget(settings));
+    }
 }

@@ -1,13 +1,14 @@
-const { Gdk, GLib, GObject, Gtk } = imports.gi;
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
+import Gdk from 'gi://Gdk';
+import GLib from 'gi://GLib';
+import GObject from 'gi://GObject';
+import Gtk from 'gi://Gtk';
+import {gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-const Convenience = Me.imports.convenience;
-const _ = ExtensionUtils.gettext;
+import * as Convenience from './conveniencePref.js';
 
 const ShortcutWidget = GObject.registerClass({
     GTypeName: 'ShortcutWidget',
-    Template: Me.dir.get_child('./ui/shortcut.ui').get_uri(),
+    Template: GLib.Uri.resolve_relative(import.meta.url, './ui/shortcut.ui', GLib.UriFlags.NONE),
     InternalChildren: [
         'set_button',
         'shortcut_label',
@@ -15,7 +16,7 @@ const ShortcutWidget = GObject.registerClass({
         'clear_button',
         'edit_button',
         'dialog',
-        "shortcut_info_label"
+        'shortcut_info_label',
     ],
     Properties: {
         keybinding: GObject.ParamSpec.string(
@@ -27,13 +28,12 @@ const ShortcutWidget = GObject.registerClass({
         ),
     },
 }, class ShortcutWidget extends Gtk.Stack {
-
     onKeybindingChanged(button) {
         button.visible_child_name = button.keybinding ? 'edit' : 'set';
     }
 
     onSetButtonClicked(_button) {
-        this._shortcut_info_label.set_text(_("Enter the new shortcut"))
+        this._shortcut_info_label.set_text(_('Enter the new shortcut'));
         this._dialog.transient_for = this.get_root();
         this._dialog.present();
     }
@@ -54,11 +54,10 @@ const ShortcutWidget = GObject.registerClass({
         this._shortcut_label.visible = !this._shortcut_label.visible;
         this._shortcut_entry.visible = !this._shortcut_entry.visible;
         this._clear_button.visible = !this._clear_button.visible;
-        if(this._edit_button.iconName == "document-edit-symbolic"){
-            this._edit_button.iconName = "document-save-symbolic";
-        }else{
-            this._edit_button.iconName = "document-edit-symbolic";
-        }
+        if (this._edit_button.iconName === 'document-edit-symbolic')
+            this._edit_button.iconName = 'document-save-symbolic';
+        else
+            this._edit_button.iconName = 'document-edit-symbolic';
     }
 
     onKeyPressed(_widget, keyval, keycode, state) {
@@ -71,10 +70,10 @@ const ShortcutWidget = GObject.registerClass({
         }
 
         if (
-            !Convenience.isBindingValid({ mask, keycode, keyval }) ||
-            !Convenience.isAccelValid({ mask, keyval })
-        ){
-            this._shortcut_info_label.set_text(_("Reserved or invalid binding"))
+            !Convenience.isBindingValid({mask, keycode, keyval}) ||
+            !Convenience.isAccelValid({mask, keyval})
+        ) {
+            this._shortcut_info_label.set_text(_('Reserved or invalid binding'));
             return Gdk.EVENT_STOP;
         }
 
@@ -89,5 +88,4 @@ const ShortcutWidget = GObject.registerClass({
 
         return Gdk.EVENT_STOP;
     }
-
 });
