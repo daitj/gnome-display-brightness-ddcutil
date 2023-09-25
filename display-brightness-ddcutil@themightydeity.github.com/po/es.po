@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-display-brightness-ddcutil\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-08-18 09:57+0300\n"
+"POT-Creation-Date: 2023-09-25 11:19+0300\n"
 "PO-Revision-Date: 2022-08-24 12:05+0200\n"
 "Last-Translator: Óscar Fernández Díaz <oscfdezdz@tuta.io>\n"
 "Language-Team: \n"
@@ -132,23 +132,23 @@ msgstr "Introduzca el atajo nuevo"
 msgid "Press Esc to cancel the keyboard shortcut."
 msgstr "Pulse Esc para cancelar el atajo del teclado."
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:111
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:107
 msgid "Initializing"
 msgstr "Inicializando"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:231
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:222
 msgid "Settings"
 msgstr "Configuración"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:237
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:228
 msgid "Reload"
 msgstr "Recargar"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:250
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:254
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:241
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:245
 msgid "All"
 msgstr "Todos"
 
-#: display-brightness-ddcutil@themightydeity.github.com/shortcut.js:77
+#: display-brightness-ddcutil@themightydeity.github.com/shortcut.js:76
 msgid "Reserved or invalid binding"
 msgstr ""
