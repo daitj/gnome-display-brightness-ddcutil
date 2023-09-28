@@ -40,10 +40,6 @@ const {
 
 const {
     brightnessLog,
-    clearInterval,
-    clearTimeout,
-    setInterval,
-    setTimeout,
     spawnWithCallback,
 } = Convenience;
 
@@ -81,6 +77,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
 
     disable() {
         this.brightnessControl('disable', this.settings);
+        this.settings = null;
     }
 
     brightnessControl(set) {
@@ -126,13 +123,17 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 clearTimeout(_reloadExtensionTimer);
 
             Object.keys(writeCollection).forEach(bus => {
-                if (writeCollection[bus].interval !== null)
+                if (writeCollection[bus].interval !== null){
                     clearInterval(writeCollection[bus].interval);
+                }
             });
-
+            if(monitorChangeTimeout !== null){
+                clearTimeout(monitorChangeTimeout)
+                monitorChangeTimeout = null;
+            }
             displays.forEach(display => {
                 if ('slider' in display)
-                    display.slider.destory();
+                    display.slider.destroy();
             });
 
             /* clear variables */

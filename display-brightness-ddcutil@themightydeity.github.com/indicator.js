@@ -269,7 +269,7 @@ export const SingleMonitorSliderAndValueForStatusAreaMenu = class SingleMonitorS
             clearTimeout(this._timer);
     }
 
-    destory() {
+    destroy() {
         this.clearTimeout();
     }
 };
@@ -355,8 +355,8 @@ export const SingleMonitorSliderAndValueForQuickSettings = GObject.registerClass
             clearTimeout(this._timer);
     }
 
-    destory() {
-        brightnessLog(this.settings, 'Destory quick settings single slider item');
+    destroy() {
+        brightnessLog(this.settings, 'Destroy quick settings single slider item');
         this.clearTimeout();
     }
 });
