@@ -10,28 +10,25 @@ const PrefsWidget = GObject.registerClass({
     GTypeName: 'PrefsWidget',
     Template: GLib.Uri.resolve_relative(import.meta.url, './ui/prefs.ui', GLib.UriFlags.NONE),
     InternalChildren: [
-        'show_all_slider_switch',
-        'only_all_slider_switch',
-        'show_value_label_switch',
-        'show_display_name_switch',
-        'show_osd_switch',
+        'show_all_slider_row',
+        'only_all_slider_row',
+        'show_value_label_row',
+        'show_display_name_row',
+        'show_osd_row',
         'button_location_combo_row',
         'hide_system_indicator_row',
-        'hide_system_indicator_switch',
         'position_system_indicator_row',
-        'position_system_indicator_spin_button',
         'position_system_menu_row',
-        'position_system_menu_spin_button',
         'increase_shortcut_button',
         'decrease_shortcut_button',
-        'step_keyboard_spin_button',
-        'ddcutil_binary_path_entry',
-        'sleep_multiplier_spin_button',
-        'queue_ms_spin_button',
-        'ddcutil_additional_args_entry',
-        'allow_zero_brightness_switch',
-        'disable_display_state_check_switch',
-        'verbose_debugging_switch',
+        'step_keyboard_row',
+        'ddcutil_binary_path_row',
+        'sleep_multiplier_row',
+        'queue_ms_row',
+        'ddcutil_additional_args_row',
+        'allow_zero_brightness_row',
+        'disable_display_state_check_row',
+        'verbose_debugging_row',
     ],
 }, class PrefsWidget extends Adw.PreferencesPage {
     _init(settings, params = {}) {
@@ -39,35 +36,35 @@ const PrefsWidget = GObject.registerClass({
         this.settings = settings;
         this.settings.bind(
             'show-all-slider',
-            this._show_all_slider_switch,
+            this._show_all_slider_row,
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
 
         this.settings.bind(
             'only-all-slider',
-            this._only_all_slider_switch,
+            this._only_all_slider_row,
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
 
         this.settings.bind(
             'show-value-label',
-            this._show_value_label_switch,
+            this._show_value_label_row,
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
 
         this.settings.bind(
             'show-display-name',
-            this._show_display_name_switch,
+            this._show_display_name_row,
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
 
         this.settings.bind(
             'show-osd',
-            this._show_osd_switch,
+            this._show_osd_row,
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
@@ -81,36 +78,36 @@ const PrefsWidget = GObject.registerClass({
 
         this.settings.bind(
             'hide-system-indicator',
-            this._hide_system_indicator_switch,
+            this._hide_system_indicator_row,
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
 
-        this._position_system_indicator_spin_button.value = this.settings.get_double('position-system-indicator');
-        this._position_system_menu_spin_button.value = this.settings.get_double('position-system-menu');
-        this._step_keyboard_spin_button.value = this.settings.get_double('step-change-keyboard');
-        this._ddcutil_binary_path_entry.set_text(this.settings.get_string('ddcutil-binary-path'));
-        this._ddcutil_additional_args_entry.set_text(this.settings.get_string('ddcutil-additional-args'));
-        this._sleep_multiplier_spin_button.value = this.settings.get_double('ddcutil-sleep-multiplier');
-        this._queue_ms_spin_button.value = this.settings.get_double('ddcutil-queue-ms');
+        this._position_system_indicator_row.value = this.settings.get_double('position-system-indicator');
+        this._position_system_menu_row.value = this.settings.get_double('position-system-menu');
+        this._step_keyboard_row.value = this.settings.get_double('step-change-keyboard');
+        this._ddcutil_binary_path_row.set_text(this.settings.get_string('ddcutil-binary-path'));
+        this._ddcutil_additional_args_row.set_text(this.settings.get_string('ddcutil-additional-args'));
+        this._sleep_multiplier_row.value = this.settings.get_double('ddcutil-sleep-multiplier');
+        this._queue_ms_row.value = this.settings.get_double('ddcutil-queue-ms');
 
         this.settings.bind(
             'allow-zero-brightness',
-            this._allow_zero_brightness_switch,
+            this._allow_zero_brightness_row,
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
 
         this.settings.bind(
             'disable-display-state-check',
-            this._disable_display_state_check_switch,
+            this._disable_display_state_check_row,
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
 
         this.settings.bind(
             'verbose-debugging',
-            this._verbose_debugging_switch,
+            this._verbose_debugging_row,
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
@@ -152,31 +149,31 @@ const PrefsWidget = GObject.registerClass({
     }
 
     onMenuPositionValueChanged() {
-        this.settings.set_double('position-system-menu', this._position_system_menu_spin_button.value);
+        this.settings.set_double('position-system-menu', this._position_system_menu_row.value);
     }
 
     onIndicatorPositionValueChanged() {
-        this.settings.set_double('position-system-indicator', this._position_system_indicator_spin_button.value);
+        this.settings.set_double('position-system-indicator', this._position_system_indicator_row.value);
     }
 
     onStepKeyboardValueChanged() {
-        this.settings.set_double('step-change-keyboard', this._step_keyboard_spin_button.value);
+        this.settings.set_double('step-change-keyboard', this._step_keyboard_row.value);
     }
 
     onDdcutilBinaryPathChanged() {
-        this.settings.set_string('ddcutil-binary-path', this._ddcutil_binary_path_entry.get_text());
+        this.settings.set_string('ddcutil-binary-path', this._ddcutil_binary_path_row.get_text());
     }
 
     onDdcutilAdditionalArgsChanged() {
-        this.settings.set_string('ddcutil-additional-args', this._ddcutil_additional_args_entry.get_text());
+        this.settings.set_string('ddcutil-additional-args', this._ddcutil_additional_args_row.get_text());
     }
 
     onSleepMultiplierValueChanged() {
-        this.settings.set_double('ddcutil-sleep-multiplier', this._sleep_multiplier_spin_button.value);
+        this.settings.set_double('ddcutil-sleep-multiplier', this._sleep_multiplier_row.value);
     }
 
     onQueueMsValueChanged() {
-        this.settings.set_double('ddcutil-queue-ms', this._queue_ms_spin_button.value);
+        this.settings.set_double('ddcutil-queue-ms', this._queue_ms_row.value);
     }
 }
 );
