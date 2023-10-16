@@ -131,10 +131,6 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 clearTimeout(monitorChangeTimeout)
                 monitorChangeTimeout = null;
             }
-            displays.forEach(display => {
-                if ('slider' in display)
-                    display.slider.destroy();
-            });
 
             /* clear variables */
             mainMenuButton.destroy();
@@ -146,7 +142,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
 
     ddcWriteInQueue(displayBus) {
         if (writeCollection[displayBus].interval == null) {
-            writeCollection[displayBus].interval = setInterval(this.settings, () => {
+            writeCollection[displayBus].interval = setInterval(() => {
                 if (writeCollection[displayBus].countdown === 0) {
                     brightnessLog(this.settings, `Write in queue countdown over for ${displayBus}`);
                     writeCollection[displayBus].writer();

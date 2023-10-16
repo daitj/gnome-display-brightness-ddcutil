@@ -14,7 +14,6 @@ import * as Convenience from './convenienceExt.js';
 
 const {
     brightnessLog,
-    clearTimeout,
 } = Convenience;
 
 function decycle(obj, stack = []) {
@@ -203,7 +202,6 @@ export const SingleMonitorSliderAndValueForStatusAreaMenu = class SingleMonitorS
     constructor(settings, displayName, currentValue, onSliderChange) {
         super();
         this._settings = settings;
-        this._timer = null;
         this._displayName = displayName;
         this._currentValue = currentValue;
         this._onSliderChange = onSliderChange;
@@ -263,15 +261,6 @@ export const SingleMonitorSliderAndValueForStatusAreaMenu = class SingleMonitorS
     _SliderChange() {
         sliderValueChangeCommon(this);
     }
-
-    clearTimeout() {
-        if (this._timer)
-            clearTimeout(this._timer);
-    }
-
-    destroy() {
-        this.clearTimeout();
-    }
 };
 
 
@@ -299,7 +288,6 @@ export const SingleMonitorSliderAndValueForQuickSettings = GObject.registerClass
             ...params,
             iconName: 'display-brightness-symbolic',
         });
-        this._timer = null;
         /* OSD is never shown by default */
         this._hideOSD = true;
         this.__hideOSDBackup = true;
@@ -348,15 +336,5 @@ export const SingleMonitorSliderAndValueForQuickSettings = GObject.registerClass
 
     _SliderChange() {
         sliderValueChangeCommon(this);
-    }
-
-    clearTimeout() {
-        if (this._timer)
-            clearTimeout(this._timer);
-    }
-
-    destroy() {
-        brightnessLog(this.settings, 'Destroy quick settings single slider item');
-        this.clearTimeout();
     }
 });
