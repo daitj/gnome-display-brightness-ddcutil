@@ -5,69 +5,29 @@
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="yes">General</property>
         <child>
-          <object class="AdwActionRow">
+          <object class="AdwSwitchRow" id="show_all_slider_row">
             <property name="title" translatable="yes">Enable "All" Slider</property>
-            <property name="selectable">False</property>
-            <property name="focusable">False</property>
-            <property name="activatable-widget">show_all_slider_switch</property>
-            <child>
-              <object class="GtkSwitch" id="show_all_slider_switch">
-                <property name="valign">center</property>
-              </object>
-            </child>
           </object>
         </child>
         <child>
-          <object class="AdwActionRow">
+          <object class="AdwSwitchRow" id="only_all_slider_row">
             <property name="title" translatable="yes">Use Only "All" Slider</property>
-            <property name="selectable">False</property>
-            <property name="focusable">False</property>
-            <property name="activatable-widget">only_all_slider_switch</property>
-            <property name="sensitive" bind-source="show_all_slider_switch" bind-property="active" bind-flags="sync-create"/>
-            <child>
-              <object class="GtkSwitch" id="only_all_slider_switch">
-                <property name="valign">center</property>
-              </object>
-            </child>
+            <property name="sensitive" bind-source="show_all_slider_row" bind-property="active" bind-flags="sync-create"/>
           </object>
         </child>
         <child>
-          <object class="AdwActionRow">
+          <object class="AdwSwitchRow" id="show_value_label_row">
             <property name="title" translatable="yes">Show Value Label</property>
-            <property name="selectable">False</property>
-            <property name="focusable">False</property>
-            <property name="activatable-widget">show_value_label_switch</property>
-            <child>
-              <object class="GtkSwitch" id="show_value_label_switch">
-                <property name="valign">center</property>
-              </object>
-            </child>
           </object>
         </child>
         <child>
-          <object class="AdwActionRow">
+          <object class="AdwSwitchRow" id="show_display_name_row">
             <property name="title" translatable="yes">Show Display Name</property>
-            <property name="selectable">False</property>
-            <property name="focusable">False</property>
-            <property name="activatable-widget">show_display_name_switch</property>
-            <child>
-              <object class="GtkSwitch" id="show_display_name_switch">
-                <property name="valign">center</property>
-              </object>
-            </child>
           </object>
         </child>
         <child>
-          <object class="AdwActionRow">
+          <object class="AdwSwitchRow" id="show_osd_row">
             <property name="title" translatable="yes">Show OSD</property>
-            <property name="selectable">False</property>
-            <property name="focusable">False</property>
-            <property name="activatable-widget">show_osd_switch</property>
-            <child>
-              <object class="GtkSwitch" id="show_osd_switch">
-                <property name="valign">center</property>
-              </object>
-            </child>
           </object>
         </child>
         <child>
@@ -78,46 +38,24 @@
           </object>
         </child>
         <child>
-          <object class="AdwActionRow" id="hide_system_indicator_row">
+          <object class="AdwSwitchRow" id="hide_system_indicator_row">
             <property name="title" translatable="yes">Hide System Indicator</property>
-            <property name="selectable">False</property>
-            <property name="focusable">False</property>
-            <property name="activatable-widget">hide_system_indicator_switch</property>
-            <child>
-              <object class="GtkSwitch" id="hide_system_indicator_switch">
-                <property name="valign">center</property>
-              </object>
-            </child>
           </object>
         </child>
         <child>
-          <object class="AdwActionRow" id="position_system_indicator_row">
+          <object class="AdwSpinRow" id="position_system_indicator_row">
             <property name="title" translatable="yes">Position in System Indicator</property>
-            <property name="selectable">False</property>
-            <property name="focusable">False</property>
-            <child>
-              <object class="GtkSpinButton" id="position_system_indicator_spin_button">
-                <property name="valign">center</property>
-                <property name="numeric">True</property>
-                <property name="adjustment">position_system_indicator_adjustment</property>
-                <signal name="value-changed" handler="onIndicatorPositionValueChanged" swapped="no" />
-              </object>
-            </child>
+            <property name="numeric">True</property>
+            <property name="adjustment">position_system_indicator_adjustment</property>
+            <signal name="changed" handler="onIndicatorPositionValueChanged" swapped="no" />
           </object>
         </child>
         <child>
-          <object class="AdwActionRow" id="position_system_menu_row">
+          <object class="AdwSpinRow" id="position_system_menu_row">
             <property name="title" translatable="yes">Position in System Menu</property>
-            <property name="selectable">False</property>
-            <property name="focusable">False</property>
-            <child>
-              <object class="GtkSpinButton" id="position_system_menu_spin_button">
-                <property name="valign">center</property>
-                <property name="numeric">True</property>
-                <property name="adjustment">position_system_menu_adjustment</property>
-                <signal name="value-changed" handler="onMenuPositionValueChanged" swapped="no" />
-              </object>
-            </child>
+            <property name="numeric">True</property>
+            <property name="adjustment">position_system_menu_adjustment</property>
+            <signal name="changed" handler="onMenuPositionValueChanged" swapped="no" />
           </object>
         </child>
       </object>
@@ -128,8 +66,6 @@
         <child>
           <object class="AdwActionRow">
             <property name="title" translatable="yes">Increase Brightness</property>
-            <property name="selectable">False</property>
-            <property name="focusable">False</property>
             <child>
               <object class="ShortcutWidget" id="increase_shortcut_button">
                 <property name="valign">center</property>
@@ -140,8 +76,6 @@
         <child>
           <object class="AdwActionRow">
             <property name="title" translatable="yes">Decrease Brightness</property>
-            <property name="selectable">False</property>
-            <property name="focusable">False</property>
             <child>
               <object class="ShortcutWidget" id="decrease_shortcut_button">
                 <property name="valign">center</property>
@@ -150,18 +84,11 @@
           </object>
         </child>
         <child>
-          <object class="AdwActionRow" id="step_keyboard_row">
+          <object class="AdwSpinRow" id="step_keyboard_row">
             <property name="title" translatable="yes">Step Change %</property>
-            <property name="selectable">False</property>
-            <property name="focusable">False</property>
-            <child>
-              <object class="GtkSpinButton" id="step_keyboard_spin_button">
-                <property name="valign">center</property>
-                <property name="numeric">True</property>
-                <property name="adjustment">step_keyboard_adjustment</property>
-                <signal name="value-changed" handler="onStepKeyboardValueChanged" swapped="no" />
-              </object>
-            </child>
+            <property name="numeric">True</property>
+            <property name="adjustment">step_keyboard_adjustment</property>
+            <signal name="changed" handler="onStepKeyboardValueChanged" swapped="no" />
           </object>
         </child>
       </object>
@@ -170,98 +97,46 @@
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="yes">Advanced Settings</property>
         <child>
-          <object class="AdwActionRow" id="ddcutil_binary_path_row">
+          <object class="AdwEntryRow" id="ddcutil_binary_path_row">
             <property name="title" translatable="yes">`ddcutil` Binary Path</property>
-            <property name="selectable">False</property>
-            <property name="focusable">False</property>
-            <child>
-              <object class="GtkEntry" id="ddcutil_binary_path_entry">
-                <property name="valign">center</property>
-                <signal name="changed" handler="onDdcutilBinaryPathChanged" swapped="no" />
-              </object>
-            </child>
+            <signal name="changed" handler="onDdcutilBinaryPathChanged" swapped="no" />
           </object>
         </child>
         <child>
-          <object class="AdwActionRow" id="ddcutil_addional_args_row">
+          <object class="AdwEntryRow" id="ddcutil_additional_args_row">
             <property name="title" translatable="yes">`ddcutil` Additional Arguments</property>
-            <property name="selectable">False</property>
-            <property name="focusable">False</property>
-            <child>
-              <object class="GtkEntry" id="ddcutil_additional_args_entry">
-                <property name="valign">center</property>
-                <signal name="changed" handler="onDdcutilAdditionalArgsChanged" swapped="no" />
-              </object>
-            </child>
+            <signal name="changed" handler="onDdcutilAdditionalArgsChanged" swapped="no" />
           </object>
         </child>
         <child>
-          <object class="AdwActionRow" id="sleep_multiplier_row">
+          <object class="AdwSpinRow" id="sleep_multiplier_row">
             <property name="title" translatable="yes">`ddcutil` Sleep Multiplier ms</property>
-            <property name="selectable">False</property>
-            <property name="focusable">False</property>
-            <child>
-              <object class="GtkSpinButton" id="sleep_multiplier_spin_button">
-                <property name="valign">center</property>
-                <property name="numeric">True</property>
-                <property name="adjustment">sleep_multiplier_adjustment</property>
-                <signal name="value-changed" handler="onSleepMultiplierValueChanged" swapped="no" />
-              </object>
-            </child>
+            <property name="numeric">True</property>
+            <property name="adjustment">sleep_multiplier_adjustment</property>
+            <signal name="changed" handler="onSleepMultiplierValueChanged" swapped="no" />
           </object>
         </child>
         <child>
-          <object class="AdwActionRow" id="queue_ms_row">
+          <object class="AdwSpinRow" id="queue_ms_row">
             <property name="title" translatable="yes">`ddcutil` Queue ms</property>
-            <property name="selectable">False</property>
-            <property name="focusable">False</property>
-            <child>
-              <object class="GtkSpinButton" id="queue_ms_spin_button">
-                <property name="valign">center</property>
-                <property name="numeric">True</property>
-                <property name="adjustment">queue_ms_adjustment</property>
-                <signal name="value-changed" handler="onQueueMsValueChanged" swapped="no" />
-              </object>
-            </child>
+            <property name="numeric">True</property>
+            <property name="adjustment">queue_ms_adjustment</property>
+            <signal name="changed" handler="onQueueMsValueChanged" swapped="no" />
           </object>
         </child>
         <child>
-          <object class="AdwActionRow">
+          <object class="AdwSwitchRow" id="allow_zero_brightness_row">
             <property name="title" translatable="yes">Allow Zero Brightness</property>
-            <property name="selectable">False</property>
-            <property name="focusable">False</property>
-            <property name="activatable-widget">allow_zero_brightness_switch</property>
-            <child>
-              <object class="GtkSwitch" id="allow_zero_brightness_switch">
-                <property name="valign">center</property>
-              </object>
-            </child>
           </object>
         </child>
         <child>
-          <object class="AdwActionRow">
+          <object class="AdwSwitchRow" id="disable_display_state_check_row">
             <property name="title" translatable="yes">Disable Display State Check</property>
-            <property name="selectable">False</property>
-            <property name="focusable">False</property>
-            <property name="activatable-widget">disable_display_state_check_switch</property>
-            <child>
-              <object class="GtkSwitch" id="disable_display_state_check_switch">
-                <property name="valign">center</property>
-              </object>
-            </child>
           </object>
         </child>
         <child>
-          <object class="AdwActionRow">
+          <object class="AdwSwitchRow" id="verbose_debugging_row">
             <property name="title" translatable="yes">Verbose debugging</property>
-            <property name="selectable">False</property>
-            <property name="focusable">False</property>
-            <property name="activatable-widget">verbose_debugging_switch</property>
-            <child>
-              <object class="GtkSwitch" id="verbose_debugging_switch">
-                <property name="valign">center</property>
-              </object>
-            </child>
           </object>
         </child>
       </object>
