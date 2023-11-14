@@ -34,3 +34,13 @@ export function spawnWithCallback(settings, argv, callback) {
     });
 }
 
+
+/**
+ * Filters a VCP Feature Codes output to make sure only valid lines are returned.
+ *
+ * @param {string} val The `getvcp` feature code output
+ * @returns {string} An array containing valid VPC lines, e.g. 'VPC D6 SNC 0x1'
+ */
+export function filterVCPInfoSpecification(val) {
+    return val.trim().match(/^VCP.*$/gm).join('\n')
+}

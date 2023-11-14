@@ -41,6 +41,7 @@ const {
 const {
     brightnessLog,
     spawnWithCallback,
+    filterVCPInfoSpecification
 } = Convenience;
 
 /*
@@ -416,7 +417,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                         brightnessLog(this.settings, `ddcutil reading display status for bus: ${displayBus} is: ${vcpPowerInfos}`);
                         /* only add display to list if ddc communication is supported with the bus*/
                         if (vcpPowerInfos.indexOf('DDC communication failed') === -1 && vcpPowerInfos.indexOf('No monitor detected') === -1) {
-                            const vcpPowerInfosArray = vcpPowerInfos.trim().split(' ');
+                            const vcpPowerInfosArray = filterVCPInfoSpecification(vcpPowerInfos).split(' ')
 
                             let displayInGoodState = true;
                             if (!this.settings.get_boolean('disable-display-state-check')) {
@@ -430,7 +431,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                                 /* read the current and max brightness using getvcp 10 */
                                 spawnWithCallback(this.settings, [ddcutilPath, 'getvcp', '--brief', '10', '--bus', displayBus, '--sleep-multiplier', sleepMultiplier.toString()], vcpInfos  => {
                                     if (vcpInfos.indexOf('DDC communication failed') === -1 && vcpInfos.indexOf('No monitor detected') === -1) {
-                                        const vcpInfosArray = vcpInfos.trim().split(' ');
+                                        const vcpInfosArray = filterVCPInfoSpecification(vcpInfos).split(' ');
                                         if (vcpInfosArray[2] !== 'ERR' && vcpInfosArray.length >= 5) {
                                             let display = {};
 
