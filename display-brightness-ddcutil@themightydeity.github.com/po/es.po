@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-display-brightness-ddcutil\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-02 20:41+0200\n"
+"POT-Creation-Date: 2023-11-14 14:44+0200\n"
 "PO-Revision-Date: 2022-08-24 12:05+0200\n"
 "Last-Translator: Óscar Fernández Díaz <oscfdezdz@tuta.io>\n"
 "Language-Team: \n"
@@ -26,92 +26,92 @@ msgstr "General"
 msgid "Enable \"All\" Slider"
 msgstr "Activar el deslizador para \"Todos\""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:22
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:14
 msgid "Use Only \"All\" Slider"
 msgstr "Usar sólo el deslizador \"Todos\""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:36
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:20
 msgid "Show Value Label"
 msgstr "Mostrar la etiqueta del valor"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:49
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:25
 msgid "Show Display Name"
 msgstr "Mostrar nombre de la pantalla"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:62
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:30
 msgid "Show OSD"
 msgstr "Mostrar OSD"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:75
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:35
 msgid "Button Location"
 msgstr "Ubicación del botón"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:82
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:42
 msgid "Hide System Indicator"
 msgstr "Ocultar el indicador del sistema"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:95
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:47
 #, fuzzy
 msgid "Position in System Indicator"
 msgstr "Ocultar el indicador del sistema"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:110
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:55
 msgid "Position in System Menu"
 msgstr "Posición en el menú del sistema"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:127
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:65
 msgid "Keyboard Shortcuts"
 msgstr "Atajos del teclado"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:130
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:68
 msgid "Increase Brightness"
 msgstr "Aumentar brillo"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:142
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:78
 msgid "Decrease Brightness"
 msgstr "Reducir brillo"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:154
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:88
 msgid "Step Change %"
 msgstr "Porcentaje de variación"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:171
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:98
 msgid "Advanced Settings"
 msgstr "Configuración avanzada"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:174
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:101
 msgid "`ddcutil` Binary Path"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:187
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:107
 msgid "`ddcutil` Additional Arguments"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:200
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:113
 msgid "`ddcutil` Sleep Multiplier ms"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:215
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:121
 msgid "`ddcutil` Queue ms"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:230
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:129
 msgid "Allow Zero Brightness"
 msgstr "Permitir brillo cero"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:243
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:134
 msgid "Disable Display State Check"
 msgstr "Desactivar la comprobación del estado de la pantalla"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:256
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:139
 msgid "Verbose debugging"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:272
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:147
 msgid "Top Bar"
 msgstr "Barra superior"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:273
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:148
 msgid "System Menu"
 msgstr "Menú del sistema"
 
@@ -132,20 +132,20 @@ msgstr "Introduzca el atajo nuevo"
 msgid "Press Esc to cancel the keyboard shortcut."
 msgstr "Pulse Esc para cancelar el atajo del teclado."
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:104
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:105
 msgid "Initializing"
 msgstr "Inicializando"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:219
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:220
 msgid "Settings"
 msgstr "Configuración"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:225
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:226
 msgid "Reload"
 msgstr "Recargar"
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:238
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:242
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:239
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:243
 msgid "All"
 msgstr "Todos"
 
