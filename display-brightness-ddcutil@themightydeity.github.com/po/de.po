@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-14 14:44+0200\n"
+"POT-Creation-Date: 2023-11-26 14:19+0200\n"
 "PO-Revision-Date: 2022-02-13 09:53+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -123,16 +123,16 @@ msgstr "System-Menü"
 msgid "Set Shortcut…"
 msgstr "Tastaturkurzbefehle"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/shortcut.ui:74
+#: display-brightness-ddcutil@themightydeity.github.com/ui/shortcut.ui:65
 msgid "Add Custom Shortcut"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/shortcut.ui:87
+#: display-brightness-ddcutil@themightydeity.github.com/ui/shortcut.ui:82
 #: display-brightness-ddcutil@themightydeity.github.com/shortcut.js:36
 msgid "Enter the new shortcut"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/shortcut.ui:98
+#: display-brightness-ddcutil@themightydeity.github.com/ui/shortcut.ui:93
 msgid "Press Esc to cancel the keyboard shortcut."
 msgstr ""
 
