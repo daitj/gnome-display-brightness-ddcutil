@@ -1,22 +1,22 @@
 # Spanish translation.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# Óscar Fernández Díaz <oscfdezdz@tuta.io>, 2021-2022.
+# Óscar Fernández Díaz <oscfdezdz@tuta.io>, 2021-2023.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-display-brightness-ddcutil\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-14 14:44+0200\n"
-"PO-Revision-Date: 2022-08-24 12:05+0200\n"
+"POT-Creation-Date: 2023-11-26 11:52+0100\n"
+"PO-Revision-Date: 2023-11-26 12:05+0100\n"
 "Last-Translator: Óscar Fernández Díaz <oscfdezdz@tuta.io>\n"
-"Language-Team: \n"
+"Language-Team: Spanish\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"X-Generator: Gtranslator 42.0\n"
+"X-Generator: Gtranslator 45.3\n"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:6
 msgid "General"
@@ -28,7 +28,7 @@ msgstr "Activar el deslizador para \"Todos\""
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:14
 msgid "Use Only \"All\" Slider"
-msgstr "Usar sólo el deslizador \"Todos\""
+msgstr "Usar solo el deslizador \"Todos\""
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:20
 msgid "Show Value Label"
@@ -51,9 +51,8 @@ msgid "Hide System Indicator"
 msgstr "Ocultar el indicador del sistema"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:47
-#, fuzzy
 msgid "Position in System Indicator"
-msgstr "Ocultar el indicador del sistema"
+msgstr "Posición en el indicador del sistema"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:55
 msgid "Position in System Menu"
@@ -81,19 +80,19 @@ msgstr "Configuración avanzada"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:101
 msgid "`ddcutil` Binary Path"
-msgstr ""
+msgstr "Ruta del binario de `ddcutil`"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:107
 msgid "`ddcutil` Additional Arguments"
-msgstr ""
+msgstr "Argumentos adicionales de `ddcutil`"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:113
 msgid "`ddcutil` Sleep Multiplier ms"
-msgstr ""
+msgstr "Multiplicador de espera ms de `ddcutil`"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:121
 msgid "`ddcutil` Queue ms"
-msgstr ""
+msgstr "Cola ms de `ddcutil`"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:129
 msgid "Allow Zero Brightness"
@@ -105,7 +104,7 @@ msgstr "Desactivar la comprobación del estado de la pantalla"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:139
 msgid "Verbose debugging"
-msgstr ""
+msgstr "Depuración detallada"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:147
 msgid "Top Bar"
@@ -119,16 +118,16 @@ msgstr "Menú del sistema"
 msgid "Set Shortcut…"
 msgstr "Establecer atajo…"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/shortcut.ui:74
+#: display-brightness-ddcutil@themightydeity.github.com/ui/shortcut.ui:65
 msgid "Add Custom Shortcut"
 msgstr "Añadir un atajo personalizado"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/shortcut.ui:87
+#: display-brightness-ddcutil@themightydeity.github.com/ui/shortcut.ui:82
 #: display-brightness-ddcutil@themightydeity.github.com/shortcut.js:36
 msgid "Enter the new shortcut"
 msgstr "Introduzca el atajo nuevo"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/shortcut.ui:98
+#: display-brightness-ddcutil@themightydeity.github.com/ui/shortcut.ui:93
 msgid "Press Esc to cancel the keyboard shortcut."
 msgstr "Pulse Esc para cancelar el atajo del teclado."
 
@@ -151,4 +150,4 @@ msgstr "Todos"
 
 #: display-brightness-ddcutil@themightydeity.github.com/shortcut.js:76
 msgid "Reserved or invalid binding"
-msgstr ""
+msgstr "Asignación reservada o no válida"
