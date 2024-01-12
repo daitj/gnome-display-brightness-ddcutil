@@ -33,11 +33,21 @@ ddcutil capabilities | grep "Feature: 10"
 
 4. udev rule for giving group i2c RW permission on the `/dev/i2c` devices
 
+ddcutil 2.0+
+```sh
+
+sudo cp /usr/share/ddcutil/data/60-ddcutil-i2c.rules /etc/udev/rules.d
+
+```
+Prior ddcutil 1.4.0
 ```sh
 
 sudo cp /usr/share/ddcutil/data/45-ddcutil-i2c.rules /etc/udev/rules.d
 
 ```
+
+Read more: [https://www.ddcutil.com/i2c_permissions/](https://www.ddcutil.com/i2c_permissions/)
+
 
 5. Create i2c group and add yourself
 
