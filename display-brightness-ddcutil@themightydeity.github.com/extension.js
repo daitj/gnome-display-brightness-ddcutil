@@ -577,7 +577,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
 
     connectMonitorChangeSignals() {
         monitorSignals = {
-            change: Main.layoutManager.connect('monitors-changed', this.onMonitorChange),
+            change: Main.layoutManager.connect('monitors-changed', this.onMonitorChange.bind(this)),
         };
     }
 
