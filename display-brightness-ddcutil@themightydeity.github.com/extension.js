@@ -245,13 +245,21 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         settingsItem.connect('activate', () => {
             this.openPreferences();
         });
-        mainMenuButton.addMenuItem(settingsItem, 1);
+        if (this.settings.get_boolean('show-sliders-in-submenu') && this.settings.get_boolean('show-all-slider')) {
+            mainMenuButton.getStoredSliders()[0].menu.addMenuItem(settingsItem)
+        } else if (this.settings.get_int('button-location') === 0) {
+            mainMenuButton.addMenuItem(settingsItem, 1);
+        }
 
         const reloadItem = new PopupMenu.PopupMenuItem(_('Reload'));
         reloadItem.connect('activate', event => {
             this.reloadExtension();
         });
-        mainMenuButton.addMenuItem(reloadItem, 2);
+        if (this.settings.get_boolean('show-sliders-in-submenu') && this.settings.get_boolean('show-all-slider')) {
+            mainMenuButton.getStoredSliders()[0].menu.addMenuItem(reloadItem)
+        } else if (this.settings.get_int('button-location') === 0) {
+            mainMenuButton.addMenuItem(reloadItem, 2);
+        }
     }
 
     addAllSlider() {
@@ -358,8 +366,9 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             });
             this.syncAllSlider();
 
+            this.addSettingsItem();
             if (this.settings.get_int('button-location') === 0) {
-                this.addSettingsItem();
+
             } else {
                 /* in case of quick settings we need to add items after all the sliders were created */
 
