@@ -263,6 +263,78 @@ export const SingleMonitorSliderAndValueForStatusAreaMenu = class SingleMonitorS
     }
 };
 
+export const SingleMonitorSliderAndValueForQuickSettingsSubMenu = GObject.registerClass({
+    GType: 'SingleMonitorSliderAndValueForQuickSettingsSubMenu',
+    Properties: {
+        'settings': GObject.ParamSpec.object('settings', 'settings', 'settings',
+            GObject.ParamFlags.READWRITE,
+            Gio.Settings),
+        'display-name': GObject.ParamSpec.string('display-name', 'display-name', 'display-name',
+            GObject.ParamFlags.READWRITE,
+            ''),
+        'current-value': GObject.ParamSpec.double('current-value', 'current-value', 'current-value',
+            GObject.ParamFlags.READWRITE,
+            0, 1, 1),
+    },
+    Signals: {
+        'slider-change': {
+            param_types: [GObject.TYPE_DOUBLE],
+        },
+    },
+}, class SingleMonitorSliderAndValueForQuickSettingsSubMenu extends PopupMenu.PopupImageMenuItem {
+    _init(params) {
+        super._init(
+            "", 'display-brightness-symbolic', {}
+        );
+        this.settings = params.settings
+        /* OSD is never shown by default */
+        this._hideOSD = true;
+        this.__hideOSDBackup = true;
+
+        if (this.settings.get_boolean('show-display-name'))
+            this.label.text = this.display_name;
+
+        this.ValueSlider = new Slider(this.current_value);
+        this.ValueSlider.connect('notify::value', this._SliderChange.bind(this));
+        this.ValueLabel = new St.Label({text: this._SliderValueToBrightness(this.current_value).toString()});
+        this.add_child(this.ValueSlider);
+
+        /* for compatibility in other places */
+        this._settings = this.settings;
+        this.displayName = this.display_name;
+
+        if (this.settings.get_boolean('show-value-label'))
+            this.add_child(this.ValueLabel);
+    }
+
+    setHideOSD() {
+        this.__hideOSDBackup = this._hideOSD;
+        this._hideOSD = true;
+    }
+
+    setShowOSD() {
+        this.__hideOSDBackup = this._hideOSD;
+        this._hideOSD = false;
+    }
+
+    resetOSD() {
+        this._hideOSD = this.__hideOSDBackup;
+    }
+
+    changeValue(newValue) {
+        this.ValueSlider.value = newValue / 100;
+    }
+
+    _SliderValueToBrightness(sliderValue) {
+        return Math.floor(sliderValue * 100);
+    }
+
+    _SliderChange() {
+        sliderValueChangeCommon(this);
+    }
+});
+
+
 
 export const SingleMonitorSliderAndValueForQuickSettings = GObject.registerClass({
     GType: 'SingleMonitorSliderAndValueForQuickSettings',

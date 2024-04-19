@@ -36,6 +36,7 @@ const {
     SystemMenuBrightnessMenu,
     SingleMonitorSliderAndValueForStatusAreaMenu,
     SingleMonitorSliderAndValueForQuickSettings,
+    SingleMonitorSliderAndValueForQuickSettingsSubMenu,
 } = Indicator;
 
 const {
@@ -59,6 +60,9 @@ let monitorChangeTimeout = null;
 let settingsSignals = {};
 let oldSettings = null;
 let monitorSignals = {};
+
+let syncing = false
+let pause_sync = false
 
 /*
     instead of reading i2c bus everytime during startup,
@@ -208,12 +212,32 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         this.ddcWriteCollector(display.bus, writer);
     }
 
+    syncAllSlider() {
+        if (pause_sync)
+            return
+        syncing = true
+        if (this.settings.get_boolean('show-all-slider')) {
+            var sum = 0.0
+            for (let display of displays) {
+                sum = sum + display.slider.ValueSlider.value
+            }
+            mainMenuButton.getStoredSliders()[0].changeValue(sum * 100 / displays.length)
+            mainMenuButton.getStoredSliders()[0].old_value = sum * 100 / displays.length;
+        }
+        syncing = false
+    }
+
     setAllBrightness(newValue) {
+        const oldValue = mainMenuButton.getStoredSliders()[0].old_value;
+        if (syncing)
+            return
+        pause_sync = true
         displays.forEach(display => {
             display.slider.setHideOSD();
             display.slider.changeValue(newValue);
             display.slider.resetOSD();
         });
+        pause_sync = false
     }
 
     addSettingsItem() {
@@ -244,6 +268,9 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 'current-value': displays[0].current,
             });
             allslider.connect('slider-change', onAllSliderChange);
+            if (this.settings.get_boolean('show-sliders-in-submenu'))
+                allslider.menuEnabled = true
+                allslider.menu.setHeader('display-brightness-symbolic', 'Brightness');
         }
         mainMenuButton.addMenuItem(allslider);
 
@@ -254,10 +281,18 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     addDisplayToPanel(display) {
         const onSliderChange = (quickSettingsSlider, newValue) => {
             this.setBrightness(display, newValue);
+            this.syncAllSlider();
         };
         let displaySlider = null;
         if (this.settings.get_int('button-location') === 0) {
             displaySlider = new SingleMonitorSliderAndValueForStatusAreaMenu(this.settings, display.name, display.current, onSliderChange);
+        } else if (this.settings.get_boolean('show-sliders-in-submenu')) {
+            displaySlider = new SingleMonitorSliderAndValueForQuickSettingsSubMenu({
+                settings: this.settings,
+                'display-name': display.name,
+                'current-value': display.current
+            });
+            displaySlider.connect('slider-change', onSliderChange);
         } else {
             displaySlider = new SingleMonitorSliderAndValueForQuickSettings({
                 settings: this.settings,
@@ -269,8 +304,11 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
 
         display.slider = displaySlider;
         if (!(this.settings.get_boolean('show-all-slider') && this.settings.get_boolean('only-all-slider')))
-            mainMenuButton.addMenuItem(displaySlider);
-
+            if (this.settings.get_boolean('show-sliders-in-submenu') && this.settings.get_boolean('show-all-slider')) {
+                mainMenuButton.getStoredSliders()[0].menu.addMenuItem(displaySlider)
+            } else {
+                mainMenuButton.addMenuItem(displaySlider);
+            }
 
         /* when "All" slider is shown we do not need to store each display's value slider */
         /* save slider in main menu, so that it can be accessed easily for different events */
@@ -318,6 +356,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             displays.forEach(display => {
                 this.addDisplayToPanel(display);
             });
+            this.syncAllSlider();
 
             if (this.settings.get_int('button-location') === 0) {
                 this.addSettingsItem();
@@ -343,7 +382,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                         _box.insert_child_at_index(item.NameContainer, 1);
 
                     _grid.insert_child_at_index(item, this.settings.get_double('position-system-menu'));
-                    _grid.layout_manager.child_set_property(_grid, item, 'column-span', 2);
+                    QuickSettingsPanelMenuButton.menu._completeAddItem(item, 2);
                     if (this.settings.get_boolean('show-value-label'))
                         _box.insert_child_at_index(item.ValueLabel, 3);
                 });

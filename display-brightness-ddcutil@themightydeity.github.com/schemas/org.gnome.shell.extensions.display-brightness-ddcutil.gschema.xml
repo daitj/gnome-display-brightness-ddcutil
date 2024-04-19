@@ -10,6 +10,10 @@
       <default>false</default>
       <summary>Hides display list and uses only All Slider</summary>
     </key>
+    <key type="b" name="show-sliders-in-submenu">
+      <default>true</default>
+      <summary>Shows sliders as submenu of All Slider</summary>
+    </key>
     <key type="b" name="show-value-label">
       <default>false</default>
       <summary>Show Value Label</summary>

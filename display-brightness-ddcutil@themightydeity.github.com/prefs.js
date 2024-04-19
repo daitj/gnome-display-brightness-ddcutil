@@ -16,6 +16,7 @@ const PrefsWidget = GObject.registerClass({
         'show_display_name_row',
         'show_osd_row',
         'button_location_combo_row',
+        'sub_menu_row',
         'hide_system_indicator_row',
         'position_system_indicator_row',
         'position_system_menu_row',
@@ -65,6 +66,13 @@ const PrefsWidget = GObject.registerClass({
         this.settings.bind(
             'show-osd',
             this._show_osd_row,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+
+        this.settings.bind(
+            'show-sliders-in-submenu',
+            this._sub_menu_row,
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
@@ -141,10 +149,12 @@ const PrefsWidget = GObject.registerClass({
             this._hide_system_indicator_row.sensitive = false;
             this._position_system_indicator_row.sensitive = false;
             this._position_system_menu_row.sensitive = false;
+            this._sub_menu_row.sensitive = false;
         } else {
             this._hide_system_indicator_row.sensitive = true;
             this._position_system_menu_row.sensitive = true;
             this._position_system_indicator_row.sensitive = !this.settings.get_boolean('hide-system-indicator');
+            this._sub_menu_row.sensitive = true;
         }
     }
 

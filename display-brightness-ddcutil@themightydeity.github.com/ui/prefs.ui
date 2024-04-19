@@ -38,6 +38,11 @@
           </object>
         </child>
         <child>
+          <object class="AdwSwitchRow" id="sub_menu_row">
+            <property name="title" translatable="yes">Use Quick Settings Sub Menu</property>
+          </object>
+        </child>
+        <child>
           <object class="AdwSwitchRow" id="hide_system_indicator_row">
             <property name="title" translatable="yes">Hide System Indicator</property>
           </object>
