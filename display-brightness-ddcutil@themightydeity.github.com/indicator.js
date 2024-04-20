@@ -286,16 +286,28 @@ export const SingleMonitorSliderAndValueForQuickSettingsSubMenu = GObject.regist
         super._init(
             "", 'display-brightness-symbolic', {}
         );
+        console.log(params)
         this.settings = params.settings
+        this.display_name = params['display-name']
+        this.current_value = params['current-value']
+
         /* OSD is never shown by default */
         this._hideOSD = true;
         this.__hideOSDBackup = true;
 
-        if (this.settings.get_boolean('show-display-name'))
-            this.label.text = this.display_name;
+        //if (this.settings.get_boolean('show-display-name'))
+        //    this.label.text = this.display_name;
 
         this.ValueSlider = new Slider(this.current_value);
         this.ValueSlider.connect('notify::value', this._SliderChange.bind(this));
+        this.NameContainer = new St.Label({
+            y_align: Clutter.ActorAlign.CENTER,
+            text: this.display_name,
+            style: 'font-size: 10px; font-weight: normal;',
+            style_class: 'display-brightness-ddcutil-monitor-name-system-menu',
+        });
+        if (this.settings.get_boolean('show-display-name'))
+            this.add_child(this.NameContainer);
         this.ValueLabel = new St.Label({text: this._SliderValueToBrightness(this.current_value).toString()});
         this.add_child(this.ValueSlider);
 

@@ -228,15 +228,52 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     }
 
     setAllBrightness(newValue) {
-        const oldValue = mainMenuButton.getStoredSliders()[0].old_value;
+
         if (syncing)
             return
         pause_sync = true
-        displays.forEach(display => {
-            display.slider.setHideOSD();
-            display.slider.changeValue(newValue);
-            display.slider.resetOSD();
-        });
+        const mode = "experimental"
+        if (mode === "original") {
+            displays.forEach(display => {
+                display.slider.setHideOSD();
+                display.slider.changeValue(newValue);
+                display.slider.resetOSD();
+            });
+        } else if (mode === "experimental") {
+            const oldValue = mainMenuButton.getStoredSliders()[0].old_value;
+
+            if (oldValue === newValue)
+                return;
+            const increased = (newValue > oldValue)
+
+            if (increased) {
+                const increase = newValue - oldValue
+                const remaining = 100 - oldValue
+                const frac = increase / remaining
+                displays.forEach(display => {
+                    display.slider.setHideOSD();
+                    const oldValue = 100 * display.slider.ValueSlider.value;
+                    const remaining = 100 - oldValue
+                    const increase = frac * remaining
+                    display.slider.changeValue(oldValue + increase);
+                    display.slider.resetOSD();
+                });
+            } else {
+                const decrease = oldValue - newValue
+                const remaining = oldValue
+                const frac = decrease / remaining
+                displays.forEach(display => {
+                    display.slider.setHideOSD();
+                    const oldValue = 100 * display.slider.ValueSlider.value;
+                    const remaining = oldValue
+                    const decrease = frac * remaining
+                    display.slider.changeValue(oldValue - decrease);
+                    display.slider.resetOSD();
+                });
+            }
+
+            mainMenuButton.getStoredSliders()[0].old_value = newValue;
+        }
         pause_sync = false
     }
 
