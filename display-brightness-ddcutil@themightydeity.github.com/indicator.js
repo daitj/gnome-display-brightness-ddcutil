@@ -286,7 +286,6 @@ export const SingleMonitorSliderAndValueForQuickSettingsSubMenu = GObject.regist
         super._init(
             "", 'display-brightness-symbolic', {}
         );
-        console.log(params)
         this.settings = params.settings
         this.display_name = params['display-name']
         this.current_value = params['current-value']

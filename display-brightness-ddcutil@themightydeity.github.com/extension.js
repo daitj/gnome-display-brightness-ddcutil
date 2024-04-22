@@ -25,6 +25,8 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import {Extension,  gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
+import {loadInterfaceXML} from 'resource:///org/gnome/shell/misc/fileUtils.js';
+
 import * as Convenience from './convenienceExt.js';
 import * as Indicator from './indicator.js';
 
@@ -63,6 +65,7 @@ let monitorSignals = {};
 
 let syncing = false
 let pause_sync = false
+let internal_control = true
 
 /*
     instead of reading i2c bus everytime during startup,
@@ -73,6 +76,12 @@ let pause_sync = false
 */
 const cacheDir = GLib.get_user_cache_dir();
 const ddcutilDetectCacheFile = `${cacheDir}/ddcutil_detect`;
+
+const BUS_NAME = 'org.gnome.SettingsDaemon.Power';
+const OBJECT_PATH = '/org/gnome/SettingsDaemon/Power';
+
+const BrightnessInterface = loadInterfaceXML('org.gnome.SettingsDaemon.Power.Screen');
+const BrightnessProxy = Gio.DBusProxy.makeProxyWrapper(BrightnessInterface);
 
 export default class DDCUtilBrightnessControlExtension extends Extension {
     enable() {
@@ -187,6 +196,10 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     }
 
     setBrightness(display, newValue) {
+        if (display.bus === 'internal') {
+           this.setInternalBrightness(newValue);
+           return;
+        }
         let newBrightness = parseInt((newValue / 100) * display.max);
         if (newBrightness === 0) {
             if (!this.settings.get_boolean('allow-zero-brightness'))
@@ -210,6 +223,13 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         */
 
         this.ddcWriteCollector(display.bus, writer);
+    }
+
+    setInternalBrightness(newValue) {
+        if (!internal_control)
+            return
+        let proxy = new BrightnessProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH)
+        proxy.Brightness = newValue
     }
 
     syncAllSlider() {
@@ -282,12 +302,11 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         settingsItem.connect('activate', () => {
             this.openPreferences();
         });
-        if (this.settings.get_boolean('show-sliders-in-submenu') && this.settings.get_boolean('show-all-slider')) {
-            mainMenuButton.getStoredSliders()[0].menu.addMenuItem(settingsItem)
-        } else if (this.settings.get_int('button-location') === 0) {
+        if (this.settings.get_int('button-location') === 0) {
             mainMenuButton.addMenuItem(settingsItem, 1);
+        } else if (this.settings.get_boolean('show-sliders-in-submenu') && this.settings.get_boolean('show-all-slider')) {
+            mainMenuButton.getStoredSliders()[0].menu.addMenuItem(settingsItem)
         }
-
         const reloadItem = new PopupMenu.PopupMenuItem(_('Reload'));
         reloadItem.connect('activate', event => {
             this.reloadExtension();
@@ -354,6 +373,22 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             } else {
                 mainMenuButton.addMenuItem(displaySlider);
             }
+
+        if (display.bus === 'internal') {
+            const sync = () => {
+                internal_control = false
+                displaySlider.changeValue(display.proxy.Brightness)
+                internal_control = true
+            }
+            display.proxy = new BrightnessProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH,
+                (_proxy, error) => {
+                    if (error)
+                        console.error(error.message);
+                    else
+                        display.proxy.connect('g-properties-changed', () => sync());
+                    sync();
+                });
+        }
 
         /* when "All" slider is shown we do not need to store each display's value slider */
         /* save slider in main menu, so that it can be accessed easily for different events */
@@ -477,6 +512,17 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     }
 
     parseDisplaysInfoAndAddToPanel(ddcutilBriefInfo) {
+        if (this.settings.get_boolean('show-internal-slider')) {
+            const _sync = () => {
+
+            }
+            let proxy = new BrightnessProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH);
+            let current = proxy.Brightness / 100
+
+            let display = {'bus': 'internal', 'max': 100, 'current': current, 'name': _('Internal')}
+            if (Number.isInteger(current) && current >= 0)
+                displays.push(display)
+        }
         try {
             const ddcutilPath = this.settings.get_string('ddcutil-binary-path');
             const displayNames = [];
