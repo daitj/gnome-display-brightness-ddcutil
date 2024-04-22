@@ -10,6 +10,11 @@
           </object>
         </child>
         <child>
+          <object class="AdwSwitchRow" id="show_internal_slider_row">
+            <property name="title" translatable="yes">Enable "Internal" Slider</property>
+          </object>
+        </child>
+        <child>
           <object class="AdwSwitchRow" id="only_all_slider_row">
             <property name="title" translatable="yes">Use Only "All" Slider</property>
             <property name="sensitive" bind-source="show_all_slider_row" bind-property="active" bind-flags="sync-create"/>

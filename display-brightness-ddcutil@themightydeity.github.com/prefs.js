@@ -11,6 +11,7 @@ const PrefsWidget = GObject.registerClass({
     Template: GLib.Uri.resolve_relative(import.meta.url, './ui/prefs.ui', GLib.UriFlags.NONE),
     InternalChildren: [
         'show_all_slider_row',
+        'show_internal_slider_row',
         'only_all_slider_row',
         'show_value_label_row',
         'show_display_name_row',
@@ -38,6 +39,13 @@ const PrefsWidget = GObject.registerClass({
         this.settings.bind(
             'show-all-slider',
             this._show_all_slider_row,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+
+        this.settings.bind(
+            'show-internal-slider',
+            this._show_internal_slider_row,
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
