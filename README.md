@@ -36,7 +36,7 @@ ddcutil capabilities | grep "Feature: 10"
 ddcutil 2.0+
 ```sh
 
-sudo cp /usr/share/ddcutil/data/60-ddcutil-i2c.rules /etc/udev/rules.d
+sudo cp /usr/share/ddcutil/data/45-ddcutil-i2c.rules /etc/udev/rules.d
 
 ```
 Prior ddcutil 1.4.0
