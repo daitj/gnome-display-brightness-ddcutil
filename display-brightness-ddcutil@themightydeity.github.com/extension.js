@@ -25,6 +25,8 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import {Extension,  gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 
+import {loadInterfaceXML} from 'resource:///org/gnome/shell/misc/fileUtils.js';
+
 import * as Convenience from './convenienceExt.js';
 import * as Indicator from './indicator.js';
 
@@ -36,6 +38,7 @@ const {
     SystemMenuBrightnessMenu,
     SingleMonitorSliderAndValueForStatusAreaMenu,
     SingleMonitorSliderAndValueForQuickSettings,
+    SingleMonitorSliderAndValueForQuickSettingsSubMenu,
 } = Indicator;
 
 const {
@@ -60,6 +63,10 @@ let settingsSignals = {};
 let oldSettings = null;
 let monitorSignals = {};
 
+let syncing = false
+let pause_sync = false
+let internal_control = true
+
 /*
     instead of reading i2c bus everytime during startup,
     as it is unlikely that bus number changes, we can read
@@ -69,6 +76,12 @@ let monitorSignals = {};
 */
 const cacheDir = GLib.get_user_cache_dir();
 const ddcutilDetectCacheFile = `${cacheDir}/ddcutil_detect`;
+
+const BUS_NAME = 'org.gnome.SettingsDaemon.Power';
+const OBJECT_PATH = '/org/gnome/SettingsDaemon/Power';
+
+const BrightnessInterface = loadInterfaceXML('org.gnome.SettingsDaemon.Power.Screen');
+const BrightnessProxy = Gio.DBusProxy.makeProxyWrapper(BrightnessInterface);
 
 export default class DDCUtilBrightnessControlExtension extends Extension {
     enable() {
@@ -183,6 +196,10 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     }
 
     setBrightness(display, newValue) {
+        if (display.bus === 'internal') {
+           this.setInternalBrightness(newValue);
+           return;
+        }
         let newBrightness = parseInt((newValue / 100) * display.max);
         if (newBrightness === 0) {
             if (!this.settings.get_boolean('allow-zero-brightness'))
@@ -208,12 +225,76 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         this.ddcWriteCollector(display.bus, writer);
     }
 
+    setInternalBrightness(newValue) {
+        if (!internal_control)
+            return
+        let proxy = new BrightnessProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH)
+        proxy.Brightness = newValue
+    }
+
+    syncAllSlider() {
+        if (pause_sync)
+            return
+        syncing = true
+        if (this.settings.get_boolean('show-all-slider')) {
+            var sum = 0.0
+            for (let display of displays) {
+                sum = sum + display.slider.ValueSlider.value
+            }
+            mainMenuButton.getStoredSliders()[0].changeValue(sum * 100 / displays.length)
+            mainMenuButton.getStoredSliders()[0].old_value = sum * 100 / displays.length;
+        }
+        syncing = false
+    }
+
     setAllBrightness(newValue) {
-        displays.forEach(display => {
-            display.slider.setHideOSD();
-            display.slider.changeValue(newValue);
-            display.slider.resetOSD();
-        });
+
+        if (syncing)
+            return
+        pause_sync = true
+        const mode = "experimental"
+        if (mode === "original") {
+            displays.forEach(display => {
+                display.slider.setHideOSD();
+                display.slider.changeValue(newValue);
+                display.slider.resetOSD();
+            });
+        } else if (mode === "experimental") {
+            const oldValue = mainMenuButton.getStoredSliders()[0].old_value;
+
+            if (oldValue === newValue)
+                return;
+            const increased = (newValue > oldValue)
+
+            if (increased) {
+                const increase = newValue - oldValue
+                const remaining = 100 - oldValue
+                const frac = increase / remaining
+                displays.forEach(display => {
+                    display.slider.setHideOSD();
+                    const oldValue = 100 * display.slider.ValueSlider.value;
+                    const remaining = 100 - oldValue
+                    const increase = frac * remaining
+                    display.slider.changeValue(oldValue + increase);
+                    display.slider.resetOSD();
+                });
+            } else {
+                const decrease = oldValue - newValue
+                const remaining = oldValue
+                const frac = decrease / remaining
+                displays.forEach(display => {
+                    display.slider.setHideOSD();
+                    const oldValue = 100 * display.slider.ValueSlider.value;
+                    const remaining = oldValue
+                    const decrease = frac * remaining
+                    display.slider.changeValue(oldValue - decrease);
+                    display.slider.resetOSD();
+                });
+            }
+
+            mainMenuButton.getStoredSliders()[0].old_value = newValue;
+        }
+        pause_sync = false
     }
 
     addSettingsItem() {
@@ -221,13 +302,20 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         settingsItem.connect('activate', () => {
             this.openPreferences();
         });
-        mainMenuButton.addMenuItem(settingsItem, 1);
-
+        if (this.settings.get_int('button-location') === 0) {
+            mainMenuButton.addMenuItem(settingsItem, 1);
+        } else if (this.settings.get_boolean('show-sliders-in-submenu') && this.settings.get_boolean('show-all-slider')) {
+            mainMenuButton.getStoredSliders()[0].menu.addMenuItem(settingsItem)
+        }
         const reloadItem = new PopupMenu.PopupMenuItem(_('Reload'));
         reloadItem.connect('activate', event => {
             this.reloadExtension();
         });
-        mainMenuButton.addMenuItem(reloadItem, 2);
+        if (this.settings.get_int('button-location') === 0) {
+            mainMenuButton.addMenuItem(reloadItem, 2);
+        } else if (this.settings.get_boolean('show-sliders-in-submenu') && this.settings.get_boolean('show-all-slider')) {
+            mainMenuButton.getStoredSliders()[0].menu.addMenuItem(reloadItem)
+        }
     }
 
     addAllSlider() {
@@ -244,6 +332,9 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 'current-value': displays[0].current,
             });
             allslider.connect('slider-change', onAllSliderChange);
+            if (this.settings.get_boolean('show-sliders-in-submenu'))
+                allslider.menuEnabled = true
+                allslider.menu.setHeader('display-brightness-symbolic', 'Brightness');
         }
         mainMenuButton.addMenuItem(allslider);
 
@@ -254,10 +345,18 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     addDisplayToPanel(display) {
         const onSliderChange = (quickSettingsSlider, newValue) => {
             this.setBrightness(display, newValue);
+            this.syncAllSlider();
         };
         let displaySlider = null;
         if (this.settings.get_int('button-location') === 0) {
             displaySlider = new SingleMonitorSliderAndValueForStatusAreaMenu(this.settings, display.name, display.current, onSliderChange);
+        } else if (this.settings.get_boolean('show-sliders-in-submenu')) {
+            displaySlider = new SingleMonitorSliderAndValueForQuickSettingsSubMenu({
+                settings: this.settings,
+                'display-name': display.name,
+                'current-value': display.current
+            });
+            displaySlider.connect('slider-change', onSliderChange);
         } else {
             displaySlider = new SingleMonitorSliderAndValueForQuickSettings({
                 settings: this.settings,
@@ -269,8 +368,27 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
 
         display.slider = displaySlider;
         if (!(this.settings.get_boolean('show-all-slider') && this.settings.get_boolean('only-all-slider')))
-            mainMenuButton.addMenuItem(displaySlider);
+            if (this.settings.get_boolean('show-sliders-in-submenu') && this.settings.get_boolean('show-all-slider')) {
+                mainMenuButton.getStoredSliders()[0].menu.addMenuItem(displaySlider)
+            } else {
+                mainMenuButton.addMenuItem(displaySlider);
+            }
 
+        if (display.bus === 'internal') {
+            const sync = () => {
+                internal_control = false
+                displaySlider.changeValue(display.proxy.Brightness)
+                internal_control = true
+            }
+            display.proxy = new BrightnessProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH,
+                (_proxy, error) => {
+                    if (error)
+                        console.error(error.message);
+                    else
+                        display.proxy.connect('g-properties-changed', () => sync());
+                    sync();
+                });
+        }
 
         /* when "All" slider is shown we do not need to store each display's value slider */
         /* save slider in main menu, so that it can be accessed easily for different events */
@@ -318,9 +436,11 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             displays.forEach(display => {
                 this.addDisplayToPanel(display);
             });
+            this.syncAllSlider();
 
+            this.addSettingsItem();
             if (this.settings.get_int('button-location') === 0) {
-                this.addSettingsItem();
+
             } else {
                 /* in case of quick settings we need to add items after all the sliders were created */
 
@@ -343,7 +463,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                         _box.insert_child_at_index(item.NameContainer, 1);
 
                     _grid.insert_child_at_index(item, this.settings.get_double('position-system-menu'));
-                    _grid.layout_manager.child_set_property(_grid, item, 'column-span', 2);
+                    QuickSettingsPanelMenuButton.menu._completeAddItem(item, 2);
                     if (this.settings.get_boolean('show-value-label'))
                         _box.insert_child_at_index(item.ValueLabel, 3);
                 });
@@ -392,6 +512,14 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     }
 
     parseDisplaysInfoAndAddToPanel(ddcutilBriefInfo) {
+        if (this.settings.get_boolean('show-internal-slider')) {
+            let proxy = new BrightnessProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH);
+            let current = proxy.Brightness / 100
+
+            let display = {'bus': 'internal', 'max': 100, 'current': current, 'name': _('Internal')}
+            if (Number.isInteger(current) && current >= 0)
+                displays.push(display)
+        }
         try {
             const ddcutilPath = this.settings.get_string('ddcutil-binary-path');
             const displayNames = [];

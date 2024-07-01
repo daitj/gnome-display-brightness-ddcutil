@@ -11,11 +11,13 @@ const PrefsWidget = GObject.registerClass({
     Template: GLib.Uri.resolve_relative(import.meta.url, './ui/prefs.ui', GLib.UriFlags.NONE),
     InternalChildren: [
         'show_all_slider_row',
+        'show_internal_slider_row',
         'only_all_slider_row',
         'show_value_label_row',
         'show_display_name_row',
         'show_osd_row',
         'button_location_combo_row',
+        'sub_menu_row',
         'hide_system_indicator_row',
         'position_system_indicator_row',
         'position_system_menu_row',
@@ -37,6 +39,13 @@ const PrefsWidget = GObject.registerClass({
         this.settings.bind(
             'show-all-slider',
             this._show_all_slider_row,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+
+        this.settings.bind(
+            'show-internal-slider',
+            this._show_internal_slider_row,
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
@@ -65,6 +74,13 @@ const PrefsWidget = GObject.registerClass({
         this.settings.bind(
             'show-osd',
             this._show_osd_row,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+
+        this.settings.bind(
+            'show-sliders-in-submenu',
+            this._sub_menu_row,
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
@@ -141,10 +157,12 @@ const PrefsWidget = GObject.registerClass({
             this._hide_system_indicator_row.sensitive = false;
             this._position_system_indicator_row.sensitive = false;
             this._position_system_menu_row.sensitive = false;
+            this._sub_menu_row.sensitive = false;
         } else {
             this._hide_system_indicator_row.sensitive = true;
             this._position_system_menu_row.sensitive = true;
             this._position_system_indicator_row.sensitive = !this.settings.get_boolean('hide-system-indicator');
+            this._sub_menu_row.sensitive = true;
         }
     }
 
