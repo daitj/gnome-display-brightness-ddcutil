@@ -311,10 +311,10 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         reloadItem.connect('activate', event => {
             this.reloadExtension();
         });
-        if (this.settings.get_boolean('show-sliders-in-submenu') && this.settings.get_boolean('show-all-slider')) {
-            mainMenuButton.getStoredSliders()[0].menu.addMenuItem(reloadItem)
-        } else if (this.settings.get_int('button-location') === 0) {
+        if (this.settings.get_int('button-location') === 0) {
             mainMenuButton.addMenuItem(reloadItem, 2);
+        } else if (this.settings.get_boolean('show-sliders-in-submenu') && this.settings.get_boolean('show-all-slider')) {
+            mainMenuButton.getStoredSliders()[0].menu.addMenuItem(reloadItem)
         }
     }
 
@@ -513,9 +513,6 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
 
     parseDisplaysInfoAndAddToPanel(ddcutilBriefInfo) {
         if (this.settings.get_boolean('show-internal-slider')) {
-            const _sync = () => {
-
-            }
             let proxy = new BrightnessProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH);
             let current = proxy.Brightness / 100
 
