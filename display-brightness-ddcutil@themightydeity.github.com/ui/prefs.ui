@@ -132,6 +132,7 @@
         <child>
           <object class="AdwSwitchRow" id="disable_display_state_check_row">
             <property name="title" translatable="yes">Disable Display State Check</property>
+            <property name="subtitle" translatable="yes">Disables the check for the display power state before changing brightness, might help in detecting more displays</property>
           </object>
         </child>
         <child>
