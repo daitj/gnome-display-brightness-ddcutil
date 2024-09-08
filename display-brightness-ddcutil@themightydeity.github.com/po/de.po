@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-08 20:22+0300\n"
+"POT-Creation-Date: 2024-09-09 01:21+0300\n"
 "PO-Revision-Date: 2022-02-13 09:53+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -115,15 +115,21 @@ msgstr "Vollständige Abdunkelung erlauben"
 msgid "Disable Display State Check"
 msgstr "Status-Überprüfung deaktivieren"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:149
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:145
+msgid ""
+"Disables the check for the display power state before changing brightness, "
+"might help in detecting more displays"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:150
 msgid "Verbose debugging"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:157
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:158
 msgid "Top Bar"
 msgstr "Obere Leiste"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:158
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:159
 msgid "System Menu"
 msgstr "System-Menü"
 

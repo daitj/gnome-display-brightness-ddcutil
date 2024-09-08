@@ -11,11 +11,11 @@
       <summary>Hides display list and uses only All Slider</summary>
     </key>
     <key type="b" name="show-internal-slider">
-      <default>true</default>
+      <default>false</default>
       <summary>Enables the slider for any internal display</summary>
     </key>
     <key type="b" name="show-sliders-in-submenu">
-      <default>true</default>
+      <default>false</default>
       <summary>Shows sliders as submenu of All Slider</summary>
     </key>
     <key type="b" name="show-value-label">
