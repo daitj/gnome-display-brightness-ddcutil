@@ -533,7 +533,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             brightnessLog(this.settings, `ddcutil brief info:\n${ddcutilBriefInfo}`);
             const sleepMultiplier = this.settings.get_double('ddcutil-sleep-multiplier') / 40;
             ddcutilBriefInfo.split('\n').map(ddcLine => {
-                if (ddcLine.indexOf('/dev/i2c-') !== -1) {
+                if (ddcLine.indexOf('/dev/i2c-') !== -1 && ddcLine.indexOf('Associated non-phantom display') === -1) {
                     brightnessLog(this.settings, `ddcutil brief info found bus line:\n ${ddcLine}`);
                     /* I2C bus comes first, so when that is detect start a new display object */
                     const displayBus = ddcLine.split('/dev/i2c-')[1].trim();
