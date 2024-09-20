@@ -39,6 +39,11 @@ ddcutil 2.0+
 sudo cp /usr/share/ddcutil/data/60-ddcutil-i2c.rules /etc/udev/rules.d
 
 ```
+**Note: Fedora 40+ users, you need to uncomment this line**
+```
+# KERNEL=="i2c-[0-9]*", GROUP="i2c", MODE="0660"
+```
+
 Prior ddcutil 1.4.0
 ```sh
 
