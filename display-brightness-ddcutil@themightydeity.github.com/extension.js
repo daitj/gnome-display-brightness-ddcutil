@@ -67,6 +67,9 @@ let syncing = false
 let pause_sync = false
 let internal_control = true
 
+//const ddcVcpBrightnessId = '10';
+const ddcVcpBrightnessId = '6B';
+
 /*
     instead of reading i2c bus everytime during startup,
     as it is unlikely that bus number changes, we can read
@@ -209,8 +212,8 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         const ddcutilAdditionalArgs = this.settings.get_string('ddcutil-additional-args');
         const sleepMultiplier = this.settings.get_double('ddcutil-sleep-multiplier') / 40;
         const writer = () => {
-            brightnessLog(this.settings, `async ${ddcutilPath} setvcp 10 ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`);
-            GLib.spawn_command_line_async(`${ddcutilPath} setvcp 10 ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`);
+            brightnessLog(this.settings, `async ${ddcutilPath} setvcp ${ddcVcpBrightnessId} ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`);
+            GLib.spawn_command_line_async(`${ddcutilPath} setvcp ${ddcVcpBrightnessId} ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`);
         };
         brightnessLog(this.settings, `display ${display.name}, current: ${display.current} => ${newValue / 100}, new brightness: ${newBrightness}, new value: ${newValue}`);
         display.current = newValue / 100;
@@ -556,8 +559,8 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                                 displayInGoodState = vcpPowerInfosArray.length >= 4 && vcpPowerInfosArray[3] === 'x01';
                             }
                             if (displayInGoodState) {
-                                /* read the current and max brightness using getvcp 10 */
-                                spawnWithCallback(this.settings, [ddcutilPath, 'getvcp', '--brief', '10', '--bus', displayBus, '--sleep-multiplier', sleepMultiplier.toString()], vcpInfos  => {
+                                /* read the current and max brightness using getvcp */
+                                spawnWithCallback(this.settings, [ddcutilPath, 'getvcp', '--brief', ddcVcpBrightnessId, '--bus', displayBus, '--sleep-multiplier', sleepMultiplier.toString()], vcpInfos  => {
                                     if (vcpInfos.indexOf('DDC communication failed') === -1 && vcpInfos.indexOf('No monitor detected') === -1) {
                                         const vcpInfosArray = filterVCPInfoSpecification(vcpInfos).split(' ');
                                         if (vcpInfosArray[2] !== 'ERR' && vcpInfosArray.length >= 5) {
