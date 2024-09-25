@@ -67,8 +67,6 @@ let syncing = false
 let pause_sync = false
 let internal_control = true
 
-//const ddcVcpBrightnessId = '10';
-const ddcVcpBrightnessId = '6B';
 const ddcVcpBrightnessIds = [
     //'fa',    // Non-existant; used to test fallback works
     '6B',      // Backlight Level: White
@@ -576,7 +574,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                                             const currentBrightness = vcpInfosArray[3] / vcpInfosArray[4];
 
                                             /* make display object */
-                                            display = {'bus': displayBus, 'max': maxBrightness, 'current': currentBrightness, 'name': displayNames[displayId]};
+                                            display = {'bus': displayBus, 'max': maxBrightness, 'current': currentBrightness, 'name': displayNames[displayId], 'vcpId': ddcVcpBrightnessIds[0]};
                                             displays.push(display);
 
                                             /* cheap way of making reloading all display slider in the panel */
