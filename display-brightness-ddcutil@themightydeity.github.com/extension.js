@@ -564,7 +564,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                             if (displayInGoodState) {
                                 /* read the current and max brightness using getvcp */
                                 let ddcVcpBrightnessIdsIndex = 0;
-                                let ddcutilCall = brightnessId =>  [ddcutilPath, 'getvcp', '--brief', brightnessId, '--bus', displayBus, '--sleep-multiplier', sleepMultiplier.toString()];
+                                let ddcutilCall = brightnessIdsIndex =>  [ddcutilPath, 'getvcp', '--brief', ddcVcpBrightnessIds[brightnessIdsIndex], '--bus', displayBus, '--sleep-multiplier', sleepMultiplier.toString()];
                                 let ddutilCallback = (brightnessIdsIndex, vcpInfos) => {
                                     if (vcpInfos.indexOf('DDC communication failed') === -1 && vcpInfos.indexOf('No monitor detected') === -1) {
                                         const vcpInfosArray = filterVCPInfoSpecification(vcpInfos).split(' ');
@@ -584,7 +584,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                                         }
                                     }
                                 };
-                                spawnWithCallback(this.settings, ddcutilCall(ddcVcpBrightnessIds[ddcVcpBrightnessIdsIndex]), vcpInfos => ddutilCallback(ddcVcpBrightnessIdsIndex, vcpInfos));
+                                spawnWithCallback(this.settings, ddcutilCall(ddcVcpBrightnessIdsIndex), vcpInfos => ddutilCallback(ddcVcpBrightnessIdsIndex, vcpInfos));
                             }
                         }
                     });
