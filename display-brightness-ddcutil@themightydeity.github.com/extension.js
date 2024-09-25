@@ -563,7 +563,6 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                             }
                             if (displayInGoodState) {
                                 /* read the current and max brightness using getvcp */
-                                let ddcVcpBrightnessIdsIndex = 0;
                                 let ddcutilCall = brightnessIdsIndex =>  [ddcutilPath, 'getvcp', '--brief', ddcVcpBrightnessIds[brightnessIdsIndex], '--bus', displayBus, '--sleep-multiplier', sleepMultiplier.toString()];
                                 let ddutilCallback = (brightnessIdsIndex, vcpInfos) => {
                                     if (vcpInfos.indexOf('DDC communication failed') === -1 && vcpInfos.indexOf('No monitor detected') === -1) {
@@ -576,7 +575,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                                             const currentBrightness = vcpInfosArray[3] / vcpInfosArray[4];
 
                                             /* make display object */
-                                            display = {'bus': displayBus, 'max': maxBrightness, 'current': currentBrightness, 'name': displayNames[displayId], 'vcpId': ddcVcpBrightnessIds[ddcVcpBrightnessIdsIndex]};
+                                            display = {'bus': displayBus, 'max': maxBrightness, 'current': currentBrightness, 'name': displayNames[displayId], 'vcpId': ddcVcpBrightnessIds[brightnessIdsIndex]};
                                             displays.push(display);
 
                                             /* cheap way of making reloading all display slider in the panel */
@@ -584,7 +583,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                                         }
                                     }
                                 };
-                                spawnWithCallback(this.settings, ddcutilCall(ddcVcpBrightnessIdsIndex), vcpInfos => ddutilCallback(ddcVcpBrightnessIdsIndex, vcpInfos));
+                                spawnWithCallback(this.settings, ddcutilCall(0), vcpInfos => ddutilCallback(0, vcpInfos));
                             }
                         }
                     });
