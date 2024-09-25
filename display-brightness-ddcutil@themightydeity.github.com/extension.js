@@ -69,6 +69,11 @@ let internal_control = true
 
 //const ddcVcpBrightnessId = '10';
 const ddcVcpBrightnessId = '6B';
+const ddcVcpBrightnessIds = [
+    //'fa',    // Non-existant; used to test fallback works
+    '6B',      // Backlight Level: White
+    '10',      // Brightness
+];
 
 /*
     instead of reading i2c bus everytime during startup,
