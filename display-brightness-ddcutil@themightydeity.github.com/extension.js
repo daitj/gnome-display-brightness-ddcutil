@@ -562,8 +562,9 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                                 displayInGoodState = vcpPowerInfosArray.length >= 4 && vcpPowerInfosArray[3] === 'x01';
                             }
                             if (displayInGoodState) {
+                                let ddcVcpBrightnessIdsIndex = 0;
                                 /* read the current and max brightness using getvcp */
-                                spawnWithCallback(this.settings, [ddcutilPath, 'getvcp', '--brief', ddcVcpBrightnessIds[0], '--bus', displayBus, '--sleep-multiplier', sleepMultiplier.toString()], vcpInfos  => {
+                                spawnWithCallback(this.settings, [ddcutilPath, 'getvcp', '--brief', ddcVcpBrightnessIds[ddcVcpBrightnessIdsIndex], '--bus', displayBus, '--sleep-multiplier', sleepMultiplier.toString()], vcpInfos  => {
                                     if (vcpInfos.indexOf('DDC communication failed') === -1 && vcpInfos.indexOf('No monitor detected') === -1) {
                                         const vcpInfosArray = filterVCPInfoSpecification(vcpInfos).split(' ');
                                         if (vcpInfosArray[2] !== 'ERR' && vcpInfosArray.length >= 5) {
@@ -574,7 +575,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                                             const currentBrightness = vcpInfosArray[3] / vcpInfosArray[4];
 
                                             /* make display object */
-                                            display = {'bus': displayBus, 'max': maxBrightness, 'current': currentBrightness, 'name': displayNames[displayId], 'vcpId': ddcVcpBrightnessIds[0]};
+                                            display = {'bus': displayBus, 'max': maxBrightness, 'current': currentBrightness, 'name': displayNames[displayId], 'vcpId': ddcVcpBrightnessIds[ddcVcpBrightnessIdsIndex]};
                                             displays.push(display);
 
                                             /* cheap way of making reloading all display slider in the panel */
