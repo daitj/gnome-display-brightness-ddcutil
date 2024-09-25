@@ -565,6 +565,13 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                                 /* read the current and max brightness using getvcp */
                                 let ddcutilCall = brightnessIdsIndex =>  [ddcutilPath, 'getvcp', '--brief', ddcVcpBrightnessIds[brightnessIdsIndex], '--bus', displayBus, '--sleep-multiplier', sleepMultiplier.toString()];
                                 let ddutilCallback = (brightnessIdsIndex, vcpInfos) => {
+                                    if (vcpInfos.indexOf('Unsupported feature code') !== -1) {
+                                        brightnessIdsIndex++;
+                                        if (brightnessIdsIndex < ddcVcpBrightnessIds.length) {
+                                            spawnWithCallback(this.settings, ddcutilCall(brightnessIdsIndex), vcpInfos => ddutilCallback(brightnessIdsIndex, vcpInfos));
+                                        };
+                                        return;
+                                    }
                                     if (vcpInfos.indexOf('DDC communication failed') === -1 && vcpInfos.indexOf('No monitor detected') === -1) {
                                         const vcpInfosArray = filterVCPInfoSpecification(vcpInfos).split(' ');
                                         if (vcpInfosArray[2] !== 'ERR' && vcpInfosArray.length >= 5) {
