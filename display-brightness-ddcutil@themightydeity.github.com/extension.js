@@ -215,8 +215,8 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         const ddcutilAdditionalArgs = this.settings.get_string('ddcutil-additional-args');
         const sleepMultiplier = this.settings.get_double('ddcutil-sleep-multiplier') / 40;
         const writer = () => {
-            brightnessLog(this.settings, `async ${ddcutilPath} setvcp ${ddcVcpBrightnessIds[0]} ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`);
-            GLib.spawn_command_line_async(`${ddcutilPath} setvcp ${ddcVcpBrightnessIds[0]} ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`);
+            brightnessLog(this.settings, `async ${ddcutilPath} setvcp ${display.vcpId} ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`);
+            GLib.spawn_command_line_async(`${ddcutilPath} setvcp ${display.vcpId} ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`);
         };
         brightnessLog(this.settings, `display ${display.name}, current: ${display.current} => ${newValue / 100}, new brightness: ${newBrightness}, new value: ${newValue}`);
         display.current = newValue / 100;
