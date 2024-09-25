@@ -68,9 +68,9 @@ let pause_sync = false
 let internal_control = true
 
 const ddcVcpBrightnessIds = [
-    //'fa',    // Non-existant; used to test fallback works
-    '6B',      // Backlight Level: White
-    '10',      // Brightness
+    // 'fa',    // Non-existant; used to test fallback works
+    '6B',       // Backlight Level: White
+    '10',       // Brightness
 ];
 
 /*
@@ -565,16 +565,13 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                                 /* read the current and max brightness using getvcp */
                                 let ddcutilCall = brightnessIdsIndex =>  [ddcutilPath, 'getvcp', '--brief', ddcVcpBrightnessIds[brightnessIdsIndex], '--bus', displayBus, '--sleep-multiplier', sleepMultiplier.toString()];
                                 let ddutilCallback = (brightnessIdsIndex, vcpInfos) => {
-                                    if (vcpInfos.indexOf('Unsupported feature code') !== -1) {
-                                        brightnessIdsIndex++;
-                                        if (brightnessIdsIndex < ddcVcpBrightnessIds.length) {
-                                            spawnWithCallback(this.settings, ddcutilCall(brightnessIdsIndex), vcpInfos => ddutilCallback(brightnessIdsIndex, vcpInfos));
-                                        };
-                                        return;
-                                    }
                                     if (vcpInfos.indexOf('DDC communication failed') === -1 && vcpInfos.indexOf('No monitor detected') === -1) {
                                         const vcpInfosArray = filterVCPInfoSpecification(vcpInfos).split(' ');
-                                        if (vcpInfosArray[2] !== 'ERR' && vcpInfosArray.length >= 5) {
+                                        if (vcpInfosArray[2] === 'ERR') {
+                                            if (brightnessIdsIndex+1 < ddcVcpBrightnessIds.length) {
+                                                spawnWithCallback(this.settings, ddcutilCall(brightnessIdsIndex+1), nextVcpInfos => ddutilCallback(brightnessIdsIndex+1, nextVcpInfos));
+                                            }
+                                        } else if (vcpInfosArray.length >= 5) {
                                             let display = {};
 
                                             const maxBrightness = vcpInfosArray[4];
