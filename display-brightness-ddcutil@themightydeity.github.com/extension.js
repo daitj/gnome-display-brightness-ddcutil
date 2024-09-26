@@ -67,6 +67,12 @@ let syncing = false
 let pause_sync = false
 let internal_control = true
 
+const ddcVcpBrightnessIds = [
+    // 'fa',    // Non-existant; used to test fallback works
+    '6B',       // Backlight Level: White
+    '10',       // Brightness
+];
+
 /*
     instead of reading i2c bus everytime during startup,
     as it is unlikely that bus number changes, we can read
@@ -209,8 +215,8 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         const ddcutilAdditionalArgs = this.settings.get_string('ddcutil-additional-args');
         const sleepMultiplier = this.settings.get_double('ddcutil-sleep-multiplier') / 40;
         const writer = () => {
-            brightnessLog(this.settings, `async ${ddcutilPath} setvcp 10 ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`);
-            GLib.spawn_command_line_async(`${ddcutilPath} setvcp 10 ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`);
+            brightnessLog(this.settings, `async ${ddcutilPath} setvcp ${display.vcpId} ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`);
+            GLib.spawn_command_line_async(`${ddcutilPath} setvcp ${display.vcpId} ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`);
         };
         brightnessLog(this.settings, `display ${display.name}, current: ${display.current} => ${newValue / 100}, new brightness: ${newBrightness}, new value: ${newValue}`);
         display.current = newValue / 100;
@@ -556,11 +562,16 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                                 displayInGoodState = vcpPowerInfosArray.length >= 4 && vcpPowerInfosArray[3] === 'x01';
                             }
                             if (displayInGoodState) {
-                                /* read the current and max brightness using getvcp 10 */
-                                spawnWithCallback(this.settings, [ddcutilPath, 'getvcp', '--brief', '10', '--bus', displayBus, '--sleep-multiplier', sleepMultiplier.toString()], vcpInfos  => {
+                                /* read the current and max brightness using getvcp */
+                                let ddcutilCall = brightnessIdsIndex =>  [ddcutilPath, 'getvcp', '--brief', ddcVcpBrightnessIds[brightnessIdsIndex], '--bus', displayBus, '--sleep-multiplier', sleepMultiplier.toString()];
+                                let ddutilCallback = (brightnessIdsIndex, vcpInfos) => {
                                     if (vcpInfos.indexOf('DDC communication failed') === -1 && vcpInfos.indexOf('No monitor detected') === -1) {
                                         const vcpInfosArray = filterVCPInfoSpecification(vcpInfos).split(' ');
-                                        if (vcpInfosArray[2] !== 'ERR' && vcpInfosArray.length >= 5) {
+                                        if (vcpInfosArray[2] === 'ERR') {
+                                            if (brightnessIdsIndex+1 < ddcVcpBrightnessIds.length) {
+                                                spawnWithCallback(this.settings, ddcutilCall(brightnessIdsIndex+1), nextVcpInfos => ddutilCallback(brightnessIdsIndex+1, nextVcpInfos));
+                                            }
+                                        } else if (vcpInfosArray.length >= 5) {
                                             let display = {};
 
                                             const maxBrightness = vcpInfosArray[4];
@@ -568,14 +579,15 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                                             const currentBrightness = vcpInfosArray[3] / vcpInfosArray[4];
 
                                             /* make display object */
-                                            display = {'bus': displayBus, 'max': maxBrightness, 'current': currentBrightness, 'name': displayNames[displayId]};
+                                            display = {'bus': displayBus, 'max': maxBrightness, 'current': currentBrightness, 'name': displayNames[displayId], 'vcpId': ddcVcpBrightnessIds[brightnessIdsIndex]};
                                             displays.push(display);
 
                                             /* cheap way of making reloading all display slider in the panel */
                                             this.reloadMenuWidgets();
                                         }
                                     }
-                                });
+                                };
+                                spawnWithCallback(this.settings, ddcutilCall(0), vcpInfos => ddutilCallback(0, vcpInfos));
                             }
                         }
                     });
