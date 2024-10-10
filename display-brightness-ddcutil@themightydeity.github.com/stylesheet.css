@@ -1,5 +1,5 @@
 .display-brightness-ddcutil-monitor-name-system-menu {
-    width: auto;
+    max-width: 60px;
     overflow: none;
     padding: 0px !important;
     margin: 0px !important;
