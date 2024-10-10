@@ -1,6 +1,9 @@
 .display-brightness-ddcutil-monitor-name-system-menu {
     width: auto; max-width: 60px;
-    overflow: hidden;
+    /*"max-width" is a valid property on Ubuntu 24.04.1 LTS with Gnome 46 (tested OK!)*/
+    /*"overflow: hidden" is not supported in GTK-CSS... It could only be implemented
+    this way: https://docs.gtk.org/gtk4/enum.Overflow.html 
+    It's already set to "hidden", somehow somewhere, anyway. :) */
     padding: 0px !important;
     margin: 0px !important;
 }
