@@ -140,6 +140,23 @@
           </object>
         </child>
         <child>
+          <object class="AdwExpanderRow">
+            <property name="title" translatable="yes">DDC VCP Brightness Ids</property>
+            <child>
+              <object class="AdwSwitchRow" id="try_ddc_vcp_backlight_level_white_6b">
+                <property name="title" translatable="yes">Backlight Level: White (6B)</property>
+                <signal name="notify::active" handler="onDdcVcpBrightnessIdsChanged" swapped="no" />
+              </object>
+            </child>
+            <child>
+              <object class="AdwSwitchRow" id="try_ddc_vcp_brightness_10">
+                <property name="title" translatable="yes">Brightness (10)</property>
+                <signal name="notify::active" handler="onDdcVcpBrightnessIdsChanged" swapped="no" />
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
           <object class="AdwSwitchRow" id="disable_display_state_check_row">
             <property name="title" translatable="yes">Disable Display State Check</property>
             <property name="subtitle" translatable="yes">Disables the check for the display power state before changing brightness, might help in detecting more displays</property>

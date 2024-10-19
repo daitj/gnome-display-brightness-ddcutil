@@ -67,12 +67,6 @@ let syncing = false
 let pause_sync = false
 let internal_control = true
 
-const ddcVcpBrightnessIds = [
-    // 'fa',    // Non-existant; used to test fallback works
-    '6B',       // Backlight Level: White
-    '10',       // Brightness
-];
-
 /*
     instead of reading i2c bus everytime during startup,
     as it is unlikely that bus number changes, we can read
@@ -563,12 +557,12 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                             }
                             if (displayInGoodState) {
                                 /* read the current and max brightness using getvcp */
-                                let ddcutilCall = brightnessIdsIndex =>  [ddcutilPath, 'getvcp', '--brief', ddcVcpBrightnessIds[brightnessIdsIndex], '--bus', displayBus, '--sleep-multiplier', sleepMultiplier.toString()];
+                                let ddcutilCall = brightnessIdsIndex =>  [ddcutilPath, 'getvcp', '--brief', this.settings.get_strv('ddc-vcp-brightness-ids')[brightnessIdsIndex], '--bus', displayBus, '--sleep-multiplier', sleepMultiplier.toString()];
                                 let ddutilCallback = (brightnessIdsIndex, vcpInfos) => {
                                     if (vcpInfos.indexOf('DDC communication failed') === -1 && vcpInfos.indexOf('No monitor detected') === -1) {
                                         const vcpInfosArray = filterVCPInfoSpecification(vcpInfos).split(' ');
                                         if (vcpInfosArray[2] === 'ERR') {
-                                            if (brightnessIdsIndex+1 < ddcVcpBrightnessIds.length) {
+                                            if (brightnessIdsIndex+1 < this.settings.get_strv('ddc-vcp-brightness-ids').length) {
                                                 spawnWithCallback(this.settings, ddcutilCall(brightnessIdsIndex+1), nextVcpInfos => ddutilCallback(brightnessIdsIndex+1, nextVcpInfos));
                                             }
                                         } else if (vcpInfosArray.length >= 5) {
@@ -579,7 +573,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                                             const currentBrightness = vcpInfosArray[3] / vcpInfosArray[4];
 
                                             /* make display object */
-                                            display = {'bus': displayBus, 'max': maxBrightness, 'current': currentBrightness, 'name': displayNames[displayId], 'vcpId': ddcVcpBrightnessIds[brightnessIdsIndex]};
+                                            display = {'bus': displayBus, 'max': maxBrightness, 'current': currentBrightness, 'name': displayNames[displayId], 'vcpId': this.settings.get_strv('ddc-vcp-brightness-ids')[brightnessIdsIndex]};
                                             displays.push(display);
 
                                             /* cheap way of making reloading all display slider in the panel */
@@ -646,6 +640,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             'ddcutil-binary-path': this.settings.get_string('ddcutil-binary-path'),
             'decrease-brightness-shortcut': this.settings.get_strv('decrease-brightness-shortcut'),
             'increase-brightness-shortcut': this.settings.get_strv('increase-brightness-shortcut'),
+            'ddc-vcp-brightness-ids':  this.settings.get_strv('ddc-vcp-brightness-ids'),
         };
         return out;
     }

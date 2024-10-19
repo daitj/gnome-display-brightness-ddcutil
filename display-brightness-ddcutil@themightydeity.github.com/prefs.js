@@ -29,6 +29,8 @@ const PrefsWidget = GObject.registerClass({
         'queue_ms_row',
         'ddcutil_additional_args_row',
         'allow_zero_brightness_row',
+        'try_ddc_vcp_backlight_level_white_6b',
+        'try_ddc_vcp_brightness_10',
         'disable_display_state_check_row',
         'verbose_debugging_row',
     ],
@@ -128,6 +130,8 @@ const PrefsWidget = GObject.registerClass({
             Gio.SettingsBindFlags.DEFAULT
         );
 
+        this.settings.connect('changed::ddc-vcp-brightness-ids', () => this._readDdcVcpBrightnessIds());
+        this._readDdcVcpBrightnessIds();
 
         this.settings.connect('changed::increase-brightness-shortcut', () => {
             this._increase_shortcut_button.keybinding = this.settings.get_strv('increase-brightness-shortcut')[0];
@@ -149,6 +153,21 @@ const PrefsWidget = GObject.registerClass({
         this.settings.connect('changed::hide-system-indicator', () => {
             this._position_system_indicator_row.sensitive = !this.settings.get_boolean('hide-system-indicator');
         });
+    }
+
+    _readDdcVcpBrightnessIds() {
+        let brightness_ids = this.settings.get_strv('ddc-vcp-brightness-ids');
+        this._try_ddc_vcp_backlight_level_white_6b.active = brightness_ids.includes('6B');
+        this._try_ddc_vcp_brightness_10.active = brightness_ids.includes('10');
+
+    }
+
+    onDdcVcpBrightnessIdsChanged() {
+        let brightness_ids = [
+            this._try_ddc_vcp_backlight_level_white_6b.active ? '6B' : undefined,
+            this._try_ddc_vcp_brightness_10.active ? '10' : undefined,
+        ].filter(v => v !== undefined);
+        this.settings.set_strv('ddc-vcp-brightness-ids', brightness_ids);
     }
 
     onButtonLocationChanged() {

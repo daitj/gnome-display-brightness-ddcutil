@@ -84,6 +84,15 @@
       <default>false</default>
       <summary>Allow zero brightness</summary>
     </key>
+    <key type="as" name="ddc-vcp-brightness-ids">
+      <default><![CDATA[['10']]]></default>
+      <summary>
+        The DDC VCP Brightness Ids to use in descending order of priority.
+        Common IDs are "Backlight Level: White (6B)" and "Brightness (10)".
+        IDs that a monitor does not support will be skipped and the next in the
+        list we be tried.
+      </summary>
+    </key>
     <key type="b" name="disable-display-state-check">
       <default>false</default>
       <summary>Disable display state check</summary>
