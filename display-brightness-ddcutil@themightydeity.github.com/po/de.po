@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-09 01:21+0300\n"
+"POT-Creation-Date: 2024-10-17 23:27+0200\n"
 "PO-Revision-Date: 2022-02-13 09:53+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -27,12 +27,10 @@ msgid "Enable \"All\" Slider"
 msgstr "Gemeinsamen Schieberegler anzeigen"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:14
-#, fuzzy
 msgid "Enable \"Internal\" Slider"
-msgstr "Gemeinsamen Schieberegler anzeigen"
+msgstr "Internen Schieberegler anzeigen"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:19
-#, fuzzy
 msgid "Use Only \"All\" Slider"
 msgstr "Nur gemeinsame Regler anzeigen"
 
@@ -61,9 +59,8 @@ msgid "Hide System Indicator"
 msgstr "Systemindikator verstecken"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:57
-#, fuzzy
 msgid "Position in System Indicator"
-msgstr "Systemindikator verstecken"
+msgstr "Position des Systemindikators"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:65
 msgid "Position in System Menu"
@@ -106,37 +103,46 @@ msgid "`ddcutil` Queue ms"
 msgstr ""
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:139
-#, fuzzy
 msgid "Allow Zero Brightness"
 msgstr "Vollständige Abdunkelung erlauben"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:144
-#, fuzzy
-msgid "Disable Display State Check"
-msgstr "Status-Überprüfung deaktivieren"
+msgid "DDC VCP Brightness Ids"
+msgstr "DDC VCP Helligkeits Ids"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:145
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:147
+msgid "Backlight Level: White (6B)"
+msgstr "Hintergrund-Helligkeit: Weiß (6B) "
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:153
+msgid "Brightness (10)"
+msgstr "Helligkeit (10)"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:161
+msgid "Disable Display State Check"
+msgstr "Status-Überprüfung Bildschrim deaktivieren"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:162
 msgid ""
 "Disables the check for the display power state before changing brightness, "
 "might help in detecting more displays"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:150
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:167
 msgid "Verbose debugging"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:158
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:175
 msgid "Top Bar"
 msgstr "Obere Leiste"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:159
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:176
 msgid "System Menu"
 msgstr "System-Menü"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/shortcut.ui:11
-#, fuzzy
 msgid "Set Shortcut…"
-msgstr "Tastaturkurzbefehle"
+msgstr "Tastaturkurzbefehle setzen"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/shortcut.ui:65
 msgid "Add Custom Shortcut"
