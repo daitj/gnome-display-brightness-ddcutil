@@ -2,7 +2,7 @@ import Adw from 'gi://Adw';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
-import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+import {gettext as _, ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 import * as ShortcutWidget from './shortcut.js';
 
@@ -27,6 +27,9 @@ const PrefsWidget = GObject.registerClass({
         'ddcutil_binary_path_row',
         'sleep_multiplier_row',
         'queue_ms_row',
+        'vcp_code_list_expander',
+        'vcp_code_row_6b',
+        'vcp_code_row_10',
         'ddcutil_additional_args_row',
         'allow_zero_brightness_row',
         'disable_display_state_check_row',
@@ -108,6 +111,19 @@ const PrefsWidget = GObject.registerClass({
         this._queue_ms_row.value = this.settings.get_double('ddcutil-queue-ms');
 
         this.settings.bind(
+            'vcp-10',
+            this._vcp_code_row_10,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+        this.settings.bind(
+            'vcp-6b',
+            this._vcp_code_row_6b,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+
+        this.settings.bind(
             'allow-zero-brightness',
             this._allow_zero_brightness_row,
             'active',
@@ -149,21 +165,86 @@ const PrefsWidget = GObject.registerClass({
         this.settings.connect('changed::hide-system-indicator', () => {
             this._position_system_indicator_row.sensitive = !this.settings.get_boolean('hide-system-indicator');
         });
-    }
 
+        this.settings.connect('changed::show-all-slider', () => {
+            this.fixSubmenuModeVisibility()
+        });
+        this.settings.connect('changed::only-all-slider', () => {
+            this.fixSubmenuModeVisibility()
+        });
+
+        this.settings.connect('changed::vcp-10', () => {
+            this.fixVCPInfoSubtitle()
+            this.disableLastVCP()
+        });
+        this.settings.connect('changed::vcp-6b', () => {
+            this.fixVCPInfoSubtitle()
+            this.disableLastVCP()
+        });
+        this.fixVCPInfoSubtitle()
+        this.disableLastVCP()
+        this.fixSubmenuModeVisibility()
+    }
+    getVCPList(){
+        let vcpList = []
+        if(this.settings.get_boolean('vcp-6b')){
+            vcpList.push("6B")
+        }
+        if(this.settings.get_boolean('vcp-10')){
+            vcpList.push("10")
+        }
+        return vcpList
+    }
+    disableLastVCP(){
+        const vcpList = this.getVCPList()
+        this._vcp_code_row_6b.sensitive = true
+        this._vcp_code_row_10.sensitive = true
+        if(vcpList.length == 1){
+            if(vcpList[0] == "10"){
+                this._vcp_code_row_10.sensitive = false
+            }else{
+                this._vcp_code_row_6b.sensitive = false
+            }
+        }
+    }
+    fixVCPInfoSubtitle(){
+        const vcpList = this.getVCPList()
+        this._vcp_code_list_expander.subtitle = `${vcpList.join(" ,")}`
+    }
+    fixSubmenuModeVisibility(){
+        const allSliderActive = this.settings.get_boolean('show-all-slider')
+        const onlyAllSliderActive  = this.settings.get_boolean('only-all-slider')
+        const buttonLocation = this.settings.get_int('button-location')
+        this._sub_menu_row.sensitive = true;
+        this._sub_menu_row.set_subtitle("")
+        const disableSubMenu = (subtitle) => {
+            this._sub_menu_row.sensitive = false;
+            this._sub_menu_row.set_subtitle(subtitle)
+            this._sub_menu_row.set_active(false)
+        }
+        if (buttonLocation === 0) {
+            disableSubMenu(_('Submenu mode cannot be enabled in TopBar mode '))
+        }
+        else{
+            if(!allSliderActive){
+                disableSubMenu(_('Need to enable ("All" slider)'))
+            }else if(allSliderActive && onlyAllSliderActive){
+                disableSubMenu(_('Need to disable (Only "All" slider)'))
+            }
+        }
+    } 
     onButtonLocationChanged() {
         this.settings.set_int('button-location', this._button_location_combo_row.selected);
         if (this._button_location_combo_row.selected === 0) {
             this._hide_system_indicator_row.sensitive = false;
-            this._position_system_indicator_row.sensitive = false;
             this._position_system_menu_row.sensitive = false;
-            this._sub_menu_row.sensitive = false;
+            this._position_system_indicator_row.sensitive = false;
         } else {
             this._hide_system_indicator_row.sensitive = true;
             this._position_system_menu_row.sensitive = true;
             this._position_system_indicator_row.sensitive = !this.settings.get_boolean('hide-system-indicator');
-            this._sub_menu_row.sensitive = true;
         }
+        this.fixSubmenuModeVisibility()
     }
 
     onMenuPositionValueChanged() {

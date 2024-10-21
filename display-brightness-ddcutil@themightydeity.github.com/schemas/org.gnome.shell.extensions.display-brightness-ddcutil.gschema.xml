@@ -80,6 +80,14 @@
       <default>130</default>
       <summary>`ddcutil` call queue time in ms, tweak it around to make brightness update faster.</summary>
     </key>
+    <key type="b" name="vcp-10">
+      <default>true</default>
+      <summary>Use VCP code 10</summary>
+    </key>
+    <key type="b" name="vcp-6b">
+      <default>false</default>
+      <summary>Use VCP code 6B</summary>
+    </key>
     <key type="b" name="allow-zero-brightness">
       <default>false</default>
       <summary>Allow zero brightness</summary>

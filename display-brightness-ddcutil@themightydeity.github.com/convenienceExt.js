@@ -41,6 +41,11 @@ export function spawnWithCallback(settings, argv, callback) {
  * @param {string} val The `getvcp` feature code output
  * @returns {string} An array containing valid VPC lines, e.g. 'VPC D6 SNC 0x1'
  */
-export function filterVCPInfoSpecification(val) {
-    return val.trim().match(/^VCP.*$/gm).join('\n')
+export function getVCPInfoAsArray(val) {
+    const matched = val.trim().match(/^VCP.*$/gm)
+    if(matched !== null){
+        return matched.join('\n').split(' ')
+    }else{
+        return []
+    }
 }

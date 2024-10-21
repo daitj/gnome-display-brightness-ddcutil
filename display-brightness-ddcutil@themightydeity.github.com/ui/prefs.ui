@@ -17,7 +17,8 @@
         <child>
           <object class="AdwSwitchRow" id="only_all_slider_row">
             <property name="title" translatable="yes">Use Only "All" Slider</property>
-            <property name="sensitive" bind-source="show_all_slider_row" bind-property="active" bind-flags="sync-create"/>
+            <property name="sensitive" bind-source="show_all_slider_row" bind-property="active"
+              bind-flags="sync-create" />
           </object>
         </child>
         <child>
@@ -132,6 +133,24 @@
             <property name="numeric">True</property>
             <property name="adjustment">queue_ms_adjustment</property>
             <signal name="changed" handler="onQueueMsValueChanged" swapped="no" />
+          </object>
+        </child>
+        <child>
+          <object class="AdwExpanderRow" id="vcp_code_list_expander">
+            <property name="title" translatable="yes">VCP codes in use</property>
+            <property name="subtitle"></property>
+            <child>
+              <object class="AdwSwitchRow" id="vcp_code_row_10">
+                <property name="title">10</property>
+                <property name="subtitle" translatable="yes">Brightness</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSwitchRow" id="vcp_code_row_6b">
+                <property name="title">6B</property>
+                <property name="subtitle" translatable="yes">White Backlight</property>
+              </object>
+            </child>
           </object>
         </child>
         <child>

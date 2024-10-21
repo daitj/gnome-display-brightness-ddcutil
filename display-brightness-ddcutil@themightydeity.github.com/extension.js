@@ -23,9 +23,9 @@ import Shell from 'gi://Shell';
 // menu items
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
-import {Extension,  gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+import { Extension, gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 
-import {loadInterfaceXML} from 'resource:///org/gnome/shell/misc/fileUtils.js';
+import { loadInterfaceXML } from 'resource:///org/gnome/shell/misc/fileUtils.js';
 
 import * as Convenience from './convenienceExt.js';
 import * as Indicator from './indicator.js';
@@ -44,7 +44,7 @@ const {
 const {
     brightnessLog,
     spawnWithCallback,
-    filterVCPInfoSpecification
+    getVCPInfoAsArray
 } = Convenience;
 
 /*
@@ -66,12 +66,6 @@ let monitorSignals = {};
 let syncing = false
 let pause_sync = false
 let internal_control = true
-
-const ddcVcpBrightnessIds = [
-    // 'fa',    // Non-existant; used to test fallback works
-    '6B',       // Backlight Level: White
-    '10',       // Brightness
-];
 
 /*
     instead of reading i2c bus everytime during startup,
@@ -143,11 +137,11 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 clearTimeout(_reloadExtensionTimer);
 
             Object.keys(writeCollection).forEach(bus => {
-                if (writeCollection[bus].interval !== null){
+                if (writeCollection[bus].interval !== null) {
                     clearInterval(writeCollection[bus].interval);
                 }
             });
-            if(monitorChangeTimeout !== null){
+            if (monitorChangeTimeout !== null) {
                 clearTimeout(monitorChangeTimeout)
                 monitorChangeTimeout = null;
             }
@@ -203,8 +197,8 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
 
     setBrightness(display, newValue) {
         if (display.bus === 'internal') {
-           this.setInternalBrightness(newValue);
-           return;
+            this.setInternalBrightness(newValue);
+            return;
         }
         let newBrightness = parseInt((newValue / 100) * display.max);
         if (newBrightness === 0) {
@@ -215,8 +209,8 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         const ddcutilAdditionalArgs = this.settings.get_string('ddcutil-additional-args');
         const sleepMultiplier = this.settings.get_double('ddcutil-sleep-multiplier') / 40;
         const writer = () => {
-            brightnessLog(this.settings, `async ${ddcutilPath} setvcp ${display.vcpId} ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`);
-            GLib.spawn_command_line_async(`${ddcutilPath} setvcp ${display.vcpId} ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`);
+            brightnessLog(this.settings, `async ${ddcutilPath} setvcp ${display.vcp} ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`);
+            GLib.spawn_command_line_async(`${ddcutilPath} setvcp ${display.vcp} ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`);
         };
         brightnessLog(this.settings, `display ${display.name}, current: ${display.current} => ${newValue / 100}, new brightness: ${newBrightness}, new value: ${newValue}`);
         display.current = newValue / 100;
@@ -340,7 +334,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             allslider.connect('slider-change', onAllSliderChange);
             if (this.settings.get_boolean('show-sliders-in-submenu'))
                 allslider.menuEnabled = true
-                allslider.menu.setHeader('display-brightness-symbolic', 'Brightness');
+            allslider.menu.setHeader('display-brightness-symbolic', 'Brightness');
         }
         mainMenuButton.addMenuItem(allslider);
 
@@ -516,18 +510,98 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         });
         mainMenuButton.addMenuItem(menuItem);
     }
+    busValidate(ddcLine) {
+        return ddcLine.indexOf('/dev/i2c-') !== -1 && ddcLine.indexOf('Associated non-phantom display') === -1
+    }
+
+    getVCPList() {
+        let vcpList = []
+        if (this.settings.get_boolean('vcp-6b')) {
+            vcpList.push("6B")
+        }
+        if (this.settings.get_boolean('vcp-10')) {
+            vcpList.push("10")
+        }
+        return vcpList
+    }
+
+    displayInGoodState(ddcutilResponse) {
+        const ddcutilResponseArray = getVCPInfoAsArray(ddcutilResponse)
+        let displayInGoodState = true;
+        if (!this.settings.get_boolean('disable-display-state-check')) {
+            /*
+                D6 = Power mode
+                x01 = DPM: On,  DPMS: Off
+            */
+            displayInGoodState = ddcutilResponseArray.length >= 4 && ddcutilResponseArray[3] === 'x01';
+        }
+        return displayInGoodState
+    }
+
+    displayValidate(ddcutilResponse) {
+        return (ddcutilResponse.indexOf('DDC communication failed') === -1 && ddcutilResponse.indexOf('No monitor detected') === -1)
+    }
+
+    displayResponseError(ddcutilResponse) {
+        const ddcutilResponseArray = getVCPInfoAsArray(ddcutilResponse)
+        return (ddcutilResponseArray[2] === 'ERR')
+    }
+
+    afterGetDdcutilBrightnessResponseSuccess(displayId, displayBus, displayNames, vcp, ddcutilResponseArray) {
+        let display = {};
+        const maxBrightness = ddcutilResponseArray[4];
+        /* we need current brightness in the scale of 0 to 1 for slider*/
+        const currentBrightness = ddcutilResponseArray[3] / ddcutilResponseArray[4];
+        /* make display object */
+        display = { 'bus': displayBus, 'max': maxBrightness, 'current': currentBrightness, 'name': displayNames[displayId], 'vcp': vcp };
+        brightnessLog(this.settings, `added display to list ${JSON.stringify(display)}`);
+        displays.push(display);
+
+        /* cheap way of reloading all display slider in the panel */
+        this.reloadMenuWidgets();
+    }
+
+    ddcutilCommandLine(vcp, displayBus) {
+        const ddcutilPath = this.settings.get_string('ddcutil-binary-path');
+        const sleepMultiplier = this.settings.get_double('ddcutil-sleep-multiplier') / 40;
+        return [ddcutilPath, 'getvcp', '--brief', vcp, '--bus', displayBus, '--sleep-multiplier', sleepMultiplier.toString()]
+    }
+
+    getDdcutilResponse(displayId, displayBus, displayNames, vcpListIndex, ddcutilResponse) {
+        //this will try and call getvcp on each vcp from vcpList until it doesn't return an error.
+        const vcpList = this.getVCPList()
+        if (this.displayValidate(ddcutilResponse)) {
+            if (this.displayResponseError(ddcutilResponse)) {
+                vcpListIndex += 1
+                if (vcpListIndex < vcpList.length) {
+                    /* read the current and max brightness using getvcp */
+                    brightnessLog(this.settings, `calling ddcutil getvcp ${vcpList[vcpListIndex]} for bus ${displayBus}`);
+                    spawnWithCallback(this.settings, this.ddcutilCommandLine(vcpList[vcpListIndex], displayBus),
+                        ddcutilReponseInner => {
+                            brightnessLog(this.settings, `ddcutil getvcp ${vcpList[vcpListIndex]} for bus ${displayBus} is : ${ddcutilReponseInner}`);
+                            return this.getDdcutilResponse(displayId, displayBus, displayNames, vcpListIndex, ddcutilReponseInner)
+                        });
+                }
+            } else {
+                const ddcutilResponseArray = getVCPInfoAsArray(ddcutilResponse)
+                if (ddcutilResponseArray.length >= 5){
+                    brightnessLog(this.settings, `ddcutil getvcp  ${vcpList[vcpListIndex]} got success response for bus ${displayBus}`);
+                    this.afterGetDdcutilBrightnessResponseSuccess(displayId, displayBus, displayNames, vcpList[vcpListIndex], ddcutilResponseArray)
+                }
+            }
+        }
+    }
 
     parseDisplaysInfoAndAddToPanel(ddcutilBriefInfo) {
         if (this.settings.get_boolean('show-internal-slider')) {
             let proxy = new BrightnessProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH);
             let current = proxy.Brightness / 100
 
-            let display = {'bus': 'internal', 'max': 100, 'current': current, 'name': _('Internal')}
+            let display = { 'bus': 'internal', 'max': 100, 'current': current, 'name': _('Internal') }
             if (Number.isInteger(current) && current >= 0)
                 displays.push(display)
         }
         try {
-            const ddcutilPath = this.settings.get_string('ddcutil-binary-path');
             const displayNames = [];
             /*
                 due to spawnWithCallback fetching faster information for second display in list before first one
@@ -537,58 +611,23 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             */
             let displayLoopId = 0;
             brightnessLog(this.settings, `ddcutil brief info:\n${ddcutilBriefInfo}`);
-            const sleepMultiplier = this.settings.get_double('ddcutil-sleep-multiplier') / 40;
             ddcutilBriefInfo.split('\n').map(ddcLine => {
-                if (ddcLine.indexOf('/dev/i2c-') !== -1 && ddcLine.indexOf('Associated non-phantom display') === -1) {
+                if (this.busValidate(ddcLine)) {
                     brightnessLog(this.settings, `ddcutil brief info found bus line:\n ${ddcLine}`);
                     /* I2C bus comes first, so when that is detect start a new display object */
                     const displayBus = ddcLine.split('/dev/i2c-')[1].trim();
                     /* save displayLoopId as a const for rest of the async calls below here*/
                     const displayId = displayLoopId;
                     /* check if display is on or not */
-                    brightnessLog(this.settings, `ddcutil reading display state for bus: ${displayBus}`);
-                    spawnWithCallback(this.settings, [ddcutilPath, 'getvcp', '--brief', 'D6', '--bus', displayBus, '--sleep-multiplier', sleepMultiplier.toString()], vcpPowerInfos => {
-                        brightnessLog(this.settings, `ddcutil reading display status for bus: ${displayBus} is: ${vcpPowerInfos}`);
+                    brightnessLog(this.settings, `ddcutil reading display power state for bus: ${displayBus}`);
+                    spawnWithCallback(this.settings, this.ddcutilCommandLine('D6', displayBus), ddcutilResponsePowerMode => {
+                        brightnessLog(this.settings, `ddcutil display power state for bus: ${displayBus} is: ${ddcutilResponsePowerMode}`);
                         /* only add display to list if ddc communication is supported with the bus*/
-                        if (vcpPowerInfos.indexOf('DDC communication failed') === -1 && vcpPowerInfos.indexOf('No monitor detected') === -1) {
-                            const vcpPowerInfosArray = filterVCPInfoSpecification(vcpPowerInfos).split(' ')
-
-                            let displayInGoodState = true;
-                            if (!this.settings.get_boolean('disable-display-state-check')) {
-                                /*
-                                    D6 = Power mode
-                                    x01 = DPM: On,  DPMS: Off
-                                */
-                                displayInGoodState = vcpPowerInfosArray.length >= 4 && vcpPowerInfosArray[3] === 'x01';
-                            }
-                            if (displayInGoodState) {
-                                /* read the current and max brightness using getvcp */
-                                let ddcutilCall = brightnessIdsIndex =>  [ddcutilPath, 'getvcp', '--brief', ddcVcpBrightnessIds[brightnessIdsIndex], '--bus', displayBus, '--sleep-multiplier', sleepMultiplier.toString()];
-                                let ddutilCallback = (brightnessIdsIndex, vcpInfos) => {
-                                    if (vcpInfos.indexOf('DDC communication failed') === -1 && vcpInfos.indexOf('No monitor detected') === -1) {
-                                        const vcpInfosArray = filterVCPInfoSpecification(vcpInfos).split(' ');
-                                        if (vcpInfosArray[2] === 'ERR') {
-                                            if (brightnessIdsIndex+1 < ddcVcpBrightnessIds.length) {
-                                                spawnWithCallback(this.settings, ddcutilCall(brightnessIdsIndex+1), nextVcpInfos => ddutilCallback(brightnessIdsIndex+1, nextVcpInfos));
-                                            }
-                                        } else if (vcpInfosArray.length >= 5) {
-                                            let display = {};
-
-                                            const maxBrightness = vcpInfosArray[4];
-                                            /* we need current brightness in the scale of 0 to 1 for slider*/
-                                            const currentBrightness = vcpInfosArray[3] / vcpInfosArray[4];
-
-                                            /* make display object */
-                                            display = {'bus': displayBus, 'max': maxBrightness, 'current': currentBrightness, 'name': displayNames[displayId], 'vcpId': ddcVcpBrightnessIds[brightnessIdsIndex]};
-                                            displays.push(display);
-
-                                            /* cheap way of making reloading all display slider in the panel */
-                                            this.reloadMenuWidgets();
-                                        }
-                                    }
-                                };
-                                spawnWithCallback(this.settings, ddcutilCall(0), vcpInfos => ddutilCallback(0, vcpInfos));
-                            }
+                        if (this.displayValidate(ddcutilResponsePowerMode) &&
+                            this.displayInGoodState(ddcutilResponsePowerMode)) {
+                            // start with an ERR, so that the getDdcutilResponse will directly call 
+                            // move to call with index 0
+                            this.getDdcutilResponse(displayId, displayBus, displayNames, -1, "VCP 0 ERR")
                         }
                     });
                 }
@@ -606,8 +645,8 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
 
     getDisplaysInfoAsync() {
         const ddcutilPath = this.settings.get_string('ddcutil-binary-path');
-        spawnWithCallback(this.settings, [ddcutilPath, 'detect', '--brief'], stdout => {
-            this.parseDisplaysInfoAndAddToPanel(stdout);
+        spawnWithCallback(this.settings, [ddcutilPath, 'detect', '--brief'], ddcutilBriefInfo => {
+            this.parseDisplaysInfoAndAddToPanel(ddcutilBriefInfo);
         });
     }
 
@@ -635,6 +674,9 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             'show-all-slider': this.settings.get_boolean('show-all-slider'),
             'show-display-name': this.settings.get_boolean('show-display-name'),
             'show-value-label': this.settings.get_boolean('show-value-label'),
+            'show-sliders-in-submenu': this.settings.get_boolean('show-sliders-in-submenu'),
+            'vcp-6b': this.settings.get_boolean('vcp-6b'),
+            'vcp-10': this.settings.get_boolean('vcp-10'),
             'verbose-debugging': this.settings.get_boolean('verbose-debugging'),
             'ddcutil-queue-ms': this.settings.get_double('ddcutil-queue-ms'),
             'ddcutil-sleep-multiplier': this.settings.get_double('ddcutil-sleep-multiplier'),
@@ -692,6 +734,12 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 this.onSettingsChange();
             }),
             reload: this.settings.connect('changed::reload', () => {
+                this.reloadExtension();
+            }),
+            vcp6b: this.settings.connect('changed::vcp-6b', () => {
+                this.reloadExtension();
+            }),
+            vcp10: this.settings.connect('changed::vcp-10', () => {
                 this.reloadExtension();
             }),
             indicator: this.settings.connect('changed::button-location', () => {
