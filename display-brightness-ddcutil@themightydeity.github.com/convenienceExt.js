@@ -27,6 +27,9 @@ export function spawnWithCallback(settings, argv, callback) {
                     callback(stderr);
                 else if (stdout)
                     callback(stdout);
+                else {
+                    callback("");
+                }
             }
         } catch (e) {
             brightnessLog(settings, e.message);
