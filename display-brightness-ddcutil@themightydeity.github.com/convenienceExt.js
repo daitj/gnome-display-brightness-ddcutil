@@ -10,28 +10,30 @@ export function brightnessLog(settings, str) {
         console.log(`display-brightness-ddcutil extension:\n${str}`);
 }
 
-export function spawnWithCallback(settings, argv, callback) {
-    const proc = Gio.Subprocess.new(argv, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
+export function isNullOrWhitespace(str) {
+    return str === undefined || str === null || str.match(/^ *$/) !== null;
+}
 
-    proc.communicate_utf8_async(null, null, (proc, res) => {
-        try {
-            const [, stdout, stderr] = proc.communicate_utf8_finish(res);
-            if (proc.get_successful()) {
+export function spawnWithCallback(settings, argv, callback) {
+    try {
+        const proc = Gio.Subprocess.new(argv, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
+
+        const [_, stdout, stderr] = proc.communicate_utf8(null, null);
+        if (proc.get_successful()) {
+            callback(stdout);
+        } else {
+            /*
+                errors from ddcutil (like monitor not found) were actually in stdout
+                only the process return code was 1
+            */
+            if (stderr)
+                callback(stderr);
+            else if (stdout)
                 callback(stdout);
-            } else {
-                /*
-                    errors from ddcutil (like monitor not found) were actually in stdout
-                    only the process return code was 1
-                */
-                if (stderr)
-                    callback(stderr);
-                else if (stdout)
-                    callback(stdout);
-            }
-        } catch (e) {
-            brightnessLog(settings, e.message);
         }
-    });
+    } catch (e) {
+        brightnessLog(settings, e.message);
+    }
 }
 
 

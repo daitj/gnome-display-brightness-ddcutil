@@ -44,7 +44,8 @@ const {
 const {
     brightnessLog,
     spawnWithCallback,
-    getVCPInfoAsArray
+    getVCPInfoAsArray,
+    isNullOrWhitespace
 } = Convenience;
 
 /*
@@ -547,13 +548,13 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         return (ddcutilResponseArray[2] === 'ERR')
     }
 
-    afterGetDdcutilBrightnessResponseSuccess(displayId, displayBus, displayNames, vcp, ddcutilResponseArray) {
+    afterGetDdcutilBrightnessResponseSuccess(displayBus, displayName, vcp, ddcutilResponseArray) {
         let display = {};
         const maxBrightness = ddcutilResponseArray[4];
         /* we need current brightness in the scale of 0 to 1 for slider*/
         const currentBrightness = ddcutilResponseArray[3] / ddcutilResponseArray[4];
         /* make display object */
-        display = { 'bus': displayBus, 'max': maxBrightness, 'current': currentBrightness, 'name': displayNames[displayId], 'vcp': vcp };
+        display = { 'bus': displayBus, 'max': maxBrightness, 'current': currentBrightness, 'name': displayName, 'vcp': vcp };
         brightnessLog(this.settings, `added display to list ${JSON.stringify(display)}`);
         displays.push(display);
 
@@ -567,7 +568,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         return [ddcutilPath, 'getvcp', '--brief', vcp, '--bus', displayBus, '--sleep-multiplier', sleepMultiplier.toString()]
     }
 
-    getDdcutilResponse(displayId, displayBus, displayNames, vcpListIndex, ddcutilResponse) {
+    getDdcutilResponse(displayBus, displayName, vcpListIndex, ddcutilResponse) {
         //this will try and call getvcp on each vcp from vcpList until it doesn't return an error.
         const vcpList = this.getVCPList()
         if (this.displayValidate(ddcutilResponse)) {
@@ -579,14 +580,14 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                     spawnWithCallback(this.settings, this.ddcutilCommandLine(vcpList[vcpListIndex], displayBus),
                         ddcutilReponseInner => {
                             brightnessLog(this.settings, `ddcutil getvcp ${vcpList[vcpListIndex]} for bus ${displayBus} is : ${ddcutilReponseInner}`);
-                            return this.getDdcutilResponse(displayId, displayBus, displayNames, vcpListIndex, ddcutilReponseInner)
+                            return this.getDdcutilResponse(displayBus, displayName, vcpListIndex, ddcutilReponseInner)
                         });
                 }
             } else {
                 const ddcutilResponseArray = getVCPInfoAsArray(ddcutilResponse)
                 if (ddcutilResponseArray.length >= 5){
                     brightnessLog(this.settings, `ddcutil getvcp  ${vcpList[vcpListIndex]} got success response for bus ${displayBus}`);
-                    this.afterGetDdcutilBrightnessResponseSuccess(displayId, displayBus, displayNames, vcpList[vcpListIndex], ddcutilResponseArray)
+                    this.afterGetDdcutilBrightnessResponseSuccess(displayBus, displayName, vcpList[vcpListIndex], ddcutilResponseArray)
                 }
             }
         }
@@ -602,40 +603,45 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 displays.push(display)
         }
         try {
-            const displayNames = [];
-            /*
-                due to spawnWithCallback fetching faster information for second display in list before first one
-                there is a situation where name is displayed for first device but controls second device.
+            var displayBus;
+            var displayName;
 
-                To fix that, we define our own id inside the loop, which is used to detect right device.
-            */
-            let displayLoopId = 0;
             brightnessLog(this.settings, `ddcutil brief info:\n${ddcutilBriefInfo}`);
             ddcutilBriefInfo.split('\n').map(ddcLine => {
+                if (ddcLine.trim().length === 0) {
+                    displayBus = null;
+                    displayName = null;
+                }
+
                 if (this.busValidate(ddcLine)) {
-                    brightnessLog(this.settings, `ddcutil brief info found bus line:\n ${ddcLine}`);
-                    /* I2C bus comes first, so when that is detect start a new display object */
-                    const displayBus = ddcLine.split('/dev/i2c-')[1].trim();
-                    /* save displayLoopId as a const for rest of the async calls below here*/
-                    const displayId = displayLoopId;
+                    displayBus = ddcLine.split('/dev/i2c-')[1].trim();
+                    brightnessLog(this.settings, `ddcutil brief info found bus: ${displayBus}`);
+                }
+
+                if (ddcLine.indexOf('Monitor:') !== -1) {
+                    displayName = ddcLine.split('Monitor:')[1].trim().split(':')[1].trim();
+                    brightnessLog(this.settings, `ddcutil brief info found name: ${displayName}`);
+                }
+
+                if (!isNullOrWhitespace(displayBus) && !isNullOrWhitespace(displayName)) {
                     /* check if display is on or not */
+
                     brightnessLog(this.settings, `ddcutil reading display power state for bus: ${displayBus}`);
-                    spawnWithCallback(this.settings, this.ddcutilCommandLine('D6', displayBus), ddcutilResponsePowerMode => {
+                    const powerStateCommand = this.ddcutilCommandLine('D6', displayBus);
+                    brightnessLog(this.settings, `Power state command: ${powerStateCommand}`);
+                    spawnWithCallback(this.settings, powerStateCommand, ddcutilResponsePowerMode => {
                         brightnessLog(this.settings, `ddcutil display power state for bus: ${displayBus} is: ${ddcutilResponsePowerMode}`);
                         /* only add display to list if ddc communication is supported with the bus*/
                         if (this.displayValidate(ddcutilResponsePowerMode) &&
                             this.displayInGoodState(ddcutilResponsePowerMode)) {
-                            // start with an ERR, so that the getDdcutilResponse will directly call 
+                            // start with an ERR, so that the getDdcutilResponse will directly call
                             // move to call with index 0
-                            this.getDdcutilResponse(displayId, displayBus, displayNames, -1, "VCP 0 ERR")
+                            this.getDdcutilResponse(displayBus, displayName, -1, "VCP 0 ERR")
                         }
                     });
-                }
-                if (ddcLine.indexOf('Monitor:') !== -1) {
-                    /* Monitor name comes second in the output,
-                     so when that is detected fill the object and push it to list */
-                    displayNames[displayLoopId] = ddcLine.split('Monitor:')[1].trim().split(':')[1].trim();
-                    displayLoopId++;
+
+                    displayBus = null;
+                    displayName = null;
                 }
             });
         } catch (err) {
