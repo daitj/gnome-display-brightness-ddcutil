@@ -14,22 +14,22 @@ export function isNullOrWhitespace(str) {
     return str === undefined || str === null || str.match(/^\s*$/) !== null;
 }
 
-export function spawnWithCallback(settings, argv, callback) {
+export async function spawnWithCallback(settings, argv, callback) {
     try {
         const proc = Gio.Subprocess.new(argv, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
 
-        const [_, stdout, stderr] = proc.communicate_utf8(null, null);
+        const [stdout, stderr] = await proc.communicate_utf8_async(null, null);
         if (proc.get_successful()) {
-            callback(stdout);
+            await callback(stdout);
         } else {
             /*
                 errors from ddcutil (like monitor not found) were actually in stdout
                 only the process return code was 1
             */
             if (stderr)
-                callback(stderr);
+                await callback(stderr);
             else if (stdout)
-                callback(stdout);
+                await callback(stdout);
         }
     } catch (e) {
         brightnessLog(settings, e.message);
