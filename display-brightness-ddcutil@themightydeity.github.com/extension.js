@@ -579,14 +579,14 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                     brightnessLog(this.settings, `calling ddcutil getvcp ${vcpList[vcpListIndex]} for bus ${displayBus}`);
                     spawnWithCallback(this.settings, this.ddcutilCommandLine(vcpList[vcpListIndex], displayBus),
                         ddcutilReponseInner => {
-                            brightnessLog(this.settings, `ddcutil getvcp ${vcpList[vcpListIndex]} for bus ${displayBus} is : ${ddcutilReponseInner}`);
+                            brightnessLog(this.settings, `ddcutil getvcp ${vcpList[vcpListIndex]} for bus ${displayBus} is : ${ddcutilReponseInner.replace(/\n+$/, '')}`);
                             return this.getDdcutilResponse(displayBus, displayName, vcpListIndex, ddcutilReponseInner)
                         });
                 }
             } else {
                 const ddcutilResponseArray = getVCPInfoAsArray(ddcutilResponse)
-                if (ddcutilResponseArray.length >= 5){
-                    brightnessLog(this.settings, `ddcutil getvcp  ${vcpList[vcpListIndex]} got success response for bus ${displayBus}`);
+                if (ddcutilResponseArray.length >= 5) {
+                    brightnessLog(this.settings, `ddcutil getvcp ${vcpList[vcpListIndex]} got success response for bus ${displayBus}`);
                     this.afterGetDdcutilBrightnessResponseSuccess(displayBus, displayName, vcpList[vcpListIndex], ddcutilResponseArray)
                 }
             }
@@ -624,21 +624,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 }
 
                 if (!isNullOrWhitespace(displayBus) && !isNullOrWhitespace(displayName)) {
-                    /* check if display is on or not */
-
-                    brightnessLog(this.settings, `ddcutil reading display power state for bus: ${displayBus}`);
-                    const powerStateCommand = this.ddcutilCommandLine('D6', displayBus);
-                    brightnessLog(this.settings, `Power state command: ${powerStateCommand}`);
-                    spawnWithCallback(this.settings, powerStateCommand, ddcutilResponsePowerMode => {
-                        brightnessLog(this.settings, `ddcutil display power state for bus: ${displayBus} is: ${ddcutilResponsePowerMode}`);
-                        /* only add display to list if ddc communication is supported with the bus*/
-                        if (this.displayValidate(ddcutilResponsePowerMode) &&
-                            this.displayInGoodState(ddcutilResponsePowerMode)) {
-                            // start with an ERR, so that the getDdcutilResponse will directly call
-                            // move to call with index 0
-                            this.getDdcutilResponse(displayBus, displayName, -1, "VCP 0 ERR")
-                        }
-                    });
+                    this.addDisplayToPanelIfItIsOn(displayBus, displayName);
 
                     displayBus = null;
                     displayName = null;
@@ -647,6 +633,21 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         } catch (err) {
             brightnessLog(this.settings, err);
         }
+    }
+
+    addDisplayToPanelIfItIsOn(displayBus, displayName) {
+        /* check if display is on or not */
+        const powerStateCommand = this.ddcutilCommandLine('D6', displayBus);
+        spawnWithCallback(this.settings, powerStateCommand, ddcutilResponsePowerMode => {
+            brightnessLog(this.settings, `ddcutil display power state for bus: ${displayBus} is: ${ddcutilResponsePowerMode.replace(/\n+$/, '')}`);
+            /* only add display to list if ddc communication is supported with the bus*/
+            if (this.displayValidate(ddcutilResponsePowerMode) &&
+                this.displayInGoodState(ddcutilResponsePowerMode)) {
+                // start with an ERR, so that the getDdcutilResponse will directly call
+                // move to call with index 0
+                this.getDdcutilResponse(displayBus, displayName, -1, "VCP 0 ERR")
+            }
+        });
     }
 
     getDisplaysInfoAsync() {

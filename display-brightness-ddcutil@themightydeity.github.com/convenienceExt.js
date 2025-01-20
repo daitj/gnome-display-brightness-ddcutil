@@ -7,11 +7,11 @@ import Gio from 'gi://Gio';
  */
 export function brightnessLog(settings, str) {
     if (settings.get_boolean('verbose-debugging'))
-        console.log(`display-brightness-ddcutil extension:\n${str}`);
+        console.log(`display-brightness-ddcutil extension: ${str}`);
 }
 
 export function isNullOrWhitespace(str) {
-    return str === undefined || str === null || str.match(/^ *$/) !== null;
+    return str === undefined || str === null || str.match(/^\s*$/) !== null;
 }
 
 export function spawnWithCallback(settings, argv, callback) {
