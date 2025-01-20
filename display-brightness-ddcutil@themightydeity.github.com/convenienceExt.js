@@ -1,5 +1,9 @@
 import Gio from 'gi://Gio';
 
+export function isNullOrWhitespace(str) {
+    return str === undefined || str === null || str.match(/^\s*$/) !== null;
+}
+
 /**
  * 
  * @param {*} settings 
@@ -8,10 +12,6 @@ import Gio from 'gi://Gio';
 export function brightnessLog(settings, str) {
     if (settings.get_boolean('verbose-debugging'))
         console.log(`display-brightness-ddcutil extension: ${str}`);
-}
-
-export function isNullOrWhitespace(str) {
-    return str === undefined || str === null || str.match(/^\s*$/) !== null;
 }
 
 export async function spawnWithCallback(settings, argv, callback) {
