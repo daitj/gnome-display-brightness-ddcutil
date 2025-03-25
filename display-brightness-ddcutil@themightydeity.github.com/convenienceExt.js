@@ -11,11 +11,13 @@ export function brightnessLog(settings, str) {
 }
 
 export function spawnWithCallback(settings, argv, callback) {
+    brightnessLog(settings, `Calling: ${argv.join(' ')}`);
     const proc = Gio.Subprocess.new(argv, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
 
     proc.communicate_utf8_async(null, null, (proc, res) => {
         try {
             const [, stdout, stderr] = proc.communicate_utf8_finish(res);
+            brightnessLog(settings, "subprocess ended");
             if (proc.get_successful()) {
                 callback(stdout);
             } else {
@@ -27,6 +29,9 @@ export function spawnWithCallback(settings, argv, callback) {
                     callback(stderr);
                 else if (stdout)
                     callback(stdout);
+                else {
+                    callback("");
+                }
             }
         } catch (e) {
             brightnessLog(settings, e.message);
