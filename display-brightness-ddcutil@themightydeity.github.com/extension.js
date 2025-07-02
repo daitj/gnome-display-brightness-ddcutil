@@ -44,7 +44,8 @@ const {
 const {
     brightnessLog,
     spawnWithCallback,
-    getVCPInfoAsArray
+    getVCPInfoAsArray,
+    getHDRStatus
 } = Convenience;
 
 /*
@@ -62,6 +63,7 @@ let monitorChangeTimeout = null;
 let settingsSignals = {};
 let oldSettings = null;
 let monitorSignals = {};
+let hdrStatus = {};
 
 let syncing = false
 let pause_sync = false
@@ -196,6 +198,11 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     }
 
     setBrightness(display, newValue) {
+        if (hdrStatus[display.name]?.active) {
+            this.setHDRBrightness(display, newValue);
+            return;
+        }
+
         if (display.bus === 'internal') {
             this.setInternalBrightness(newValue);
             return;
@@ -215,14 +222,48 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         brightnessLog(this.settings, `display ${display.name}, current: ${display.current} => ${newValue / 100}, new brightness: ${newBrightness}, new value: ${newValue}`);
         display.current = newValue / 100;
 
-        /*
-            Lowest value for writeCollectorWaitMs is 130ms
-            45 ms ddcutil delay,
-            85 ms waiting after write to i2c controller,
-            check #74 for details
-        */
-
         this.ddcWriteCollector(display.bus, writer);
+    }
+
+    setHDRBrightness(display, newValue) {
+        // Scale 0-100 slider to 10-190 luminance range
+        const newLuminance = 10 + (newValue / 100) * 180;
+
+        spawnWithCallback(this.settings, ['gsettings', 'get', 'org.gnome.mutter', 'output-luminance'], currentSetting => {
+            if (!currentSetting) {
+                brightnessLog(this.settings, "Could not retrieve current settings. Aborting set operation.");
+                return;
+            }
+
+            const monitorPattern = /\(([^)]+)\)/g;
+            let match;
+            const newSettingsParts = [];
+            let foundTarget = false;
+
+            while ((match = monitorPattern.exec(currentSetting)) !== null) {
+                const monitorStr = match[1];
+                if (monitorStr.includes(`'${display.name}'`)) {
+                    foundTarget = true;
+                    const lastCommaPos = monitorStr.lastIndexOf(',');
+                    if (lastCommaPos !== -1) {
+                        const prefix = monitorStr.substring(0, lastCommaPos);
+                        newSettingsParts.push(`(${prefix}, ${newLuminance})`);
+                    } else {
+                        newSettingsParts.push(`(${monitorStr})`);
+                    }
+                } else {
+                    newSettingsParts.push(`(${monitorStr})`);
+                }
+            }
+
+            if (foundTarget) {
+                const newSetting = `[${newSettingsParts.join(', ')}]`;
+                GLib.spawn_command_line_async(`gsettings set org.gnome.mutter output-luminance "${newSetting}"`);
+                brightnessLog(this.settings, `Updated '${display.name}' luminance to: ${newLuminance}`);
+            } else {
+                brightnessLog(this.settings, `Error: Target display '${display.name}' not found in current gsettings.`);
+            }
+        });
     }
 
     setInternalBrightness(newValue) {
@@ -343,6 +384,20 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     }
 
     addDisplayToPanel(display) {
+        // Add HDR Toggle Switch only if the display is capable and the setting is enabled
+        if (display.capable && this.settings.get_boolean('show-hdr-toggle')) {
+            const hdrToggle = new PopupMenu.PopupSwitchMenuItem(_('HDR'), display.active);
+            hdrToggle.connect('toggled', (item) => {
+                this.toggleHDR(display.name, item.state);
+            });
+
+            if (this.settings.get_int('button-location') === 0) {
+                    mainMenuButton.addMenuItem(hdrToggle);
+            } else if (this.settings.get_boolean('show-sliders-in-submenu') && mainMenuButton.getStoredSliders().length > 0) {
+                    mainMenuButton.getStoredSliders()[0].menu.addMenuItem(hdrToggle);
+            }
+        }
+
         const onSliderChange = (quickSettingsSlider, newValue) => {
             this.setBrightness(display, newValue);
             this.syncAllSlider();
@@ -394,6 +449,26 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         /* save slider in main menu, so that it can be accessed easily for different events */
         if (!this.settings.get_boolean('show-all-slider'))
             mainMenuButton.storeSliderForEvents(displaySlider);
+    }
+
+    toggleHDR(displayName, newState) {
+        const status = hdrStatus[displayName];
+        if (!status || !status.capable) return;
+
+        let command;
+        if (newState) {
+            // Enable HDR
+            command = `gdctl set --logical-monitor --primary --monitor ${displayName} --color-mode bt2100 --mode ${status.mode}`;
+        } else {
+            // Disable HDR
+            command = `gdctl set --logical-monitor --primary --monitor ${displayName} --color-mode default --mode ${status.mode}`;
+        }
+
+        brightnessLog(this.settings, `Toggling HDR: ${command}`);
+        GLib.spawn_command_line_async(command);
+        
+        // Reload the extension to reflect the change
+        this.reloadExtension();
     }
 
     /*
@@ -552,8 +627,20 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         const maxBrightness = ddcutilResponseArray[4];
         /* we need current brightness in the scale of 0 to 1 for slider*/
         const currentBrightness = ddcutilResponseArray[3] / ddcutilResponseArray[4];
-        /* make display object */
-        display = { 'bus': displayBus, 'max': maxBrightness, 'current': currentBrightness, 'name': displayNames[displayId], 'vcp': vcp };
+        
+        // This is still a heuristic, but it's the best we can do to link ddcutil output to gdctl output
+        const displayName = Object.keys(hdrStatus)[displayId] || displayNames[displayId];
+
+        display = { 
+            'bus': displayBus, 
+            'max': maxBrightness, 
+            'current': currentBrightness, 
+            'name': displayName, 
+            'vcp': vcp,
+            'capable': hdrStatus[displayName]?.capable || false,
+            'active': hdrStatus[displayName]?.active || false,
+            'mode': hdrStatus[displayName]?.mode || null
+        };
         brightnessLog(this.settings, `added display to list ${JSON.stringify(display)}`);
         displays.push(display);
 
@@ -782,14 +869,96 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     }
 
     addAllDisplaysToPanel() {
-        try {
-            if (GLib.file_test(ddcutilDetectCacheFile, GLib.FileTest.IS_REGULAR))
-                this.getCachedDisplayInfoAsync();
-            else
-                this.getDisplaysInfoAsync();
-        } catch (err) {
-            brightnessLog(this.settings, err);
-        }
+        // This is now the single source of truth for display detection.
+        getHDRStatus(this.settings, status => {
+            hdrStatus = status;
+            brightnessLog(this.settings, `HDR Status: ${JSON.stringify(hdrStatus)}`);
+
+            const isAnyHDRActive = Object.values(hdrStatus).some(s => s.active);
+
+            if (isAnyHDRActive) {
+                // If any display is in HDR mode, we can get all info from gsettings.
+                this.getHDRBrightness();
+            } else {
+                // If all displays are in SDR mode, we must use ddcutil to get brightness.
+                // We still use the gdctl results to know which displays exist.
+                this.getSDRBrightnessWithDDC();
+            }
+        });
+    }
+
+    getSDRBrightnessWithDDC() {
+        // This function is called when no monitors are in HDR mode.
+        // It uses ddcutil to get the brightness for the monitors found by gdctl.
+        spawnWithCallback(this.settings, ['ddcutil', 'detect', '--brief'], ddcutilBriefInfo => {
+            const lines = ddcutilBriefInfo.split('\n');
+            let currentDDCBus = null;
+            let ddcMonitorIndex = -1;
+
+            for (const line of lines) {
+                if (line.includes('/dev/i2c-')) {
+                    currentDDCBus = line.split('/dev/i2c-')[1].trim();
+                    ddcMonitorIndex++;
+                    
+                    const displayName = Object.keys(hdrStatus)[ddcMonitorIndex];
+                    if (!displayName) continue;
+
+                    const vcpList = this.getVCPList();
+                    if (vcpList.length > 0) {
+                        spawnWithCallback(this.settings, this.ddcutilCommandLine(vcpList[0], currentDDCBus), ddcutilResponse => {
+                            const ddcutilResponseArray = getVCPInfoAsArray(ddcutilResponse);
+                            if (ddcutilResponseArray.length >= 5) {
+                                const maxBrightness = ddcutilResponseArray[4];
+                                const currentBrightness = ddcutilResponseArray[3] / maxBrightness;
+                                const display = {
+                                    'bus': currentDDCBus,
+                                    'max': maxBrightness,
+                                    'current': currentBrightness,
+                                    'name': displayName,
+                                    'vcp': vcpList[0],
+                                    'capable': hdrStatus[displayName]?.capable || false,
+                                    'active': false,
+                                    'mode': hdrStatus[displayName]?.mode || null
+                                };
+                                displays.push(display);
+                                this.reloadMenuWidgets();
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    }
+
+    getHDRBrightness() {
+        spawnWithCallback(this.settings, ['gsettings', 'get', 'org.gnome.mutter', 'output-luminance'], currentSetting => {
+            if (!currentSetting) return;
+
+            Object.keys(hdrStatus).forEach(displayName => {
+                const status = hdrStatus[displayName];
+                if (status.active) {
+                    const pattern = new RegExp(`'${displayName}'[^)]*,\\s*([\\d\\.]+)`);
+                    const match = currentSetting.match(pattern);
+                    if (match) {
+                        const luminance = parseFloat(match[1]);
+                        // Scale 10-190 luminance to 0-1 slider value
+                        const currentBrightness = (luminance - 10) / 180.0;
+                        const display = {
+                            'bus': null, // Not using ddcutil bus
+                            'max': 190, // Max luminance
+                            'current': currentBrightness,
+                            'name': displayName,
+                            'vcp': null, // Not using VCP
+                            'capable': status.capable,
+                            'active': status.active,
+                            'mode': status.mode
+                        };
+                        displays.push(display);
+                    }
+                }
+            });
+            this.reloadMenuWidgets();
+        });
     }
 
     increase() {
