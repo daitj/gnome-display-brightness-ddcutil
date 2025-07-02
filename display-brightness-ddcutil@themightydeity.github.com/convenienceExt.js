@@ -49,3 +49,36 @@ export function getVCPInfoAsArray(val) {
         return []
     }
 }
+
+export function getHDRStatus(settings, callback) {
+    spawnWithCallback(settings, ['gdctl', 'show'], stdout => {
+        const lines = stdout.split('\n');
+        let currentMonitor = null;
+        const hdrStatus = {};
+
+        for (const line of lines) {
+            const monitorMatch = line.match(/Monitor (DP-\d+)/);
+            if (monitorMatch) {
+                currentMonitor = monitorMatch[1];
+                if (!hdrStatus[currentMonitor]) {
+                    hdrStatus[currentMonitor] = { capable: false, active: false, mode: null };
+                }
+            }
+
+            if (currentMonitor) {
+                const modeMatch = line.match(/(\d+x\d+@[\d\.]+)/);
+                if (modeMatch) {
+                    hdrStatus[currentMonitor].mode = modeMatch[1];
+                }
+
+                if (line.includes('bt2100')) {
+                    hdrStatus[currentMonitor].capable = true;
+                    if (line.includes('(current)')) {
+                        hdrStatus[currentMonitor].active = true;
+                    }
+                }
+            }
+        }
+        callback(hdrStatus);
+    });
+}

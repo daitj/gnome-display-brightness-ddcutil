@@ -16,6 +16,7 @@ const PrefsWidget = GObject.registerClass({
         'show_value_label_row',
         'show_display_name_row',
         'show_osd_row',
+        'show_hdr_toggle_row',
         'button_location_combo_row',
         'sub_menu_row',
         'hide_system_indicator_row',
@@ -77,6 +78,13 @@ const PrefsWidget = GObject.registerClass({
         this.settings.bind(
             'show-osd',
             this._show_osd_row,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+
+        this.settings.bind(
+            'show-hdr-toggle',
+            this._show_hdr_toggle_row,
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
