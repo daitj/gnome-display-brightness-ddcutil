@@ -869,22 +869,36 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     }
 
     addAllDisplaysToPanel() {
-        // This is now the single source of truth for display detection.
-        getHDRStatus(this.settings, status => {
-            hdrStatus = status;
-            brightnessLog(this.settings, `HDR Status: ${JSON.stringify(hdrStatus)}`);
+        if (this.settings.get_boolean('show-hdr-toggle')) {
+            // This is now the single source of truth for display detection.
+            getHDRStatus(this.settings, status => {
+                hdrStatus = status;
+                brightnessLog(this.settings, `HDR Status: ${JSON.stringify(hdrStatus)}`);
 
-            const isAnyHDRActive = Object.values(hdrStatus).some(s => s.active);
+                const isAnyHDRActive = Object.values(hdrStatus).some(s => s.active);
 
-            if (isAnyHDRActive) {
-                // If any display is in HDR mode, we can get all info from gsettings.
-                this.getHDRBrightness();
-            } else {
-                // If all displays are in SDR mode, we must use ddcutil to get brightness.
-                // We still use the gdctl results to know which displays exist.
-                this.getSDRBrightnessWithDDC();
+                if (isAnyHDRActive) {
+                    // If any display is in HDR mode, we can get all info from gsettings.
+                    this.getHDRBrightness();
+                } else {
+                    // If all displays are in SDR mode, we must use ddcutil to get brightness.
+                    // We still use the gdctl results to know which displays exist.
+                    this.getSDRBrightnessWithDDC();
+                }
+            });
+        } else {
+            // If the HDR toggle is disabled, fall back to the original ddcutil-only logic.
+            hdrStatus = {}; // Ensure HDR status is cleared
+            try {
+                if (GLib.file_test(ddcutilDetectCacheFile, GLib.FileTest.IS_REGULAR)) {
+                    this.getCachedDisplayInfoAsync();
+                } else {
+                    this.getDisplaysInfoAsync();
+                }
+            } catch (err) {
+                brightnessLog(this.settings, err);
             }
-        });
+        }
     }
 
     getSDRBrightnessWithDDC() {
