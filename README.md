@@ -1,23 +1,3 @@
-# Display Brightness & HDR Toggle
-
-This is a fork of the original [Display Brightness Slider](https://extensions.gnome.org/extension/2645/brightness-control-using-ddcutil/) extension, modified to add robust support for monitors with High Dynamic Range (HDR).
-
-## Key Features of this Fork
-
-*   **Automatic HDR Detection**: The extension now uses `gdctl` to automatically detect if a connected monitor is HDR-capable and whether HDR mode is currently active.
-*   **Seamless Brightness Control**:
-    *   In standard (SDR) mode, brightness is controlled using `ddcutil`, preserving the original extension's functionality.
-    *   In High Dynamic Range (HDR) mode, brightness is controlled by manipulating the `output-luminance` setting via `gsettings`, which is the native method for HDR brightness on modern GNOME desktops.
-*   **HDR Toggle**: For any monitor that reports HDR capabilities, a toggle switch is added to the extension's menu. This allows you to easily enable or disable HDR mode directly from the top bar.
-    *   The toggle intelligently preserves your current resolution and refresh rate when switching modes.
-*   **Configurable Visibility**: You can choose to show or hide the HDR toggle via a new option in the extension's settings (`General > Show HDR Toggle`).
-
-This fork aims to provide a single, unified solution for controlling display brightness across both SDR and HDR modes without needing separate scripts or manual commands.
-
----
-
-# Original README
-
 Display Brightness Slider for Gnome Shell
 
 ![screenshot](screenshot.jpg)
