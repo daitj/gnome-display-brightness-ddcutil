@@ -80,7 +80,7 @@ const ddcutilDetectCacheFile = `${cacheDir}/ddcutil_detect`;
 const BUS_NAME = 'org.gnome.SettingsDaemon.Power';
 const OBJECT_PATH = '/org/gnome/SettingsDaemon/Power';
 
-const BrightnessInterface = loadInterfaceXML('org.gnome.SettingsDaemon.Power.Screen');
+const BrightnessInterface = loadInterfaceXML('org.gnome.Shell.Brightness');
 const BrightnessProxy = Gio.DBusProxy.makeProxyWrapper(BrightnessInterface);
 
 export default class DDCUtilBrightnessControlExtension extends Extension {
