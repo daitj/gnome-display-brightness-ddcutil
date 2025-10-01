@@ -37,6 +37,11 @@
           </object>
         </child>
         <child>
+          <object class="AdwSwitchRow" id="show_hdr_toggle_row">
+            <property name="title" translatable="yes">Show HDR Toggle</property>
+          </object>
+        </child>
+        <child>
           <object class="AdwComboRow" id="button_location_combo_row">
             <property name="title" translatable="yes">Button Location</property>
             <property name="model">button_location_model</property>

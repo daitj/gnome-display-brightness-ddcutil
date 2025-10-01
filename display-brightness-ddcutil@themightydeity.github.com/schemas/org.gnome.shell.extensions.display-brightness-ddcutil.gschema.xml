@@ -18,6 +18,10 @@
       <default>false</default>
       <summary>Shows sliders as submenu of All Slider</summary>
     </key>
+    <key type="b" name="show-hdr-toggle">
+      <default>true</default>
+      <summary>Show HDR toggle for capable monitors</summary>
+    </key>
     <key type="b" name="show-value-label">
       <default>false</default>
       <summary>Show Value Label</summary>
