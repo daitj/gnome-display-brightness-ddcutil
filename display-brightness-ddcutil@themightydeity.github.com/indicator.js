@@ -75,7 +75,16 @@ function sliderValueChangeCommon(item) {
             else
                 osdLabel = `${brightness}`;
         }
-        Main.osdWindowManager.show(-1, new Gio.ThemedIcon({name: 'display-brightness-symbolic'}), osdLabel, item.ValueSlider.value, 1);
+
+        Main.osdWindowManager.show(
+            new Gio.ThemedIcon({name: 'display-brightness-symbolic'}), 
+            osdLabel,
+            Array.from({ 
+                length: Main.layoutManager.monitors.length 
+            }, () => (
+                { level: item.ValueSlider.value, maxLevel: 1 })
+            )
+        );
     }
 }
 export const StatusAreaBrightnessMenu = GObject.registerClass({
