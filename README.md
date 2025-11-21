@@ -6,8 +6,10 @@ Display Brightness Slider for Gnome Shell
 - [Installation](#installation)
   - [Automatically from GNOME extensions](#automatically-from-gnome-extensions)
   - [Manually from the source code](#manually-from-the-source-code)
-- [Issues](#issues)
+- [Troubleshoot](#troubleshoot)
   - [Screen hangs/locks on first startup](#screen-hangslocks-on-first-startup)
+  - [Docking or Daisy chain](#docking-or-daisy-chain)
+  - [Cannot detect display](#cannot-detect-display)
 - [Credits](#credits)
     - [Thanks to the following people for contributing via pull requests:](#thanks-to-the-following-people-for-contributing-via-pull-requests)
     - [Thanks to the following extensions for the inspiration](#thanks-to-the-following-extensions-for-the-inspiration)
@@ -39,7 +41,7 @@ ddcutil 2.0+
 sudo cp /usr/share/ddcutil/data/60-ddcutil-i2c.rules /etc/udev/rules.d
 
 ```
-**Note: Fedora 40+ users, you need to uncomment this line**
+**Note: Fedora 40+ and OpenSUSE Aeon users, you need to uncomment this line**
 ```
 # KERNEL=="i2c-[0-9]*", GROUP="i2c", MODE="0660"
 ```
@@ -106,7 +108,7 @@ make build
 make install
 ```
 
-## Issues
+## Troubleshoot
 
 ### Screen hangs/locks on first startup
 In my hardware for some reason when `ddcutil detect` is ran for the first time after a cold boot and then, when it checks for i2c busno=1, whole system locks for couple of seconds.
@@ -115,8 +117,26 @@ As a workaround I changed this extension to read cached info from a file, when i
 ```sh
 ddcutil --brief detect > $XDG_CACHE_HOME/ddcutil_detect
 ```
+### Docking or Daisy chain
+
+If you using a dock and are having issues:
+
+Read more about issues with dock [ddcutil.com FAQ](https://www.ddcutil.com/faq/#docking)
+
+Also some docks use daisy chaining behind the scenes.
+
+If you are daisy chaining the monitors i.e. instead of connecting each monitor to the GPU/Laptop directly, you are connecting monitor to another monitor. Then try to tweak the extension settings `Advanced settings` > `ddcutil Sleep Multipler ms`. Daisy chain doesn't allow running parallel instance of ddcutil.
+
+
+### Cannot detect display
+
+If you have issues detecting the display and stuck in "Initializing", check if disabling display state check from extension settings `Advanced settings` > `Disable Display State Check` works.
+
+If you find your monitor listed on [rockowitz/ddcutil repo wiki](https://github.com/rockowitz/ddcutil/wiki/Notes-on-Specific-Monitors), check what is recommended for your monitor.
 
 ## Credits
+
+This extension wouldn't exist without [rockowitz/ddcutil](https://github.com/rockowitz/ddcutil)
 
 This extension is developed and maintained by [@daitj](https://github.com/daitj)
 

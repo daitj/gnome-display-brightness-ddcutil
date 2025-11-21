@@ -1,5 +1,9 @@
 import Gio from 'gi://Gio';
 
+export function isNullOrWhitespace(str) {
+    return str === undefined || str === null || str.match(/^\s*$/) !== null;
+}
+
 /**
  * 
  * @param {*} settings 
@@ -7,7 +11,7 @@ import Gio from 'gi://Gio';
  */
 export function brightnessLog(settings, str) {
     if (settings.get_boolean('verbose-debugging'))
-        console.log(`display-brightness-ddcutil extension:\n${str}`);
+        console.log(`display-brightness-ddcutil extension: ${str}`);
 }
 
 export function spawnWithCallback(settings, argv, callback) {
@@ -36,7 +40,9 @@ export function spawnWithCallback(settings, argv, callback) {
         } catch (e) {
             brightnessLog(settings, e.message);
         }
-    });
+    } catch (e) {
+        brightnessLog(settings, e.message);
+    }
 }
 
 
@@ -53,4 +59,8 @@ export function getVCPInfoAsArray(val) {
     }else{
         return []
     }
+}
+
+export function sliderValuePercentFixed(sliderValue){
+    return Math.round(sliderValue * 100);
 }
