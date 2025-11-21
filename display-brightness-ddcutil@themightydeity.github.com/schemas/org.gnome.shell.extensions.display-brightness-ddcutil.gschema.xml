@@ -75,11 +75,6 @@
       <default>40</default>
       <summary>`ddcutil` sleep multiplier in ms, tweak it around to make brightness update faster.</summary>
     </key>
-    <key type="d" name="ddcutil-queue-ms">
-      <range min="130" max="1000" />
-      <default>130</default>
-      <summary>`ddcutil` call queue time in ms, tweak it around to make brightness update faster.</summary>
-    </key>
     <key type="b" name="vcp-10">
       <default>true</default>
       <summary>Use VCP code 10</summary>

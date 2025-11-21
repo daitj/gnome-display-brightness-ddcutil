@@ -15,6 +15,7 @@ export function brightnessLog(settings, str) {
 }
 
 export async function spawnWithCallback(settings, argv, callback) {
+    brightnessLog(settings, `Calling: ${argv.join(' ')}`);
     try {
         const proc = Gio.Subprocess.new(argv, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
 
@@ -30,6 +31,8 @@ export async function spawnWithCallback(settings, argv, callback) {
                 await callback(stderr);
             else if (stdout)
                 await callback(stdout);
+            else 
+                await callback("");
         }
     } catch (e) {
         brightnessLog(settings, e.message);

@@ -155,45 +155,38 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         writeCollection = null;
     }
 
-    ddcWriteInQueue(displayBus) {
-        if (writeCollection[displayBus].interval == null) {
-            writeCollection[displayBus].interval = setInterval(() => {
-                if (writeCollection[displayBus].countdown === 0) {
-                    brightnessLog(this.settings, `Write in queue countdown over for ${displayBus}`);
-                    writeCollection[displayBus].writer();
-                    clearInterval(writeCollection[displayBus].interval);
-                    writeCollection[displayBus].interval = null;
-                    const writeCollectorWaitMs = parseInt(this.settings.get_double('ddcutil-queue-ms'));
-                    writeCollection[displayBus].countdown = writeCollectorWaitMs;
-                } else {
-                    writeCollection[displayBus].countdown = writeCollection[displayBus].countdown - 1;
-                }
-            }, 1);
-        }
-    }
-
     ddcWriteCollector(displayBus, writer) {
-        if (displayBus in writeCollection) {
-            /* by setting writer to latest one,
-            when waiting is over latest writer will run */
-            writeCollection[displayBus].writer = writer;
-            brightnessLog(this.settings, `Write collector update, current countdown is ${writeCollection[displayBus].countdown} for ${displayBus}`);
-            /* countdown is over, meaning update process for this display can be added to the queue */
-            const writeCollectorWaitMs = parseInt(this.settings.get_double('ddcutil-queue-ms'));
-            if (writeCollection[displayBus].countdown === writeCollectorWaitMs) {
-                brightnessLog(this.settings, 'Write collector update, trigger queue again');
-                this.ddcWriteInQueue(displayBus);
+        const kickoffNext = (reason) => {
+            brightnessLog(this.settings, `kickoffNext called ${reason}`);
+            writeCollection[displayBus].current = writeCollection[displayBus].next;
+            writeCollection[displayBus].next = null;
+            if (writeCollection[displayBus].current) {
+                writeCollection[displayBus].current(() => {
+                    if (writeCollection === null) {
+                        // Must be disabling. Do nothing.
+                        return;
+                    }
+                    kickoffNext("on chain");
+                });
+            } else {
+                brightnessLog(this.settings, "writer done, nothing next");
             }
-        } else {
-            brightnessLog(this.settings, `Write collector defining new display ${displayBus} and adding it to queue`);
-            /* display query is not defined yet */
-            writeCollection[displayBus] = {
-                countdown: 0,
-                interval: null,
-                writer,
-            };
-            this.ddcWriteInQueue(displayBus);
         }
+
+        if (displayBus in writeCollection) {
+            writeCollection[displayBus].next = writer;
+            if (writeCollection[displayBus].current) {
+                brightnessLog(this.settings, "Saving writer for when ready");
+            } else {
+                kickoffNext("on start");
+            }
+            return;
+        }
+        writeCollection[displayBus] = {
+            next: writer,
+            current: null
+        };
+        kickoffNext("on start");
     }
 
     setBrightness(display, newValue) {
@@ -209,19 +202,13 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         const ddcutilPath = this.settings.get_string('ddcutil-binary-path');
         const ddcutilAdditionalArgs = this.settings.get_string('ddcutil-additional-args');
         const sleepMultiplier = this.settings.get_double('ddcutil-sleep-multiplier') / 40;
-        const writer = () => {
-            brightnessLog(this.settings, `async ${ddcutilPath} setvcp ${display.vcp} ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`);
-            GLib.spawn_command_line_async(`${ddcutilPath} setvcp ${display.vcp} ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`);
+        const writer = async (ondone) => {
+            const cmd = `${ddcutilPath} setvcp ${display.vcp} ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`.split(" ").filter(x => x !== "");
+            brightnessLog(this.settings, `async ${cmd.join(" ")}`);
+            await spawnWithCallback(this.settings, cmd, async (result) => {if (ondone) {await ondone();}});
         };
         brightnessLog(this.settings, `display ${display.name}, current: ${display.current} => ${newValue / 100}, new brightness: ${newBrightness}, new value: ${newValue}`);
         display.current = newValue / 100;
-
-        /*
-            Lowest value for writeCollectorWaitMs is 130ms
-            45 ms ddcutil delay,
-            85 ms waiting after write to i2c controller,
-            check #74 for details
-        */
 
         this.ddcWriteCollector(display.bus, writer);
     }
@@ -687,7 +674,6 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             'vcp-6b': this.settings.get_boolean('vcp-6b'),
             'vcp-10': this.settings.get_boolean('vcp-10'),
             'verbose-debugging': this.settings.get_boolean('verbose-debugging'),
-            'ddcutil-queue-ms': this.settings.get_double('ddcutil-queue-ms'),
             'ddcutil-sleep-multiplier': this.settings.get_double('ddcutil-sleep-multiplier'),
             'position-system-indicator': this.settings.get_double('position-system-indicator'),
             'position-system-menu': this.settings.get_double('position-system-menu'),
@@ -708,15 +694,6 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         this.reloadMenuWidgets();
         if (this.settings.get_boolean('verbose-debugging'))
             brightnessLog(this.settings, JSON.stringify(this.settingsToJSObject()));
-
-        const writeCollectorWaitMs = parseInt(this.settings.get_double('ddcutil-queue-ms'));
-        Object.keys(writeCollection).forEach(displayBus => {
-            writeCollection[displayBus].countdown = writeCollectorWaitMs;
-            if (writeCollection[displayBus].interval !== null)
-                clearInterval(writeCollection[displayBus].interval);
-
-            writeCollection[displayBus].interval = null;
-        });
     }
 
     onMonitorChange() {
