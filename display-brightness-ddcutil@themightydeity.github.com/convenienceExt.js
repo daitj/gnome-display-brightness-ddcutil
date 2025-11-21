@@ -1,5 +1,9 @@
 import Gio from 'gi://Gio';
 
+export function isNullOrWhitespace(str) {
+    return str === undefined || str === null || str.match(/^\s*$/) !== null;
+}
+
 /**
  * 
  * @param {*} settings 
@@ -7,31 +11,29 @@ import Gio from 'gi://Gio';
  */
 export function brightnessLog(settings, str) {
     if (settings.get_boolean('verbose-debugging'))
-        console.log(`display-brightness-ddcutil extension:\n${str}`);
+        console.log(`display-brightness-ddcutil extension: ${str}`);
 }
 
-export function spawnWithCallback(settings, argv, callback) {
-    const proc = Gio.Subprocess.new(argv, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
+export async function spawnWithCallback(settings, argv, callback) {
+    try {
+        const proc = Gio.Subprocess.new(argv, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
 
-    proc.communicate_utf8_async(null, null, (proc, res) => {
-        try {
-            const [, stdout, stderr] = proc.communicate_utf8_finish(res);
-            if (proc.get_successful()) {
-                callback(stdout);
-            } else {
-                /*
-                    errors from ddcutil (like monitor not found) were actually in stdout
-                    only the process return code was 1
-                */
-                if (stderr)
-                    callback(stderr);
-                else if (stdout)
-                    callback(stdout);
-            }
-        } catch (e) {
-            brightnessLog(settings, e.message);
+        const [stdout, stderr] = await proc.communicate_utf8_async(null, null);
+        if (proc.get_successful()) {
+            await callback(stdout);
+        } else {
+            /*
+                errors from ddcutil (like monitor not found) were actually in stdout
+                only the process return code was 1
+            */
+            if (stderr)
+                await callback(stderr);
+            else if (stdout)
+                await callback(stdout);
         }
-    });
+    } catch (e) {
+        brightnessLog(settings, e.message);
+    }
 }
 
 
