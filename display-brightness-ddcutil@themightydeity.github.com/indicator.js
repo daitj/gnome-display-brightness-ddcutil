@@ -34,13 +34,19 @@ function decycle(obj, stack = []) {
 }
 
 
-function sliderKeyUpDownEvent(actor, scrollStep) {
+function sliderKeyUpDownEvent(actor, settings, direction) {
+    const step = (settings.get_double('step-change-keyboard') / 100) * direction
     actor.getStoredSliders().forEach(slider => {
         slider.setShowOSD();
-        slider.ValueSlider.value = Math.min(Math.max(0, slider.ValueSlider.value + scrollStep), slider.ValueSlider._maxValue);
+        const nextValue = Math.min(Math.max(0, slider.ValueSlider.value + step), slider.ValueSlider._maxValue)
+        brightnessLog(settings, 
+            `Slider key up or down, direction:${direction} step:${step}, current:${slider.ValueSlider.value} => ${nextValue}`
+        )
+        slider.ValueSlider.value = nextValue;
         slider.setHideOSD();
     });
 }
+
 function sliderScrollEvent(actor, event) {
     actor.getStoredSliders().forEach(slider => {
         slider.setShowOSD();
@@ -49,6 +55,7 @@ function sliderScrollEvent(actor, event) {
     });
     return Clutter.EVENT_STOP;
 }
+
 function sliderValueChangeCommon(item) {
     const brightness = sliderValuePercentFixed(item.ValueSlider.value);
     item.ValueLabel.text = brightness.toString();
@@ -83,11 +90,11 @@ export const StatusAreaBrightnessMenu = GObject.registerClass({
         this.add_child(this._icon);
         this.connect('scroll-event', sliderScrollEvent);
         this.connect('value-up', (actor, event) => {
-            sliderKeyUpDownEvent(actor, settings.get_double('step-change-keyboard') / 100);
+            sliderKeyUpDownEvent(actor, settings, 1);
             return Clutter.EVENT_STOP;
         });
         this.connect('value-down', (actor, event) => {
-            sliderKeyUpDownEvent(actor, -settings.get_double('step-change-keyboard') / 100);
+            sliderKeyUpDownEvent(actor, settings, -1);
             return Clutter.EVENT_STOP;
         });
     }
@@ -135,11 +142,11 @@ export const SystemMenuBrightnessMenu = GObject.registerClass({
         this._indicator.visible = !settings.get_boolean('hide-system-indicator');
         this.connect('scroll-event', sliderScrollEvent);
         this.connect('value-up', (actor, event) => {
-            sliderKeyUpDownEvent(actor, settings.get_double('step-change-keyboard') / 100);
+            sliderKeyUpDownEvent(actor, settings, 1);
             return Clutter.EVENT_STOP;
         });
         this.connect('value-down', (actor, event) => {
-            sliderKeyUpDownEvent(actor, -settings.get_double('step-change-keyboard') / 100);
+            sliderKeyUpDownEvent(actor, settings, -1);
             return Clutter.EVENT_STOP;
         });
         this.connect('destroy', this._onDestroy.bind(this));
