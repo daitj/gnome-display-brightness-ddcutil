@@ -97,10 +97,6 @@ msgstr ""
 msgid "`ddcutil` Sleep Multiplier ms"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:132
-msgid "`ddcutil` Queue ms"
-msgstr ""
-
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:140
 msgid "VCP codes in use"
 msgstr ""

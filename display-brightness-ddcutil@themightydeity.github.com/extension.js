@@ -210,13 +210,6 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         brightnessLog(this.settings, `display ${display.name}, current: ${display.current} => ${newValue / 100}, new brightness: ${newBrightness}, new value: ${newValue}`);
         display.current = newValue / 100;
 
-        /*
-            Lowest value for writeCollectorWaitMs is 130ms
-            45 ms ddcutil delay,
-            85 ms waiting after write to i2c controller,
-            check #74 for details
-        */
-
         this.ddcWriteCollector(display.bus, writer);
     }
 
@@ -681,7 +674,6 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             'vcp-6b': this.settings.get_boolean('vcp-6b'),
             'vcp-10': this.settings.get_boolean('vcp-10'),
             'verbose-debugging': this.settings.get_boolean('verbose-debugging'),
-            'ddcutil-queue-ms': this.settings.get_double('ddcutil-queue-ms'),
             'ddcutil-sleep-multiplier': this.settings.get_double('ddcutil-sleep-multiplier'),
             'position-system-indicator': this.settings.get_double('position-system-indicator'),
             'position-system-menu': this.settings.get_double('position-system-menu'),
