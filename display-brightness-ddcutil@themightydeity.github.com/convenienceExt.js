@@ -49,3 +49,7 @@ export function getVCPInfoAsArray(val) {
         return []
     }
 }
+
+export function sliderValuePercentFixed(sliderValue){
+    return Math.round(sliderValue * 100);
+}

@@ -14,6 +14,7 @@ import * as Convenience from './convenienceExt.js';
 
 const {
     brightnessLog,
+    sliderValuePercentFixed
 } = Convenience;
 
 function decycle(obj, stack = []) {
@@ -49,7 +50,7 @@ function sliderScrollEvent(actor, event) {
     return Clutter.EVENT_STOP;
 }
 function sliderValueChangeCommon(item) {
-    const brightness = item._SliderValueToBrightness(item.ValueSlider.value);
+    const brightness = sliderValuePercentFixed(item.ValueSlider.value);
     item.ValueLabel.text = brightness.toString();
     item.emit('slider-change', brightness);
     if (item._onSliderChange)
@@ -219,7 +220,7 @@ export const SingleMonitorSliderAndValueForStatusAreaMenu = class SingleMonitorS
         });
         this.ValueSlider = new Slider(this._currentValue);
         this.ValueSlider.connect('notify::value', this._SliderChange.bind(this));
-        this.ValueLabel = new St.Label({text: this._SliderValueToBrightness(this._currentValue).toString()});
+        this.ValueLabel = new St.Label({text: sliderValuePercentFixed(this._currentValue).toString()});
         const valueSliderBin = new St.Bin({
             style_class: 'display-brightness-ddcutil-monitor-slider-bin-system-menu',
             child: this.ValueSlider,
@@ -254,11 +255,8 @@ export const SingleMonitorSliderAndValueForStatusAreaMenu = class SingleMonitorS
         this.ValueSlider.value = newValue / 100;
     }
 
-    _SliderValueToBrightness(sliderValue) {
-        return Math.floor(sliderValue * 100);
-    }
-
     _SliderChange() {
+        brightnessLog(this._settings, `StatusArea _SliderChange event ${this.ValueSlider.value}`) 
         sliderValueChangeCommon(this);
     }
 };
@@ -307,7 +305,7 @@ export const SingleMonitorSliderAndValueForQuickSettingsSubMenu = GObject.regist
         });
         if (this.settings.get_boolean('show-display-name'))
             this.add_child(this.NameContainer);
-        this.ValueLabel = new St.Label({text: this._SliderValueToBrightness(this.current_value).toString()});
+        this.ValueLabel = new St.Label({text: sliderValuePercentFixed(this.current_value).toString()});
         this.add_child(this.ValueSlider);
 
         /* for compatibility in other places */
@@ -336,15 +334,11 @@ export const SingleMonitorSliderAndValueForQuickSettingsSubMenu = GObject.regist
         this.ValueSlider.value = newValue / 100;
     }
 
-    _SliderValueToBrightness(sliderValue) {
-        return Math.floor(sliderValue * 100);
-    }
-
     _SliderChange() {
+        brightnessLog(this._settings, `QuickSettings submenu _SliderChange event ${this.ValueSlider.value}`) 
         sliderValueChangeCommon(this);
     }
 });
-
 
 
 export const SingleMonitorSliderAndValueForQuickSettings = GObject.registerClass({
@@ -387,7 +381,7 @@ export const SingleMonitorSliderAndValueForQuickSettings = GObject.registerClass
         this.ValueLabel = new St.Label({
             y_align: Clutter.ActorAlign.CENTER,
             style: 'font-size: 12px; font-weight: normal;',
-            text: this._SliderValueToBrightness(this.current_value).toString(),
+            text: sliderValuePercentFixed(this.current_value).toString(),
         });
         /* for compatibility in other places */
         this.ValueSlider = this.slider;
@@ -413,11 +407,8 @@ export const SingleMonitorSliderAndValueForQuickSettings = GObject.registerClass
         this.slider.value = newValue / 100;
     }
 
-    _SliderValueToBrightness(sliderValue) {
-        return Math.floor(sliderValue * 100);
-    }
-
     _SliderChange() {
+        brightnessLog(this._settings, `QuickSettings _SliderChange event ${this.ValueSlider.value}`) 
         sliderValueChangeCommon(this);
     }
 });
