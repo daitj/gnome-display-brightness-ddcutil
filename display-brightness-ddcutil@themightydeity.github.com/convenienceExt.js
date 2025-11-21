@@ -9,9 +9,9 @@ export function isNullOrWhitespace(str) {
  * @param {*} settings 
  * @param {*} str 
  */
-export function brightnessLog(settings, str) {
+export function brightnessLog(settings, ...args) {
     if (settings.get_boolean('verbose-debugging'))
-        console.log(`display-brightness-ddcutil extension: ${str}`);
+        console.log(`display-brightness-ddcutil extension: `, ...args);
 }
 
 export async function spawnWithCallback(settings, argv, callback) {
@@ -19,23 +19,26 @@ export async function spawnWithCallback(settings, argv, callback) {
     try {
         const proc = Gio.Subprocess.new(argv, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
 
-        const [stdout, stderr] = await proc.communicate_utf8_async(null, null);
-        if (proc.get_successful()) {
-            await callback(stdout);
-        } else {
-            /*
-                errors from ddcutil (like monitor not found) were actually in stdout
-                only the process return code was 1
-            */
-            if (stderr)
-                await callback(stderr);
-            else if (stdout)
+        await proc.communicate_utf8_async(null, null, async (proc, res)=>{
+            const [, stdout, stderr] = proc.communicate_utf8_finish(res);
+            if (proc.get_successful()) {
                 await callback(stdout);
-            else 
-                await callback("");
-        }
+            } else {
+                /*
+                    errors from ddcutil (like monitor not found) were actually in stdout
+                    only the process return code was 1
+                */
+                if (stderr)
+                    await callback(stderr);
+                else if (stdout)
+                    await callback(stdout);
+                else 
+                    await callback("");
+            }
+        });
+        
     } catch (e) {
-        brightnessLog(settings, e.message);
+        brightnessLog(settings, e);
     }
 }
 
