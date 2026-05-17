@@ -79,6 +79,10 @@
       <default>true</default>
       <summary>Use VCP code 10</summary>
     </key>
+    <key type="b" name="vcp-12">
+      <default>false</default>
+      <summary>Use VCP code 12</summary>
+    </key>
     <key type="b" name="vcp-6b">
       <default>false</default>
       <summary>Use VCP code 6B</summary>

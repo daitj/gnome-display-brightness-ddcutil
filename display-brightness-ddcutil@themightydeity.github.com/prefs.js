@@ -29,6 +29,7 @@ const PrefsWidget = GObject.registerClass({
         'vcp_code_list_expander',
         'vcp_code_row_6b',
         'vcp_code_row_10',
+        'vcp_code_row_12',
         'ddcutil_additional_args_row',
         'allow_zero_brightness_row',
         'disable_display_state_check_row',
@@ -115,6 +116,12 @@ const PrefsWidget = GObject.registerClass({
             Gio.SettingsBindFlags.DEFAULT
         );
         this.settings.bind(
+            'vcp-12',
+            this._vcp_code_row_12,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+        this.settings.bind(
             'vcp-6b',
             this._vcp_code_row_6b,
             'active',
@@ -193,16 +200,18 @@ const PrefsWidget = GObject.registerClass({
         }
         return vcpList
     }
-    disableLastVCP(){
-        const vcpList = this.getVCPList()
+    disableLastVCP() {
+        const brightnessVcpList = this.getVCPList()
+
         this._vcp_code_row_6b.sensitive = true
         this._vcp_code_row_10.sensitive = true
-        if(vcpList.length == 1){
-            if(vcpList[0] == "10"){
+        this._vcp_code_row_12.sensitive = true
+
+        if (brightnessVcpList.length == 1) {
+            if (brightnessVcpList[0] == "10")
                 this._vcp_code_row_10.sensitive = false
-            }else{
+            else
                 this._vcp_code_row_6b.sensitive = false
-            }
         }
     }
     fixVCPInfoSubtitle(){
@@ -230,7 +239,7 @@ const PrefsWidget = GObject.registerClass({
                 disableSubMenu(_('Need to disable (Only "All" slider)'))
             }
         }
-    } 
+    }
     onButtonLocationChanged() {
         this.settings.set_int('button-location', this._button_location_combo_row.selected);
         if (this._button_location_combo_row.selected === 0) {

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg height="16px" viewBox="0 0 16 16" width="16px" xmlns="http://www.w3.org/2000/svg">
+  <!-- Left half: filled solid D-shape -->
+  <path d="M 8 3 A 5 5 0 0 0 8 13 Z" fill="#2e3436"/>
+  <!-- Right half: ring (outer radius 5, inner radius 3, thickness 2px) -->
+  <path d="M 8 3 A 5 5 0 0 1 8 13 L 8 11 A 3 3 0 0 0 8 5 Z" fill="#2e3436"/>
+</svg>

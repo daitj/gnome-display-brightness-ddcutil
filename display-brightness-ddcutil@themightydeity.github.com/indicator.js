@@ -39,7 +39,7 @@ function sliderKeyUpDownEvent(actor, settings, direction) {
     actor.getStoredSliders().forEach(slider => {
         slider.setShowOSD();
         const nextValue = Math.min(Math.max(0, slider.ValueSlider.value + step), slider.ValueSlider._maxValue)
-        brightnessLog(settings, 
+        brightnessLog(settings,
             `Slider key up or down, direction:${direction} step:${step}, current:${slider.ValueSlider.value} => ${nextValue}`
         )
         slider.ValueSlider.value = nextValue;
@@ -77,10 +77,10 @@ function sliderValueChangeCommon(item) {
         }
 
         Main.osdWindowManager.show(
-            new Gio.ThemedIcon({name: 'display-brightness-symbolic'}), 
+            new Gio.ThemedIcon({name: 'display-brightness-symbolic'}),
             osdLabel,
-            Array.from({ 
-                length: Main.layoutManager.monitors.length 
+            Array.from({
+                length: Main.layoutManager.monitors.length
             }, () => (
                 { level: item.ValueSlider.value, maxLevel: 1 })
             )
@@ -203,7 +203,7 @@ export const SingleMonitorMenuItem = GObject.registerClass({
     _init(settings, icon, name, slider, label) {
         super._init();
         if (icon != null)
-            this.add_actor(icon);
+            this.add_child(icon);
 
         if (name != null && settings.get_boolean('show-display-name'))
             this.add_child(name);
@@ -216,7 +216,7 @@ export const SingleMonitorMenuItem = GObject.registerClass({
 });
 
 export const SingleMonitorSliderAndValueForStatusAreaMenu = class SingleMonitorSliderAndValue extends PopupMenu.PopupMenuSection {
-    constructor(settings, displayName, currentValue, onSliderChange) {
+    constructor(settings, displayName, currentValue, onSliderChange, iconName = 'display-brightness-symbolic') {
         super();
         this._settings = settings;
         this._displayName = displayName;
@@ -225,6 +225,7 @@ export const SingleMonitorSliderAndValueForStatusAreaMenu = class SingleMonitorS
         /* OSD is never shown by default */
         this._hideOSD = true;
         this.__hideOSDBackup = true;
+        this._iconName = iconName;
         this._init();
     }
 
@@ -245,7 +246,10 @@ export const SingleMonitorSliderAndValueForStatusAreaMenu = class SingleMonitorS
             x_expand: true,
             y_align: Clutter.ActorAlign.CENTER,
         });
-        this.SliderContainer = new SingleMonitorMenuItem(this._settings, null, null, valueSliderBin, this.ValueLabel);
+        const icon = this._iconName.startsWith('/')
+            ? new St.Icon({gicon: Gio.FileIcon.new(Gio.File.new_for_path(this._iconName)), style_class: 'popup-menu-icon'})
+            : new St.Icon({icon_name: this._iconName, style_class: 'popup-menu-icon'});
+        this.SliderContainer = new SingleMonitorMenuItem(this._settings, icon, null, valueSliderBin, this.ValueLabel);
         if (this._settings.get_boolean('show-display-name'))
             this.addMenuItem(this.NameContainer);
 
@@ -272,7 +276,7 @@ export const SingleMonitorSliderAndValueForStatusAreaMenu = class SingleMonitorS
     }
 
     _SliderChange() {
-        brightnessLog(this._settings, `StatusArea _SliderChange event ${this.ValueSlider.value}`) 
+        brightnessLog(this._settings, `StatusArea _SliderChange event ${this.ValueSlider.value}`)
         sliderValueChangeCommon(this);
     }
 };
@@ -289,6 +293,9 @@ export const SingleMonitorSliderAndValueForQuickSettingsSubMenu = GObject.regist
         'current-value': GObject.ParamSpec.double('current-value', 'current-value', 'current-value',
             GObject.ParamFlags.READWRITE,
             0, 1, 1),
+        'icon-name': GObject.ParamSpec.string('icon-name', 'icon-name', 'icon-name',
+            GObject.ParamFlags.READWRITE,
+            'display-brightness-symbolic'),
     },
     Signals: {
         'slider-change': {
@@ -297,9 +304,12 @@ export const SingleMonitorSliderAndValueForQuickSettingsSubMenu = GObject.regist
     },
 }, class SingleMonitorSliderAndValueForQuickSettingsSubMenu extends PopupMenu.PopupImageMenuItem {
     _init(params) {
+        const iconParam = params['icon-name'] ?? 'display-brightness-symbolic';
         super._init(
-            "", 'display-brightness-symbolic', {}
+            "", iconParam.startsWith('/') ? 'display-brightness-symbolic' : iconParam, {}
         );
+        if (iconParam.startsWith('/') && this._icon)
+            this._icon.gicon = Gio.FileIcon.new(Gio.File.new_for_path(iconParam));
         this.settings = params.settings
         this.display_name = params['display-name']
         this.current_value = params['current-value']
@@ -351,7 +361,7 @@ export const SingleMonitorSliderAndValueForQuickSettingsSubMenu = GObject.regist
     }
 
     _SliderChange() {
-        brightnessLog(this._settings, `QuickSettings submenu _SliderChange event ${this.ValueSlider.value}`) 
+        brightnessLog(this._settings, `QuickSettings submenu _SliderChange event ${this.ValueSlider.value}`)
         sliderValueChangeCommon(this);
     }
 });
@@ -369,6 +379,9 @@ export const SingleMonitorSliderAndValueForQuickSettings = GObject.registerClass
         'current-value': GObject.ParamSpec.double('current-value', 'current-value', 'current-value',
             GObject.ParamFlags.READWRITE,
             0, 1, 1),
+        'icon-name': GObject.ParamSpec.string('icon-name', 'icon-name', 'icon-name',
+            GObject.ParamFlags.READWRITE,
+            'display-brightness-symbolic'),
     },
     Signals: {
         'slider-change': {
@@ -377,10 +390,13 @@ export const SingleMonitorSliderAndValueForQuickSettings = GObject.registerClass
     },
 }, class SingleMonitorSliderAndValueForQuickSettings extends QuickSettings.QuickSlider {
     _init(params) {
+        const iconParam = params['icon-name'] ?? 'display-brightness-symbolic';
         super._init({
             ...params,
-            iconName: 'display-brightness-symbolic',
+            iconName: iconParam.startsWith('/') ? 'display-brightness-symbolic' : iconParam,
         });
+        if (iconParam.startsWith('/') && this._icon)
+            this._icon.gicon = Gio.FileIcon.new(Gio.File.new_for_path(iconParam));
         /* OSD is never shown by default */
         this._hideOSD = true;
         this.__hideOSDBackup = true;
@@ -424,7 +440,7 @@ export const SingleMonitorSliderAndValueForQuickSettings = GObject.registerClass
     }
 
     _SliderChange() {
-        brightnessLog(this._settings, `QuickSettings _SliderChange event ${this.ValueSlider.value}`) 
+        brightnessLog(this._settings, `QuickSettings _SliderChange event ${this.ValueSlider.value}`)
         sliderValueChangeCommon(this);
     }
 });

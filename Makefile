@@ -5,6 +5,7 @@ build: schemas
 	gnome-extensions pack \
 		--force \
 		--extra-source=ui \
+		--extra-source=icons \
 		--extra-source=convenienceExt.js \
 		--extra-source=conveniencePref.js \
 		--extra-source=indicator.js \

@@ -5,9 +5,9 @@ export function isNullOrWhitespace(str) {
 }
 
 /**
- * 
- * @param {*} settings 
- * @param {*} str 
+ *
+ * @param {*} settings
+ * @param {*} str
  */
 export function brightnessLog(settings, ...args) {
     if (settings.get_boolean('verbose-debugging'))
@@ -32,11 +32,11 @@ export async function spawnWithCallback(settings, argv, callback) {
                     await callback(stderr);
                 else if (stdout)
                     await callback(stdout);
-                else 
+                else
                     await callback("");
             }
         });
-        
+
     } catch (e) {
         brightnessLog(settings, e);
     }

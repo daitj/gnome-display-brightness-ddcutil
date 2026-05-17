@@ -225,24 +225,25 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             return
         syncing = true
         if (this.settings.get_boolean('show-all-slider')) {
+            const brightnessDisplays = displays.filter(d => d.type === 'brightness')
             var sum = 0.0
-            for (let display of displays) {
+            for (let display of brightnessDisplays) {
                 sum = sum + display.slider.ValueSlider.value
             }
-            mainMenuButton.getStoredSliders()[0].changeValue(sum * 100 / displays.length)
-            mainMenuButton.getStoredSliders()[0].old_value = sum * 100 / displays.length;
+            mainMenuButton.getStoredSliders()[0].changeValue(sum * 100 / brightnessDisplays.length)
+            mainMenuButton.getStoredSliders()[0].old_value = sum * 100 / brightnessDisplays.length;
         }
         syncing = false
     }
 
     setAllBrightness(newValue) {
-
         if (syncing)
             return
         pause_sync = true
+        const brightnessDisplays = displays.filter(d => d.type === 'brightness')
         const mode = "experimental"
         if (mode === "original") {
-            displays.forEach(display => {
+            brightnessDisplays.forEach(display => {
                 display.slider.setHideOSD();
                 display.slider.changeValue(newValue);
                 display.slider.resetOSD();
@@ -258,7 +259,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 const increase = newValue - oldValue
                 const remaining = 100 - oldValue
                 const frac = increase / remaining
-                displays.forEach(display => {
+                brightnessDisplays.forEach(display => {
                     display.slider.setHideOSD();
                     const oldValue = 100 * display.slider.ValueSlider.value;
                     const remaining = 100 - oldValue
@@ -270,7 +271,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 const decrease = oldValue - newValue
                 const remaining = oldValue
                 const frac = decrease / remaining
-                displays.forEach(display => {
+                brightnessDisplays.forEach(display => {
                     display.slider.setHideOSD();
                     const oldValue = 100 * display.slider.ValueSlider.value;
                     const remaining = oldValue
@@ -312,12 +313,12 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         };
         let allslider = null;
         if (this.settings.get_int('button-location') === 0) {
-            allslider = new SingleMonitorSliderAndValueForStatusAreaMenu(this.settings, _('All'), displays[0].current, onAllSliderChange);
+            allslider = new SingleMonitorSliderAndValueForStatusAreaMenu(this.settings, _('All'), displays.find(d => d.type === 'brightness').current, onAllSliderChange);
         } else {
             allslider = new SingleMonitorSliderAndValueForQuickSettings({
                 settings: this.settings,
                 'display-name': _('All'),
-                'current-value': displays[0].current,
+                'current-value': displays.find(d => d.type === 'brightness').current,
             });
             allslider.connect('slider-change', onAllSliderChange);
             if (this.settings.get_boolean('show-sliders-in-submenu'))
@@ -335,14 +336,18 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             this.setBrightness(display, newValue);
             this.syncAllSlider();
         };
+        const iconName = display.type === 'contrast'
+            ? `${this.path}/icons/contrast-symbolic.svg`
+            : 'display-brightness-symbolic';
         let displaySlider = null;
         if (this.settings.get_int('button-location') === 0) {
-            displaySlider = new SingleMonitorSliderAndValueForStatusAreaMenu(this.settings, display.name, display.current, onSliderChange);
+            displaySlider = new SingleMonitorSliderAndValueForStatusAreaMenu(this.settings, display.name, display.current, onSliderChange, iconName);
         } else if (this.settings.get_boolean('show-sliders-in-submenu')) {
             displaySlider = new SingleMonitorSliderAndValueForQuickSettingsSubMenu({
                 settings: this.settings,
                 'display-name': display.name,
-                'current-value': display.current
+                'current-value': display.current,
+                'icon-name': iconName,
             });
             displaySlider.connect('slider-change', onSliderChange);
         } else {
@@ -350,6 +355,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 settings: this.settings,
                 'display-name': display.name,
                 'current-value': display.current,
+                'icon-name': iconName,
             });
             displaySlider.connect('slider-change', onSliderChange);
         }
@@ -421,6 +427,16 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             if (this.settings.get_boolean('show-all-slider'))
                 this.addAllSlider();
 
+            displays.sort((a, b) => {
+                if (a.bus === 'internal') return -1;
+                if (b.bus === 'internal') return 1;
+                const busA = parseInt(a.bus);
+                const busB = parseInt(b.bus);
+                if (busA !== busB) return busA - busB;
+                if (a.type === 'brightness' && b.type !== 'brightness') return -1;
+                if (a.type !== 'brightness' && b.type === 'brightness') return 1;
+                return 0;
+            });
             displays.forEach(display => {
                 this.addDisplayToPanel(display);
             });
@@ -441,7 +457,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                     but we want custom positioning, this is bit of a hack to access
                     _grid (St.Widget) directly and add items there,
                 */
-                mainMenuButton.quickSettingsItems.forEach(item => {
+                [...mainMenuButton.quickSettingsItems].reverse().forEach(item => {
                     /*
                         also for Label and Name we are accessing slider's parent's parent
                         Slider->Parent(St.Bin)->Parent(St.BoxLayout)
@@ -535,13 +551,13 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         return (ddcutilResponseArray[2] === 'ERR')
     }
 
-    afterGetDdcutilBrightnessResponseSuccess(displayBus, displayName, vcp, ddcutilResponseArray) {
+    afterGetDdcutilBrightnessResponseSuccess(type, displayBus, displayName, vcp, ddcutilResponseArray) {
         let display = {};
         const maxBrightness = ddcutilResponseArray[4];
         /* we need current brightness in the scale of 0 to 1 for slider*/
         const currentBrightness = ddcutilResponseArray[3] / ddcutilResponseArray[4];
         /* make display object */
-        display = { 'bus': displayBus, 'max': maxBrightness, 'current': currentBrightness, 'name': displayName, 'vcp': vcp };
+        display = {'type': type, 'bus': displayBus, 'max': maxBrightness, 'current': currentBrightness, 'name': displayName, 'vcp': vcp };
         brightnessLog(this.settings, `added display to list ${JSON.stringify(display)}`);
         displays.push(display);
 
@@ -574,7 +590,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 const ddcutilResponseArray = getVCPInfoAsArray(ddcutilResponse)
                 if (ddcutilResponseArray.length >= 5) {
                     brightnessLog(this.settings, `ddcutil getvcp ${vcpList[vcpListIndex]} got success response for bus ${displayBus}`);
-                    this.afterGetDdcutilBrightnessResponseSuccess(displayBus, displayName, vcpList[vcpListIndex], ddcutilResponseArray)
+                    this.afterGetDdcutilBrightnessResponseSuccess('brightness', displayBus, displayName, vcpList[vcpListIndex], ddcutilResponseArray)
                 }
             }
         }
@@ -585,7 +601,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             let proxy = new BrightnessProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH);
             let current = proxy.Brightness / 100
 
-            let display = {'bus': 'internal', 'max': 100, 'current': current, 'name': _('Internal')}
+            let display = {'type': 'brightness', 'bus': 'internal', 'max': 100, 'current': current, 'name': _('Internal')}
             if (Number.isInteger(current) && current >= 0)
                 displays.push(display)
         }
@@ -635,6 +651,22 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 // start with an ERR, so that the getDdcutilResponse will directly call
                 // move to call with index 0
                 await this.getDdcutilResponse(displayBus, displayName, -1, "VCP 0 ERR")
+
+                if (this.settings.get_boolean('vcp-12')) {
+                    await this.addContrastDisplayIfSupported(displayBus, displayName)
+                }
+            }
+        });
+    }
+
+    async addContrastDisplayIfSupported(displayBus, displayName) {
+        await this.ddcutilCommandLine('12', displayBus, async ddcutilResponse => {
+            brightnessLog(this.settings, `ddcutil getvcp 12 (contrast) for bus ${displayBus}: ${ddcutilResponse.replace(/\n+$/, '')}`);
+            if (this.displayValidate(ddcutilResponse) && !this.displayResponseError(ddcutilResponse)) {
+                const ddcutilResponseArray = getVCPInfoAsArray(ddcutilResponse)
+                if (ddcutilResponseArray.length >= 5) {
+                    this.afterGetDdcutilBrightnessResponseSuccess('contrast', displayBus, displayName, '12', ddcutilResponseArray)
+                }
             }
         });
     }
@@ -673,6 +705,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             'show-sliders-in-submenu': this.settings.get_boolean('show-sliders-in-submenu'),
             'vcp-6b': this.settings.get_boolean('vcp-6b'),
             'vcp-10': this.settings.get_boolean('vcp-10'),
+            'vcp-12': this.settings.get_boolean('vcp-12'),
             'verbose-debugging': this.settings.get_boolean('verbose-debugging'),
             'ddcutil-sleep-multiplier': this.settings.get_double('ddcutil-sleep-multiplier'),
             'position-system-indicator': this.settings.get_double('position-system-indicator'),
@@ -726,6 +759,9 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 this.reloadExtension();
             }),
             vcp10: this.settings.connect('changed::vcp-10', () => {
+                this.reloadExtension();
+            }),
+            vcp12: this.settings.connect('changed::vcp-12', () => {
                 this.reloadExtension();
             }),
             indicator: this.settings.connect('changed::button-location', () => {

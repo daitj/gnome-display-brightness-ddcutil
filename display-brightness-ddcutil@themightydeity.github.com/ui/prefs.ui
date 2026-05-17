@@ -138,6 +138,12 @@
               </object>
             </child>
             <child>
+              <object class="AdwSwitchRow" id="vcp_code_row_12">
+                <property name="title">12</property>
+                <property name="subtitle" translatable="yes">Contrast</property>
+              </object>
+            </child>
+            <child>
               <object class="AdwSwitchRow" id="vcp_code_row_6b">
                 <property name="title">6B</property>
                 <property name="subtitle" translatable="yes">White Backlight</property>
