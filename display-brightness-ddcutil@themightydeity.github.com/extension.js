@@ -98,6 +98,9 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     enableBrightnessControl() {
         displays = [];
         writeCollection = {};
+        /* module-level flags survive a reload, don't let a stuck flag poison the new state */
+        syncing = false
+        pause_sync = false
         if (this.settings.get_int('button-location') === 0) {
             brightnessLog(this.settings, 'Adding to panel');
             mainMenuButton = new StatusAreaBrightnessMenu(this.settings);
@@ -250,8 +253,10 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         } else if (mode === "experimental") {
             const oldValue = mainMenuButton.getStoredSliders()[0].old_value;
 
-            if (oldValue === newValue)
+            if (oldValue === newValue) {
+                pause_sync = false
                 return;
+            }
             const increased = (newValue > oldValue)
 
             if (increased) {
@@ -324,6 +329,8 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 allslider.menuEnabled = true
             allslider.menu.setHeader('display-brightness-symbolic', 'Brightness');
         }
+        /* setAllBrightness computes deltas from old_value, so it must never start out undefined */
+        allslider.old_value = displays[0].current * 100;
         mainMenuButton.addMenuItem(allslider);
 
         /* save slider in main menu, so that it can be accessed easily for different events */
