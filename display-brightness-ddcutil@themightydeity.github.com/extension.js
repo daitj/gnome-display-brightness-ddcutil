@@ -250,8 +250,10 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         } else if (mode === "experimental") {
             const oldValue = mainMenuButton.getStoredSliders()[0].old_value;
 
-            if (oldValue === newValue)
+            if (oldValue === newValue) {
+                pause_sync = false
                 return;
+            }
             const increased = (newValue > oldValue)
 
             if (increased) {
@@ -324,6 +326,8 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 allslider.menuEnabled = true
             allslider.menu.setHeader('display-brightness-symbolic', 'Brightness');
         }
+        /* ensure old_value is never undefined to prevent cascading NaN */
+        allslider.old_value = displays[0].current * 100;
         mainMenuButton.addMenuItem(allslider);
 
         /* save slider in main menu, so that it can be accessed easily for different events */
