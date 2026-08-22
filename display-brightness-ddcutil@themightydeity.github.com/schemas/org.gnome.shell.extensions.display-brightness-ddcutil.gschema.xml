@@ -30,6 +30,20 @@
       <default>true</default>
       <summary>Enables OSD</summary>
     </key>
+    <key type="b" name="idle-dimming-enabled">
+      <default>false</default>
+      <summary>Dim external displays after a period of user inactivity</summary>
+    </key>
+    <key type="i" name="idle-dimming-delay-minutes">
+      <range min="1" max="120" />
+      <default>5</default>
+      <summary>Minutes of inactivity before external displays are dimmed</summary>
+    </key>
+    <key type="d" name="idle-dimming-brightness">
+      <range min="1" max="100" />
+      <default>5</default>
+      <summary>External display brightness percentage while idle</summary>
+    </key>
     <key type="i" name="button-location">
       <default>0</default>
       <range min="0" max="1" />

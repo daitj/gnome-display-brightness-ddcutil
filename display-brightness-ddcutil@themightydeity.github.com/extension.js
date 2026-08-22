@@ -55,7 +55,6 @@ const {
 const minBrightness = 1;
 let displays = null;
 let mainMenuButton = null;
-let writeCollection = null;
 let _reloadMenuWidgetsTimer = null;
 let _reloadExtensionTimer = null;
 let reloadingExtension = false;
@@ -85,19 +84,38 @@ const BrightnessInterface = loadInterfaceXML('org.gnome.Shell.Brightness');
 const BrightnessProxy = Gio.DBusProxy.makeProxyWrapper(BrightnessInterface);
 
 export default class DDCUtilBrightnessControlExtension extends Extension {
-    enable() {
+    async enable() {
+        if (this._disablePromise)
+            await this._disablePromise;
         this.settings = this.getSettings();
+        this._shellDisabling = false;
+        this._idleMonitor = null;
+        this._idlePollSourceId = 0;
+        this._idleDimmed = false;
+        this._idleBrightnessByBus = new Map();
+        this._idleRestorePromise = null;
+        this._idleRestoreRetryAt = 0;
+        this._suppressSliderWrites = new Set();
+        this._idleConfigGeneration = 0;
+        this._writeCollection = {};
+        this._tearingDown = false;
+        this._reloadPromise = null;
+        this._disablePromise = null;
         this.enableBrightnessControl();
     }
 
     disable() {
-        this.disableBrightnessControl();
-        this.settings = null;
+        this._shellDisabling = true;
+        this._disablePromise = this.disableBrightnessControl().finally(() => {
+            this.settings = null;
+        });
     }
 
     enableBrightnessControl() {
         displays = [];
-        writeCollection = {};
+        this._writeCollection = {};
+        this._teardownPromise = null;
+        this._tearingDown = false;
         if (this.settings.get_int('button-location') === 0) {
             brightnessLog(this.settings, 'Adding to panel');
             mainMenuButton = new StatusAreaBrightnessMenu(this.settings);
@@ -113,6 +131,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             this.connectMonitorChangeSignals();
 
             this.addKeyboardShortcuts();
+            this.configureIdleDimming();
 
             if (this.settings.get_int('button-location') === 0) {
                 this.addTextItemToPanel(_('Initializing'));
@@ -124,6 +143,27 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     }
 
     disableBrightnessControl() {
+        if (this._tearingDown)
+            return this._teardownPromise ?? Promise.resolve();
+        this._tearingDown = true;
+
+        this.removeIdleWatches();
+        this._idleConfigGeneration++;
+
+        /* Clear timers before any asynchronous restoration can yield. */
+        if (_reloadMenuWidgetsTimer) {
+            clearTimeout(_reloadMenuWidgetsTimer);
+            _reloadMenuWidgetsTimer = null;
+        }
+        if (_reloadExtensionTimer) {
+            clearTimeout(_reloadExtensionTimer);
+            _reloadExtensionTimer = null;
+        }
+        if (monitorChangeTimeout !== null) {
+            clearTimeout(monitorChangeTimeout);
+            monitorChangeTimeout = null;
+        }
+
         /* disconnect all signals */
         this.disconnectSettingsSignals();
         this.disconnectMonitorSignals();
@@ -131,68 +171,94 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         /* remove shortcuts */
         this.removeKeyboardShortcuts();
 
-        /* clear timeouts */
-        if (_reloadMenuWidgetsTimer)
-            clearTimeout(_reloadMenuWidgetsTimer);
-
-        if (_reloadExtensionTimer)
-            clearTimeout(_reloadExtensionTimer);
-
-        Object.keys(writeCollection).forEach(bus => {
-            if (writeCollection[bus].interval !== null) {
-                clearInterval(writeCollection[bus].interval);
-            }
-        });
-        if (monitorChangeTimeout !== null) {
-            clearTimeout(monitorChangeTimeout)
-            monitorChangeTimeout = null;
-        }
-
-        /* clear variables */
+        /* Remove UI and module globals synchronously for GNOME Shell lifecycle safety. */
+        const teardownDisplays = displays;
         mainMenuButton.destroy();
         mainMenuButton = null;
         displays = null;
-        writeCollection = null;
+
+        /* Finish serialized restoration using only this instance's captured state. */
+        this._teardownPromise = (async () => {
+            await this.disableIdleDimming(true, teardownDisplays);
+            await this.waitForAllDdcWrites();
+            this._writeCollection = null;
+        })();
+        return this._teardownPromise;
     }
 
     ddcWriteCollector(displayBus, writer) {
-        const kickoffNext = (reason) => {
-            brightnessLog(this.settings, `kickoffNext called ${reason}`);
-            writeCollection[displayBus].current = writeCollection[displayBus].next;
-            writeCollection[displayBus].next = null;
-            if (writeCollection[displayBus].current) {
-                writeCollection[displayBus].current(() => {
-                    if (writeCollection === null) {
-                        // Must be disabling. Do nothing.
-                        return;
-                    }
-                    kickoffNext("on chain");
-                });
-            } else {
-                brightnessLog(this.settings, "writer done, nothing next");
-            }
-        }
+        if (this._writeCollection === null)
+            return Promise.resolve(false);
 
-        if (displayBus in writeCollection) {
-            writeCollection[displayBus].next = writer;
-            if (writeCollection[displayBus].current) {
-                brightnessLog(this.settings, "Saving writer for when ready");
-            } else {
-                kickoffNext("on start");
-            }
-            return;
-        }
-        writeCollection[displayBus] = {
-            next: writer,
-            current: null
-        };
-        kickoffNext("on start");
+        if (!(displayBus in this._writeCollection))
+            this._writeCollection[displayBus] = {current: null, next: null};
+
+        const entry = this._writeCollection[displayBus];
+        return new Promise(resolve => {
+            if (entry.next !== null)
+                entry.next.resolve(false);
+            let complete;
+            const completion = new Promise(completionResolve => {
+                complete = completionResolve;
+            });
+            entry.next = {
+                writer,
+                completion,
+                resolve: successful => {
+                    resolve(successful);
+                    complete();
+                },
+            };
+
+            if (entry.current !== null)
+                brightnessLog(this.settings, 'Saving writer for when ready');
+            else
+                this.runNextDdcWrite(displayBus);
+        });
     }
 
-    setBrightness(display, newValue) {
+    async runNextDdcWrite(displayBus) {
+        const entry = this._writeCollection?.[displayBus];
+        if (!entry || entry.current !== null || entry.next === null)
+            return;
+
+        entry.current = entry.next;
+        entry.next = null;
+        let successful = false;
+        try {
+            successful = await entry.current.writer();
+        } catch (error) {
+            brightnessLog(this.settings, error);
+        } finally {
+            entry.current.resolve(successful);
+            entry.current = null;
+            if (entry.next !== null)
+                this.runNextDdcWrite(displayBus);
+            else
+                brightnessLog(this.settings, 'writer done, nothing next');
+        }
+    }
+
+    async waitForAllDdcWrites() {
+        while (this._writeCollection !== null) {
+            const pending = Object.values(this._writeCollection).flatMap(entry =>
+                [entry.current, entry.next]
+                    .filter(item => item !== null)
+                    .map(item => item.completion)
+            );
+            if (pending.length === 0)
+                return;
+            await Promise.all(pending);
+        }
+    }
+
+    setBrightness(display, newValue, automatic = false) {
+        if (!automatic)
+            this.cancelIdleRestoreForBus(display.bus);
+
         if (display.bus === 'internal') {
             this.setInternalBrightness(newValue);
-            return;
+            return Promise.resolve(true);
         }
         let newBrightness = parseInt((newValue / 100) * display.max);
         if (newBrightness === 0) {
@@ -202,15 +268,181 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         const ddcutilPath = this.settings.get_string('ddcutil-binary-path');
         const ddcutilAdditionalArgs = this.settings.get_string('ddcutil-additional-args');
         const sleepMultiplier = this.settings.get_double('ddcutil-sleep-multiplier') / 40;
-        const writer = async (ondone) => {
+        const writer = async () => {
             const cmd = `${ddcutilPath} setvcp ${display.vcp} ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`.split(" ").filter(x => x !== "");
             brightnessLog(this.settings, `async ${cmd.join(" ")}`);
-            await spawnWithCallback(this.settings, cmd, async (result) => {if (ondone) {await ondone();}});
+            return await spawnWithCallback(this.settings, cmd, () => {});
         };
         brightnessLog(this.settings, `display ${display.name}, current: ${display.current} => ${newValue / 100}, new brightness: ${newBrightness}, new value: ${newValue}`);
         display.current = newValue / 100;
 
-        this.ddcWriteCollector(display.bus, writer);
+        return this.ddcWriteCollector(display.bus, writer);
+    }
+
+    removeIdleWatches() {
+        if (this._idlePollSourceId !== 0) {
+            GLib.Source.remove(this._idlePollSourceId);
+            this._idlePollSourceId = 0;
+        }
+    }
+
+    cancelIdleRestoreForBus(displayBus) {
+        if (!this._idleDimmed || !this._idleBrightnessByBus.delete(displayBus))
+            return;
+
+        brightnessLog(this.settings, `User brightness change overrides idle restoration for bus ${displayBus}`);
+        if (this._idleBrightnessByBus.size === 0) {
+            this._idleDimmed = false;
+            this._idleRestoreRetryAt = 0;
+        }
+    }
+
+    configureIdleDimming() {
+        this.removeIdleWatches();
+        const generation = ++this._idleConfigGeneration;
+
+        if (!this.settings.get_boolean('idle-dimming-enabled')) {
+            brightnessLog(this.settings, 'Idle dimming disabled');
+            void this.disableIdleDimming(true).finally(() => {
+                if (generation === this._idleConfigGeneration)
+                    this._idleMonitor = null;
+            });
+            return;
+        }
+
+        try {
+            if (generation !== this._idleConfigGeneration)
+                return;
+            this._idleMonitor = global.backend.get_core_idle_monitor();
+            brightnessLog(this.settings, 'Idle dimming enabled');
+            this.scheduleIdleWatch();
+        } catch (error) {
+            brightnessLog(this.settings, `Unable to initialize idle dimming: ${error}`);
+            if (generation === this._idleConfigGeneration)
+                this._idleMonitor = null;
+        }
+    }
+
+    scheduleIdleWatch() {
+        if (this._idleMonitor === null || this._idlePollSourceId !== 0 ||
+            !this.settings.get_boolean('idle-dimming-enabled'))
+            return;
+
+        const activePollIntervalMs = 10000;
+        const dimmedPollIntervalMs = 500;
+        const pollIntervalMs = this._idleDimmed
+            ? dimmedPollIntervalMs
+            : activePollIntervalMs;
+        brightnessLog(this.settings, `Polling idle time again in ${pollIntervalMs} ms`);
+        this._idlePollSourceId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, pollIntervalMs, () => {
+            this._idlePollSourceId = 0;
+            const delayMs = this.settings.get_int('idle-dimming-delay-minutes') * 60 * 1000;
+            const idleTime = this._idleMonitor.get_idletime();
+            if (!this._idleDimmed && idleTime >= delayMs)
+                this.dimDisplaysForIdle();
+            else if (this._idleDimmed && idleTime < delayMs &&
+                GLib.get_monotonic_time() / 1000 >= this._idleRestoreRetryAt) {
+                void this.restoreIdleBrightness().finally(() => this.scheduleIdleWatch());
+                return GLib.SOURCE_REMOVE;
+            }
+
+            this.scheduleIdleWatch();
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+
+    changeBrightnessAutomatically(display, brightness, updateSlider = true) {
+        if (display.slider && updateSlider) {
+            this._suppressSliderWrites.add(display.bus);
+            display.slider.setHideOSD();
+            try {
+                display.slider.changeValue(brightness);
+            } finally {
+                display.slider.resetOSD();
+                this._suppressSliderWrites.delete(display.bus);
+            }
+        }
+        return this.setBrightness(display, brightness, true);
+    }
+
+    dimDisplaysForIdle() {
+        if (this._idleDimmed || displays === null)
+            return;
+
+        const externalDisplays = displays.filter(display => display.bus !== 'internal');
+        this._idleBrightnessByBus.clear();
+        this._idleDimmed = true;
+
+        /* Late DDC discovery will dim displays in the discovery callback. */
+        if (externalDisplays.length === 0) {
+            brightnessLog(this.settings, 'Idle detected; waiting for display discovery');
+            return;
+        }
+
+        for (const display of externalDisplays)
+            this._idleBrightnessByBus.set(display.bus, display.current * 100);
+
+        const dimBrightness = this.settings.get_double('idle-dimming-brightness');
+        brightnessLog(this.settings, `Idle detected; dimming displays to ${dimBrightness}%`);
+        for (const display of externalDisplays)
+            void this.changeBrightnessAutomatically(display, dimBrightness);
+    }
+
+    restoreIdleBrightness(abandonMissing = false, availableDisplays = displays) {
+        if (this._idleRestorePromise !== null)
+            return this._idleRestorePromise;
+        this._idleRestorePromise = this._restoreIdleBrightness(abandonMissing, availableDisplays)
+            .finally(() => {
+                this._idleRestorePromise = null;
+            });
+        return this._idleRestorePromise;
+    }
+
+    async _restoreIdleBrightness(abandonMissing = false, availableDisplays = displays) {
+        if (!this._idleDimmed || availableDisplays === null)
+            return true;
+
+        brightnessLog(this.settings, 'User active; restoring display brightness');
+        const displaysByBus = new Map(availableDisplays.map(display => [display.bus, display]));
+        const restoreResults = await Promise.all(
+            [...this._idleBrightnessByBus.entries()].map(async ([bus, brightness]) => {
+                const display = displaysByBus.get(bus);
+                if (!display)
+                    return {bus, successful: false, missing: true};
+                const successful = await this.changeBrightnessAutomatically(
+                    display,
+                    brightness,
+                    !this._tearingDown
+                );
+                return {bus, successful, missing: false};
+            })
+        );
+
+        for (const {bus, successful, missing} of restoreResults) {
+            if (successful || (missing && abandonMissing))
+                this._idleBrightnessByBus.delete(bus);
+            if (missing && abandonMissing)
+                console.warn(`Unable to restore brightness for disconnected DDC bus ${bus}`);
+        }
+
+        if (this._idleBrightnessByBus.size === 0) {
+            this._idleDimmed = false;
+            this._idleRestoreRetryAt = 0;
+            return true;
+        }
+
+        this._idleRestoreRetryAt = GLib.get_monotonic_time() / 1000 + 10000;
+        return false;
+    }
+
+    async disableIdleDimming(abandonMissing = false, availableDisplays = displays) {
+        this.removeIdleWatches();
+        const restored = await this.restoreIdleBrightness(abandonMissing, availableDisplays);
+        if (!restored && abandonMissing) {
+            console.error(`Unable to restore idle brightness for DDC buses: ${[...this._idleBrightnessByBus.keys()].join(', ')}`);
+            this._idleBrightnessByBus.clear();
+            this._idleDimmed = false;
+        }
     }
 
     setInternalBrightness(newValue) {
@@ -332,7 +564,8 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
 
     addDisplayToPanel(display) {
         const onSliderChange = (quickSettingsSlider, newValue) => {
-            this.setBrightness(display, newValue);
+            if (!this._suppressSliderWrites.has(display.bus))
+                void this.setBrightness(display, newValue);
             this.syncAllSlider();
         };
         let displaySlider = null;
@@ -465,19 +698,29 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
        caused unecessary extra ddcutil calls.
      */
     reloadExtension() {
+        if (this._tearingDown || this._shellDisabling)
+            return;
         reloadingExtension = true;
         if (_reloadExtensionTimer)
             clearTimeout(_reloadExtensionTimer);
 
         _reloadExtensionTimer = setTimeout(() => {
             _reloadExtensionTimer = null;
-            this._reloadExtension();
+            if (this._reloadPromise !== null || this._shellDisabling)
+                return;
+            this._reloadPromise = this._reloadExtension()
+                .catch(error => console.error(error))
+                .finally(() => {
+                    this._reloadPromise = null;
+                });
         }, 1000);
     }
 
-    _reloadExtension() {
+    async _reloadExtension() {
         brightnessLog(this.settings, 'Reload extension');
-        this.disableBrightnessControl();
+        await this.disableBrightnessControl();
+        if (this._shellDisabling)
+            return;
         this.enableBrightnessControl();
         reloadingExtension = false;
     }
@@ -544,6 +787,15 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         display = { 'bus': displayBus, 'max': maxBrightness, 'current': currentBrightness, 'name': displayName, 'vcp': vcp };
         brightnessLog(this.settings, `added display to list ${JSON.stringify(display)}`);
         displays.push(display);
+
+        /* Discovery can finish after the idle watch has already fired. */
+        if (this._idleDimmed) {
+            this._idleBrightnessByBus.set(display.bus, display.current * 100);
+            this.changeBrightnessAutomatically(
+                display,
+                this.settings.get_double('idle-dimming-brightness')
+            );
+        }
 
         /* cheap way of reloading all display slider in the panel */
         this.reloadMenuWidgets();
@@ -683,6 +935,9 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             'ddcutil-binary-path': this.settings.get_string('ddcutil-binary-path'),
             'decrease-brightness-shortcut': this.settings.get_strv('decrease-brightness-shortcut'),
             'increase-brightness-shortcut': this.settings.get_strv('increase-brightness-shortcut'),
+            'idle-dimming-enabled': this.settings.get_boolean('idle-dimming-enabled'),
+            'idle-dimming-delay-minutes': this.settings.get_int('idle-dimming-delay-minutes'),
+            'idle-dimming-brightness': this.settings.get_double('idle-dimming-brightness'),
         };
         return out;
     }
@@ -745,6 +1000,12 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             }),
             verbose_debugging: this.settings.connect('changed::verbose-debugging', () => {
                 this.reloadExtension();
+            }),
+            idle_dimming_enabled: this.settings.connect('changed::idle-dimming-enabled', () => {
+                this.configureIdleDimming();
+            }),
+            idle_dimming_delay: this.settings.connect('changed::idle-dimming-delay-minutes', () => {
+                this.configureIdleDimming();
             }),
         };
     }

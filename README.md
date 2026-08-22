@@ -1,5 +1,16 @@
 Display Brightness Slider for Gnome Shell
 
+## Idle dimming
+
+The extension can temporarily lower the hardware brightness of all detected
+external displays after a configurable period of user inactivity. Each
+display's previous brightness is saved independently and restored on the first
+mouse or keyboard activity. Idle dimming is disabled by default; when enabled,
+it defaults to five minutes and can be configured from the extension preferences.
+
+Automatic dimming and restoration use DDC/CI, just like the extension's
+sliders. Internal displays are left to GNOME's built-in power management.
+
 ![screenshot](screenshot.jpg)
 
 - [Setup ddcutil](#setup-ddcutil)

@@ -16,6 +16,9 @@ const PrefsWidget = GObject.registerClass({
         'show_value_label_row',
         'show_display_name_row',
         'show_osd_row',
+        'idle_dimming_enabled_row',
+        'idle_dimming_delay_row',
+        'idle_dimming_brightness_row',
         'button_location_combo_row',
         'sub_menu_row',
         'hide_system_indicator_row',
@@ -79,6 +82,15 @@ const PrefsWidget = GObject.registerClass({
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
+
+        this.settings.bind(
+            'idle-dimming-enabled',
+            this._idle_dimming_enabled_row,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+        this._idle_dimming_delay_row.value = this.settings.get_int('idle-dimming-delay-minutes');
+        this._idle_dimming_brightness_row.value = this.settings.get_double('idle-dimming-brightness');
 
         this.settings.bind(
             'show-sliders-in-submenu',
@@ -267,6 +279,14 @@ const PrefsWidget = GObject.registerClass({
 
     onSleepMultiplierValueChanged() {
         this.settings.set_double('ddcutil-sleep-multiplier', this._sleep_multiplier_row.value);
+    }
+
+    onIdleDimmingDelayChanged() {
+        this.settings.set_int('idle-dimming-delay-minutes', this._idle_dimming_delay_row.value);
+    }
+
+    onIdleDimmingBrightnessChanged() {
+        this.settings.set_double('idle-dimming-brightness', this._idle_dimming_brightness_row.value);
     }
 }
 );

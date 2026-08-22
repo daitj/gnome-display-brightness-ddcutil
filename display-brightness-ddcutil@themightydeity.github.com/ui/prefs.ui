@@ -73,6 +73,37 @@
     </child>
     <child>
       <object class="AdwPreferencesGroup">
+        <property name="title" translatable="yes">Idle Dimming</property>
+        <property name="description" translatable="yes">Temporarily lower external monitor backlights after user inactivity, then restore their previous values on activity.</property>
+        <child>
+          <object class="AdwSwitchRow" id="idle_dimming_enabled_row">
+            <property name="title" translatable="yes">Enable Idle Dimming</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwSpinRow" id="idle_dimming_delay_row">
+            <property name="title" translatable="yes">Dim After</property>
+            <property name="subtitle" translatable="yes">Minutes of inactivity</property>
+            <property name="numeric">True</property>
+            <property name="adjustment">idle_dimming_delay_adjustment</property>
+            <property name="sensitive" bind-source="idle_dimming_enabled_row" bind-property="active" bind-flags="sync-create" />
+            <signal name="changed" handler="onIdleDimmingDelayChanged" swapped="no" />
+          </object>
+        </child>
+        <child>
+          <object class="AdwSpinRow" id="idle_dimming_brightness_row">
+            <property name="title" translatable="yes">Idle Brightness</property>
+            <property name="subtitle" translatable="yes">Percentage</property>
+            <property name="numeric">True</property>
+            <property name="adjustment">idle_dimming_brightness_adjustment</property>
+            <property name="sensitive" bind-source="idle_dimming_enabled_row" bind-property="active" bind-flags="sync-create" />
+            <signal name="changed" handler="onIdleDimmingBrightnessChanged" swapped="no" />
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="AdwPreferencesGroup">
         <property name="title" translatable="yes">Keyboard Shortcuts</property>
         <child>
           <object class="AdwActionRow">
@@ -174,6 +205,16 @@
     <property name="lower">4</property>
     <property name="upper">200</property>
     <property name="step-increment">4</property>
+  </object>
+  <object class="GtkAdjustment" id="idle_dimming_delay_adjustment">
+    <property name="lower">1</property>
+    <property name="upper">120</property>
+    <property name="step-increment">1</property>
+  </object>
+  <object class="GtkAdjustment" id="idle_dimming_brightness_adjustment">
+    <property name="lower">1</property>
+    <property name="upper">100</property>
+    <property name="step-increment">1</property>
   </object>
   <object class="GtkAdjustment" id="position_system_indicator_adjustment">
     <property name="lower">0</property>
