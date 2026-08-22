@@ -1,4 +1,5 @@
 import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
 
 export function isNullOrWhitespace(str) {
     return str === undefined || str === null || str.match(/^\s*$/) !== null;
@@ -19,26 +20,41 @@ export async function spawnWithCallback(settings, argv, callback) {
     try {
         const proc = Gio.Subprocess.new(argv, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
 
-        await proc.communicate_utf8_async(null, null, async (proc, res)=>{
-            const [, stdout, stderr] = proc.communicate_utf8_finish(res);
-            if (proc.get_successful()) {
-                await callback(stdout);
-            } else {
-                /*
-                    errors from ddcutil (like monitor not found) were actually in stdout
-                    only the process return code was 1
-                */
-                if (stderr)
-                    await callback(stderr);
-                else if (stdout)
-                    await callback(stdout);
-                else 
-                    await callback("");
-            }
+        return await new Promise(resolve => {
+            let timeoutActive = true;
+            const timeoutId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 15, () => {
+                timeoutActive = false;
+                brightnessLog(settings, `Command timed out: ${argv.join(' ')}`);
+                proc.force_exit();
+                return GLib.SOURCE_REMOVE;
+            });
+            proc.communicate_utf8_async(null, null, async (proc, res) => {
+                let successful = false;
+                try {
+                    const [, stdout, stderr] = proc.communicate_utf8_finish(res);
+                    successful = proc.get_successful();
+                    /*
+                        errors from ddcutil (like monitor not found) were actually in stdout
+                        only the process return code was 1
+                    */
+                    await callback(successful ? stdout : stderr || stdout || "", successful);
+                } catch (e) {
+                    brightnessLog(settings, e);
+                } finally {
+                    if (timeoutActive)
+                        GLib.Source.remove(timeoutId);
+                    resolve(successful);
+                }
+            });
         });
-        
     } catch (e) {
         brightnessLog(settings, e);
+        try {
+            await callback("", false);
+        } catch (callbackError) {
+            brightnessLog(settings, callbackError);
+        }
+        return false;
     }
 }
 

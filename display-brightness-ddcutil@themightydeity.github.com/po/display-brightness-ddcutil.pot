@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-11-21 14:57+0200\n"
+"POT-Creation-Date: 2026-08-22 03:50+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -66,72 +66,102 @@ msgid "Position in System Menu"
 msgstr ""
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:76
+msgid "Idle Dimming"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:77
+msgid ""
+"Temporarily lower external monitor backlights after user inactivity, then "
+"restore their previous values on activity."
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:80
+msgid "Enable Idle Dimming"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:85
+msgid "Dim After"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:86
+msgid "Minutes of inactivity"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:95
+msgid "Idle Brightness"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:96
+msgid "Percentage"
+msgstr ""
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:107
 msgid "Keyboard Shortcuts"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:79
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:110
 msgid "Increase Brightness"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:89
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:120
 msgid "Decrease Brightness"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:99
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:130
 msgid "Step Change %"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:109
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:140
 msgid "Advanced Settings"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:112
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:143
 msgid "`ddcutil` Binary Path"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:118
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:149
 msgid "`ddcutil` Additional Arguments"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:124
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:155
 msgid "`ddcutil` Sleep Multiplier ms"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:132
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:163
 msgid "VCP codes in use"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:137
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:168
 msgid "Brightness"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:143
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:174
 msgid "White Backlight"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:150
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:181
 msgid "Allow Zero Brightness"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:155
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:186
 msgid "Disable Display State Check"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:156
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:187
 msgid ""
 "Disables the check for the display power state before changing brightness, "
 "might help in detecting more displays"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:161
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:192
 msgid "Verbose debugging"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:169
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:200
 msgid "Top Bar"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:170
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:201
 msgid "System Menu"
 msgstr ""
 
@@ -152,24 +182,24 @@ msgstr ""
 msgid "Press Esc to cancel the keyboard shortcut."
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:118
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:123
 msgid "Initializing"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:289
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:402
 msgid "Settings"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:298
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:411
 msgid "Reload"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:315
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:319
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:428
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:432
 msgid "All"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/extension.js:588
+#: display-brightness-ddcutil@themightydeity.github.com/extension.js:710
 msgid "Internal"
 msgstr ""
 
