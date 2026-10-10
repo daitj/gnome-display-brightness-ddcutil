@@ -69,6 +69,12 @@ let pause_sync = false
 let internal_control = true
 
 /*
+    extra setvcp args, only set when ddcutil is recent enough to support them
+    see checkDdcutilVersion()
+*/
+let fastWriteArgs = [];
+
+/*
     instead of reading i2c bus everytime during startup,
     as it is unlikely that bus number changes, we can read
     cache file instead.
@@ -201,9 +207,13 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         }
         const ddcutilPath = this.settings.get_string('ddcutil-binary-path');
         const ddcutilAdditionalArgs = this.settings.get_string('ddcutil-additional-args');
+        const additionalArgs = ddcutilAdditionalArgs.split(" ");
+        /* do not pass --noverify next to a user supplied --verify, ddcutil rejects both together */
+        const fastArgs = fastWriteArgs.filter(arg => !additionalArgs.includes(arg) &&
+            !(arg === '--noverify' && additionalArgs.includes('--verify')));
         const sleepMultiplier = this.settings.get_double('ddcutil-sleep-multiplier') / 40;
         const writer = async (ondone) => {
-            const cmd = `${ddcutilPath} setvcp ${display.vcp} ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`.split(" ").filter(x => x !== "");
+            const cmd = `${ddcutilPath} setvcp ${display.vcp} ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${fastArgs.join(" ")} ${ddcutilAdditionalArgs}`.split(" ").filter(x => x !== "");
             brightnessLog(this.settings, `async ${cmd.join(" ")}`);
             await spawnWithCallback(this.settings, cmd, async (result) => {if (ondone) {await ondone();}});
         };
@@ -767,7 +777,28 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         Main.layoutManager.disconnect(monitorSignals.change);
     }
 
+    async checkDdcutilVersion() {
+        /*
+            --skip-ddc-checks and --noverify make setvcp several times faster.
+            --skip-ddc-checks only exists since ddcutil 2.1 and 2.2.0 fixed an assert
+            failure with it, so only use them with ddcutil 2.2 or newer.
+            Until this check is done, writes keep the default ddcutil behaviour.
+        */
+        fastWriteArgs = [];
+        const ddcutilPath = this.settings.get_string('ddcutil-binary-path');
+        await spawnWithCallback(this.settings, [ddcutilPath, '--version'], async ddcutilVersion => {
+            const version = ddcutilVersion.match(/ddcutil (\d+)\.(\d+)/);
+            if (version) {
+                const [major, minor] = [parseInt(version[1]), parseInt(version[2])];
+                if (major > 2 || (major === 2 && minor >= 2))
+                    fastWriteArgs = ['--skip-ddc-checks', '--noverify'];
+            }
+            brightnessLog(this.settings, `ddcutil version: ${version ? version[0] : 'unknown'}, extra setvcp args: ${fastWriteArgs.join(" ")}`);
+        });
+    }
+
     async addAllDisplaysToPanel() {
+        await this.checkDdcutilVersion();
         try {
             if (GLib.file_test(ddcutilDetectCacheFile, GLib.FileTest.IS_REGULAR))
                 await this.getCachedDisplayInfoAsync();
