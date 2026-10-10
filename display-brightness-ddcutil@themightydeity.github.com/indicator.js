@@ -47,13 +47,21 @@ function sliderKeyUpDownEvent(actor, settings, direction) {
     });
 }
 
-function sliderScrollEvent(actor, event) {
-    actor.getStoredSliders().forEach(slider => {
-        slider.setShowOSD();
-        slider.ValueSlider.emit('scroll-event', event);
-        slider.setHideOSD();
+function addSliderScrollController(actor) {
+    // Since GNOME 51 the Slider handles scrolling through Clutter.ScrollController,
+    // so re-emitting 'scroll-event' on it no longer has any effect.
+    const scrollController = new Clutter.ScrollController({
+        flags: Clutter.ScrollControllerFlags.DISCRETE |
+            Clutter.ScrollControllerFlags.SCROLL_VERTICAL,
     });
-    return Clutter.EVENT_STOP;
+    scrollController.connect('scroll', (_controller, _sprite, _source, _dx, dy) => {
+        actor.getStoredSliders().forEach(slider => {
+            slider.setShowOSD();
+            slider.ValueSlider.step(-dy);
+            slider.setHideOSD();
+        });
+    });
+    actor.add_action(scrollController);
 }
 
 function sliderValueChangeCommon(item) {
@@ -97,7 +105,7 @@ export const StatusAreaBrightnessMenu = GObject.registerClass({
         this._icon = new St.Icon({icon_name: 'display-brightness-symbolic', style_class: 'system-status-icon'});
         this._iconVisible = true;
         this.add_child(this._icon);
-        this.connect('scroll-event', sliderScrollEvent);
+        addSliderScrollController(this);
         this.connect('value-up', (actor, event) => {
             sliderKeyUpDownEvent(actor, settings, 1);
             return Clutter.EVENT_STOP;
@@ -149,7 +157,7 @@ export const SystemMenuBrightnessMenu = GObject.registerClass({
         this._indicator = this._addIndicator();
         this._indicator.icon_name = 'display-brightness-symbolic';
         this._indicator.visible = !settings.get_boolean('hide-system-indicator');
-        this.connect('scroll-event', sliderScrollEvent);
+        addSliderScrollController(this);
         this.connect('value-up', (actor, event) => {
             sliderKeyUpDownEvent(actor, settings, 1);
             return Clutter.EVENT_STOP;
