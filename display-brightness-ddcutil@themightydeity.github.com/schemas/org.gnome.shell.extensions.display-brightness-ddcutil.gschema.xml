@@ -26,6 +26,14 @@
       <default>true</default>
       <summary>Show Display Name</summary>
     </key>
+    <key type="s" name="display-aliases">
+      <default><![CDATA['']]></default>
+      <summary>Display name aliases, comma separated, as Name=Alias</summary>
+    </key>
+    <key type="as" name="detected-displays">
+      <default>[]</default>
+      <summary>Names of the displays currently detected, published for the preferences window</summary>
+    </key>
     <key type="b" name="show-osd">
       <default>true</default>
       <summary>Enables OSD</summary>
