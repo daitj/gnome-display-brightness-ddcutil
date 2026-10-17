@@ -543,7 +543,12 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         /* make display object */
         display = { 'bus': displayBus, 'max': maxBrightness, 'current': currentBrightness, 'name': displayName, 'vcp': vcp };
         brightnessLog(this.settings, `added display to list ${JSON.stringify(display)}`);
-        displays.push(display);
+        /* in-flight ddcutil calls from before a reload can report the same bus again, replace instead of duplicating */
+        const existing = displays.findIndex(d => d.bus === displayBus);
+        if (existing !== -1)
+            displays[existing] = display;
+        else
+            displays.push(display);
 
         /* cheap way of reloading all display slider in the panel */
         this.reloadMenuWidgets();
