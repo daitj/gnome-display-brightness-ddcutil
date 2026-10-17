@@ -15,6 +15,7 @@ const PrefsWidget = GObject.registerClass({
         'only_all_slider_row',
         'show_value_label_row',
         'show_display_name_row',
+        'display_names_group',
         'show_osd_row',
         'button_location_combo_row',
         'sub_menu_row',
@@ -182,6 +183,10 @@ const PrefsWidget = GObject.registerClass({
         this.fixVCPInfoSubtitle()
         this.disableLastVCP()
         this.fixSubmenuModeVisibility()
+
+        this._displayNameRows = [];
+        this.refreshDisplayNameRows();
+        this.settings.connect('changed::detected-displays', () => this.refreshDisplayNameRows());
     }
     getVCPList(){
         let vcpList = []
@@ -255,6 +260,48 @@ const PrefsWidget = GObject.registerClass({
 
     onStepKeyboardValueChanged() {
         this.settings.set_double('step-change-keyboard', this._step_keyboard_row.value);
+    }
+
+    readAliases() {
+        const aliases = {};
+        for (const pair of this.settings.get_string('display-aliases').split(',')) {
+            const sep = pair.indexOf('=');
+            if (sep === -1)
+                continue;
+            const name = pair.slice(0, sep).trim();
+            const alias = pair.slice(sep + 1).trim();
+            if (name !== '' && alias !== '')
+                aliases[name] = alias;
+        }
+        return aliases;
+    }
+
+    writeAlias(name, alias) {
+        const aliases = this.readAliases();
+        alias = alias.replace(/,/g, ' ').trim();
+        if (alias === '')
+            delete aliases[name];
+        else
+            aliases[name] = alias;
+        this.settings.set_string('display-aliases',
+            Object.entries(aliases).map(([n, a]) => `${n}=${a}`).join(', '));
+    }
+
+    refreshDisplayNameRows() {
+        this._displayNameRows.forEach(row => this._display_names_group.remove(row));
+        this._displayNameRows = [];
+        const names = this.settings.get_strv('detected-displays');
+        const aliases = this.readAliases();
+        this._display_names_group.description = names.length > 0
+            ? _('Type a short name to replace the detected one. Leave it empty to keep the default.')
+            : _('No displays detected yet. Open the brightness menu once, then reopen this window.');
+        names.forEach(name => {
+            const row = new Adw.EntryRow({title: name});
+            row.set_text(aliases[name] ?? '');
+            row.connect('changed', () => this.writeAlias(name, row.get_text()));
+            this._display_names_group.add(row);
+            this._displayNameRows.push(row);
+        });
     }
 
     onDdcutilBinaryPathChanged() {

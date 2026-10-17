@@ -330,25 +330,35 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         mainMenuButton.storeSliderForEvents(allslider);
     }
 
+    displayAlias(name) {
+        for (const pair of this.settings.get_string('display-aliases').split(',')) {
+            const sep = pair.indexOf('=');
+            if (sep !== -1 && pair.slice(0, sep).trim() === name && pair.slice(sep + 1).trim() !== '')
+                return pair.slice(sep + 1).trim();
+        }
+        return name;
+    }
+
     addDisplayToPanel(display) {
+        const displayName = this.displayAlias(display.name);
         const onSliderChange = (quickSettingsSlider, newValue) => {
             this.setBrightness(display, newValue);
             this.syncAllSlider();
         };
         let displaySlider = null;
         if (this.settings.get_int('button-location') === 0) {
-            displaySlider = new SingleMonitorSliderAndValueForStatusAreaMenu(this.settings, display.name, display.current, onSliderChange);
+            displaySlider = new SingleMonitorSliderAndValueForStatusAreaMenu(this.settings, displayName, display.current, onSliderChange);
         } else if (this.settings.get_boolean('show-sliders-in-submenu')) {
             displaySlider = new SingleMonitorSliderAndValueForQuickSettingsSubMenu({
                 settings: this.settings,
-                'display-name': display.name,
+                'display-name': displayName,
                 'current-value': display.current
             });
             displaySlider.connect('slider-change', onSliderChange);
         } else {
             displaySlider = new SingleMonitorSliderAndValueForQuickSettings({
                 settings: this.settings,
-                'display-name': display.name,
+                'display-name': displayName,
                 'current-value': display.current,
             });
             displaySlider.connect('slider-change', onSliderChange);
@@ -398,6 +408,13 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         }, 1000);
     }
 
+    publishDetectedDisplays() {
+        const names = displays.map(display => display.name);
+        const published = this.settings.get_strv('detected-displays');
+        if (names.length !== published.length || names.some((name, i) => name !== published[i]))
+            this.settings.set_strv('detected-displays', names);
+    }
+
     _reloadMenuWidgets() {
         if (reloadingExtension) {
             /* do nothing if extension is being reloaded */
@@ -411,6 +428,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
 
         brightnessLog(this.settings, 'Reloading widgets');
 
+        this.publishDetectedDisplays();
         mainMenuButton.removeAllMenu();
         mainMenuButton.clearStoredSliders();
 
@@ -721,8 +739,10 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     connectSettingsSignals() {
         oldSettings = this.settings;
         settingsSignals = {
-            change: this.settings.connect('changed', () => {
-                this.onSettingsChange();
+            change: this.settings.connect('changed', (settings, key) => {
+                /* detected-displays is written by this extension, reacting to it would loop */
+                if (key !== 'detected-displays')
+                    this.onSettingsChange();
             }),
             reload: this.settings.connect('changed::reload', () => {
                 this.reloadExtension();

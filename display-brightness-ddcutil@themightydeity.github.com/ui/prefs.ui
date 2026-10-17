@@ -72,6 +72,11 @@
       </object>
     </child>
     <child>
+      <object class="AdwPreferencesGroup" id="display_names_group">
+        <property name="title" translatable="yes">Display Names</property>
+      </object>
+    </child>
+    <child>
       <object class="AdwPreferencesGroup">
         <property name="title" translatable="yes">Keyboard Shortcuts</property>
         <child>
