@@ -70,6 +70,10 @@
       <default><![CDATA['']]></default>
       <summary>Additional arguments for ddcutil when setting brightness</summary>
     </key>
+    <key type="s" name="ddcutil-common-args">
+      <default><![CDATA['']]></default>
+      <summary>Additional arguments for all ddcutil commands</summary>
+    </key>
     <key type="d" name="ddcutil-sleep-multiplier">
       <range min="4" max="200" />
       <default>40</default>

@@ -78,6 +78,11 @@ let internal_control = true
 const cacheDir = GLib.get_user_cache_dir();
 const ddcutilDetectCacheFile = `${cacheDir}/ddcutil_detect`;
 
+function parseDdcutilArgs(settings, key) {
+    const args = settings.get_string(key).trim();
+    return args.length > 0 ? args.split(/\s+/) : [];
+}
+
 const BUS_NAME = 'org.gnome.SettingsDaemon.Power';
 const OBJECT_PATH = '/org/gnome/SettingsDaemon/Power';
 
@@ -200,10 +205,22 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 newBrightness = minBrightness;
         }
         const ddcutilPath = this.settings.get_string('ddcutil-binary-path');
-        const ddcutilAdditionalArgs = this.settings.get_string('ddcutil-additional-args');
+        const ddcutilCommonArgs = parseDdcutilArgs(this.settings, 'ddcutil-common-args');
+        const ddcutilAdditionalArgs = parseDdcutilArgs(this.settings, 'ddcutil-additional-args');
         const sleepMultiplier = this.settings.get_double('ddcutil-sleep-multiplier') / 40;
         const writer = async (ondone) => {
-            const cmd = `${ddcutilPath} setvcp ${display.vcp} ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${ddcutilAdditionalArgs}`.split(" ").filter(x => x !== "");
+            const cmd = [
+                ddcutilPath,
+                ...ddcutilCommonArgs,
+                'setvcp',
+                display.vcp,
+                String(newBrightness),
+                '--bus',
+                display.bus,
+                '--sleep-multiplier',
+                String(sleepMultiplier),
+                ...ddcutilAdditionalArgs,
+            ];
             brightnessLog(this.settings, `async ${cmd.join(" ")}`);
             await spawnWithCallback(this.settings, cmd, async (result) => {if (ondone) {await ondone();}});
         };
@@ -551,8 +568,19 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
 
     async ddcutilCommandLine(vcp, displayBus, callback) {
         const ddcutilPath = this.settings.get_string('ddcutil-binary-path');
+        const ddcutilCommonArgs = parseDdcutilArgs(this.settings, 'ddcutil-common-args');
         const sleepMultiplier = this.settings.get_double('ddcutil-sleep-multiplier') / 40;
-        const command = [ddcutilPath, 'getvcp', '--brief', vcp, '--bus', displayBus, '--sleep-multiplier', sleepMultiplier.toString()]
+        const command = [
+            ddcutilPath,
+            ...ddcutilCommonArgs,
+            'getvcp',
+            '--brief',
+            vcp,
+            '--bus',
+            displayBus,
+            '--sleep-multiplier',
+            sleepMultiplier.toString(),
+        ];
         await spawnWithCallback(this.settings, command, callback);
     }
 
@@ -592,6 +620,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         try {
             let displayBus;
             let displayName;
+            let invalidDisplay = false;
 
             brightnessLog(this.settings, `ddcutil brief info:\n${ddcutilBriefInfo}`);
             const lines = ddcutilBriefInfo.split('\n');
@@ -601,6 +630,16 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 if (ddcLine.trim().length === 0) {
                     displayBus = null;
                     displayName = null;
+                }
+
+                if (/^\s*Display\b/i.test(ddcLine)) {
+                    invalidDisplay = false;
+                }
+
+                if (/^\s*Invalid display\b/i.test(ddcLine) ||
+                    /laptop display/i.test(ddcLine) ||
+                    /DRM_connector:\s*\S*eDP-\d+/i.test(ddcLine)) {
+                    invalidDisplay = true;
                 }
 
                 if (this.busValidate(ddcLine)) {
@@ -614,7 +653,11 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 }
 
                 if (!isNullOrWhitespace(displayBus) && !isNullOrWhitespace(displayName)) {
-                    await this.addDisplayToPanelIfItIsOn(displayBus, displayName);
+                    if (invalidDisplay) {
+                        brightnessLog(this.settings, 'Skipping invalid or internal DDC display', displayName, displayBus);
+                    } else {
+                        await this.addDisplayToPanelIfItIsOn(displayBus, displayName);
+                    }
 
                     displayBus = null;
                     displayName = null;
@@ -641,7 +684,13 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
 
     async getDisplaysInfoAsync() {
         const ddcutilPath = this.settings.get_string('ddcutil-binary-path');
-        await spawnWithCallback(this.settings, [ddcutilPath, 'detect', '--brief'], async ddcutilBriefInfo => {
+        const ddcutilCommonArgs = parseDdcutilArgs(this.settings, 'ddcutil-common-args');
+        await spawnWithCallback(this.settings, [
+            ddcutilPath,
+            ...ddcutilCommonArgs,
+            'detect',
+            '--brief',
+        ], async ddcutilBriefInfo => {
             await this.parseDisplaysInfoAndAddToPanel(ddcutilBriefInfo);
         });
     }
@@ -680,6 +729,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             'step-change-keyboard': this.settings.get_double('step-change-keyboard'),
             'button-location': this.settings.get_int('button-location'),
             'ddcutil-additional-args': this.settings.get_string('ddcutil-additional-args'),
+            'ddcutil-common-args': this.settings.get_string('ddcutil-common-args'),
             'ddcutil-binary-path': this.settings.get_string('ddcutil-binary-path'),
             'decrease-brightness-shortcut': this.settings.get_strv('decrease-brightness-shortcut'),
             'increase-brightness-shortcut': this.settings.get_strv('increase-brightness-shortcut'),
@@ -744,6 +794,9 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 this.reloadExtension();
             }),
             verbose_debugging: this.settings.connect('changed::verbose-debugging', () => {
+                this.reloadExtension();
+            }),
+            ddcutil_common_args: this.settings.connect('changed::ddcutil-common-args', () => {
                 this.reloadExtension();
             }),
         };

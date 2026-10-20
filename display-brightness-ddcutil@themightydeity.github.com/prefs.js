@@ -30,6 +30,7 @@ const PrefsWidget = GObject.registerClass({
         'vcp_code_row_6b',
         'vcp_code_row_10',
         'ddcutil_additional_args_row',
+        'ddcutil_common_args_row',
         'allow_zero_brightness_row',
         'disable_display_state_check_row',
         'verbose_debugging_row',
@@ -106,6 +107,7 @@ const PrefsWidget = GObject.registerClass({
         this._step_keyboard_row.value = this.settings.get_double('step-change-keyboard');
         this._ddcutil_binary_path_row.set_text(this.settings.get_string('ddcutil-binary-path'));
         this._ddcutil_additional_args_row.set_text(this.settings.get_string('ddcutil-additional-args'));
+        this._ddcutil_common_args_row.set_text(this.settings.get_string('ddcutil-common-args'));
         this._sleep_multiplier_row.value = this.settings.get_double('ddcutil-sleep-multiplier');
 
         this.settings.bind(
@@ -263,6 +265,10 @@ const PrefsWidget = GObject.registerClass({
 
     onDdcutilAdditionalArgsChanged() {
         this.settings.set_string('ddcutil-additional-args', this._ddcutil_additional_args_row.get_text());
+    }
+
+    onDdcutilCommonArgsChanged() {
+        this.settings.set_string('ddcutil-common-args', this._ddcutil_common_args_row.get_text());
     }
 
     onSleepMultiplierValueChanged() {
