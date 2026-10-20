@@ -115,8 +115,14 @@
         </child>
         <child>
           <object class="AdwEntryRow" id="ddcutil_additional_args_row">
-            <property name="title" translatable="yes">`ddcutil` Additional Arguments</property>
+            <property name="title" translatable="yes">`ddcutil` Additional Arguments for Setting Brightness</property>
             <signal name="changed" handler="onDdcutilAdditionalArgsChanged" swapped="no" />
+          </object>
+        </child>
+        <child>
+          <object class="AdwEntryRow" id="ddcutil_common_args_row">
+            <property name="title" translatable="yes">`ddcutil` Arguments for All Commands</property>
+            <signal name="changed" handler="onDdcutilCommonArgsChanged" swapped="no" />
           </object>
         </child>
         <child>

@@ -92,49 +92,53 @@ msgid "`ddcutil` Binary Path"
 msgstr "Ruta del binario de `ddcutil`"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:118
-msgid "`ddcutil` Additional Arguments"
-msgstr "Argumentos adicionales de `ddcutil`"
+msgid "`ddcutil` Additional Arguments for Setting Brightness"
+msgstr "Argumentos adicionales de `ddcutil` para cambiar el brillo"
 
 #: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:124
+msgid "`ddcutil` Arguments for All Commands"
+msgstr "Argumentos de `ddcutil` para todos los comandos"
+
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:130
 msgid "`ddcutil` Sleep Multiplier ms"
 msgstr "Multiplicador de espera ms de `ddcutil`"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:132
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:138
 msgid "VCP codes in use"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:137
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:143
 #, fuzzy
 msgid "Brightness"
 msgstr "Aumentar brillo"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:143
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:149
 msgid "White Backlight"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:150
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:156
 msgid "Allow Zero Brightness"
 msgstr "Permitir brillo cero"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:155
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:161
 msgid "Disable Display State Check"
 msgstr "Desactivar la comprobación del estado de la pantalla"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:156
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:162
 msgid ""
 "Disables the check for the display power state before changing brightness, "
 "might help in detecting more displays"
 msgstr ""
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:161
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:167
 msgid "Verbose debugging"
 msgstr "Depuración detallada"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:169
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:175
 msgid "Top Bar"
 msgstr "Barra superior"
 
-#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:170
+#: display-brightness-ddcutil@themightydeity.github.com/ui/prefs.ui:176
 msgid "System Menu"
 msgstr "Menú del sistema"
 
