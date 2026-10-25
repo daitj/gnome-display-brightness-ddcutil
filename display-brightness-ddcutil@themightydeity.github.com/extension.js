@@ -328,8 +328,6 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                 allslider.menuEnabled = true
             allslider.menu.setHeader('display-brightness-symbolic', 'Brightness');
         }
-        /* ensure old_value is never undefined to prevent cascading NaN */
-        allslider.old_value = displays[0].current * 100;
         mainMenuButton.addMenuItem(allslider);
 
         /* save slider in main menu, so that it can be accessed easily for different events */
