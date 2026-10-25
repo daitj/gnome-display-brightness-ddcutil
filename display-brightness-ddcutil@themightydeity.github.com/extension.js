@@ -153,6 +153,8 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         mainMenuButton = null;
         displays = null;
         writeCollection = null;
+        syncing = false;
+        pause_sync = false;
     }
 
     ddcWriteCollector(displayBus, writer) {
@@ -250,8 +252,10 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         } else if (mode === "experimental") {
             const oldValue = mainMenuButton.getStoredSliders()[0].old_value;
 
-            if (oldValue === newValue)
+            if (oldValue === newValue) {
+                pause_sync = false
                 return;
+            }
             const increased = (newValue > oldValue)
 
             if (increased) {
