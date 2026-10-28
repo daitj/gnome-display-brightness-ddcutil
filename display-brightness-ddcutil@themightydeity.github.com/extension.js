@@ -25,8 +25,6 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import { Extension, gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 
-import { loadInterfaceXML } from 'resource:///org/gnome/shell/misc/fileUtils.js';
-
 import * as Convenience from './convenienceExt.js';
 import * as Indicator from './indicator.js';
 
@@ -78,11 +76,16 @@ let internal_control = true
 const cacheDir = GLib.get_user_cache_dir();
 const ddcutilDetectCacheFile = `${cacheDir}/ddcutil_detect`;
 
-const BUS_NAME = 'org.gnome.SettingsDaemon.Power';
-const OBJECT_PATH = '/org/gnome/SettingsDaemon/Power';
-
-const BrightnessInterface = loadInterfaceXML('org.gnome.Shell.Brightness');
-const BrightnessProxy = Gio.DBusProxy.makeProxyWrapper(BrightnessInterface);
+/*
+    internal panel brightness moved from gnome-settings-daemon to the shell in
+    GNOME 49: Main.brightnessManager.globalScale exposes the value (0.0 - 1.0)
+    and writes it back to the backlight. The old
+    org.gnome.SettingsDaemon.Power.Screen "Brightness" property no longer exists,
+    and org.gnome.Shell.Brightness only carries HasBrightnessControl.
+*/
+function getInternalBrightnessScale() {
+    return Main.brightnessManager?.globalScale ?? null;
+}
 
 export default class DDCUtilBrightnessControlExtension extends Extension {
     enable() {
@@ -149,6 +152,13 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         }
 
         /* clear variables */
+        if (displays) {
+            for (const display of displays) {
+                if (display.scale && display.scaleSyncId)
+                    display.scale.disconnect(display.scaleSyncId);
+            }
+        }
+
         mainMenuButton.destroy();
         mainMenuButton = null;
         displays = null;
@@ -216,8 +226,10 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     setInternalBrightness(newValue) {
         if (!internal_control)
             return
-        let proxy = new BrightnessProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH)
-        proxy.Brightness = newValue
+        const scale = getInternalBrightnessScale();
+        if (!scale || !Number.isFinite(newValue))
+            return;
+        scale.value = Math.clamp(newValue / 100, 0, 1);
     }
 
     syncAllSlider() {
@@ -363,19 +375,17 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             }
 
         if (display.bus === 'internal') {
-            const sync = () => {
-                internal_control = false
-                displaySlider.changeValue(display.proxy.Brightness)
-                internal_control = true
+            const scale = getInternalBrightnessScale();
+            if (scale) {
+                const sync = () => {
+                    internal_control = false
+                    displaySlider.changeValue(scale.value * 100)
+                    internal_control = true
+                }
+                display.scale = scale;
+                display.scaleSyncId = scale.connect('notify::value', () => sync());
+                sync();
             }
-            display.proxy = new BrightnessProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH,
-                (_proxy, error) => {
-                    if (error)
-                        console.error(error.message);
-                    else
-                        display.proxy.connect('g-properties-changed', () => sync());
-                    sync();
-                });
         }
 
         /* when "All" slider is shown we do not need to store each display's value slider */
@@ -582,12 +592,13 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
 
     async parseDisplaysInfoAndAddToPanel(ddcutilBriefInfo) {
         if (this.settings.get_boolean('show-internal-slider')) {
-            let proxy = new BrightnessProxy(Gio.DBus.session, BUS_NAME, OBJECT_PATH);
-            let current = proxy.Brightness / 100
-
-            let display = {'bus': 'internal', 'max': 100, 'current': current, 'name': _('Internal')}
-            if (Number.isInteger(current) && current >= 0)
-                displays.push(display)
+            const scale = getInternalBrightnessScale();
+            if (scale) {
+                let current = scale.value;
+                let display = {'bus': 'internal', 'max': 100, 'current': current, 'name': _('Internal')};
+                if (Number.isFinite(current) && current >= 0)
+                    displays.push(display);
+            }
         }
         try {
             let displayBus;
