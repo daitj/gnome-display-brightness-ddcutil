@@ -137,6 +137,8 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
 
         if (_reloadExtensionTimer)
             clearTimeout(_reloadExtensionTimer);
+        // a cancelled reload never resets the flag, which would block menu rebuilds forever
+        reloadingExtension = false;
 
         Object.keys(writeCollection).forEach(bus => {
             if (writeCollection[bus].interval !== null) {
