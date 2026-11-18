@@ -56,6 +56,7 @@ const minBrightness = 1;
 let displays = null;
 let mainMenuButton = null;
 let writeCollection = null;
+let ddcWriteQueue = null;
 let _reloadMenuWidgetsTimer = null;
 let _reloadExtensionTimer = null;
 let reloadingExtension = false;
@@ -98,6 +99,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     enableBrightnessControl() {
         displays = [];
         writeCollection = {};
+        ddcWriteQueue = Promise.resolve();
         if (this.settings.get_int('button-location') === 0) {
             brightnessLog(this.settings, 'Adding to panel');
             mainMenuButton = new StatusAreaBrightnessMenu(this.settings);
@@ -153,9 +155,27 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         mainMenuButton = null;
         displays = null;
         writeCollection = null;
+        ddcWriteQueue = null;
     }
 
-    ddcWriteCollector(displayBus, writer) {
+    ddcWriteCollector(displayBus, busWriter) {
+        /*
+            Writes are coalesced per bus below, but different buses used to run
+            concurrently. On some drivers (e.g. NVIDIA) DDC/CI transactions on
+            separate buses are serialized against the display pipeline, so
+            parallel ddcutil processes stall gnome-shell while a slider is
+            dragged. Funnel every bus through a single queue so only one
+            transaction is in flight at a time.
+        */
+        const writer = (ondone) => {
+            ddcWriteQueue = ddcWriteQueue.then(() => new Promise(release => {
+                busWriter(async () => {
+                    release();
+                    if (ondone)
+                        await ondone();
+                });
+            }));
+        };
         const kickoffNext = (reason) => {
             brightnessLog(this.settings, `kickoffNext called ${reason}`);
             writeCollection[displayBus].current = writeCollection[displayBus].next;
