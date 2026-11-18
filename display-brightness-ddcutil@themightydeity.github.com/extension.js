@@ -53,9 +53,11 @@ const {
     this is skipped if allow-zero-brightness is set
 */
 const minBrightness = 1;
+const writeDebounceMs = 250;
 let displays = null;
 let mainMenuButton = null;
 let writeCollection = null;
+let writeDebounceTimers = null;
 let _reloadMenuWidgetsTimer = null;
 let _reloadExtensionTimer = null;
 let reloadingExtension = false;
@@ -98,6 +100,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     enableBrightnessControl() {
         displays = [];
         writeCollection = {};
+        writeDebounceTimers = {};
         if (this.settings.get_int('button-location') === 0) {
             brightnessLog(this.settings, 'Adding to panel');
             mainMenuButton = new StatusAreaBrightnessMenu(this.settings);
@@ -153,6 +156,9 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         mainMenuButton = null;
         displays = null;
         writeCollection = null;
+        for (const bus in writeDebounceTimers)
+            GLib.source_remove(writeDebounceTimers[bus]);
+        writeDebounceTimers = null;
     }
 
     ddcWriteCollector(displayBus, writer) {
@@ -210,7 +216,19 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         brightnessLog(this.settings, `display ${display.name}, current: ${display.current} => ${newValue / 100}, new brightness: ${newBrightness}, new value: ${newValue}`);
         display.current = newValue / 100;
 
-        this.ddcWriteCollector(display.bus, writer);
+        /*
+            Each DDC/CI transaction can briefly stall gnome-shell (notably on
+            NVIDIA), and the slider emits a value for every step of a drag.
+            Wait until the value has settled before writing, so a drag ends
+            up as one write per display instead of a continuous stream.
+        */
+        if (writeDebounceTimers[display.bus])
+            GLib.source_remove(writeDebounceTimers[display.bus]);
+        writeDebounceTimers[display.bus] = GLib.timeout_add(GLib.PRIORITY_DEFAULT, writeDebounceMs, () => {
+            delete writeDebounceTimers[display.bus];
+            this.ddcWriteCollector(display.bus, writer);
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     setInternalBrightness(newValue) {
