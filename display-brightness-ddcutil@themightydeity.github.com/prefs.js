@@ -32,6 +32,8 @@ const PrefsWidget = GObject.registerClass({
         'ddcutil_additional_args_row',
         'allow_zero_brightness_row',
         'disable_display_state_check_row',
+        'write_rate_limit_mode_row',
+        'write_rate_limit_ms_row',
         'verbose_debugging_row',
     ],
 }, class PrefsWidget extends Adw.PreferencesPage {
@@ -107,6 +109,9 @@ const PrefsWidget = GObject.registerClass({
         this._ddcutil_binary_path_row.set_text(this.settings.get_string('ddcutil-binary-path'));
         this._ddcutil_additional_args_row.set_text(this.settings.get_string('ddcutil-additional-args'));
         this._sleep_multiplier_row.value = this.settings.get_double('ddcutil-sleep-multiplier');
+        this._write_rate_limit_mode_row.selected = this.settings.get_int('write-rate-limit-mode');
+        this._write_rate_limit_ms_row.value = this.settings.get_int('write-rate-limit-ms');
+        this._write_rate_limit_ms_row.sensitive = this._write_rate_limit_mode_row.selected !== 0;
 
         this.settings.bind(
             'vcp-10',
@@ -263,6 +268,15 @@ const PrefsWidget = GObject.registerClass({
 
     onDdcutilAdditionalArgsChanged() {
         this.settings.set_string('ddcutil-additional-args', this._ddcutil_additional_args_row.get_text());
+    }
+
+    onWriteRateLimitModeChanged() {
+        this.settings.set_int('write-rate-limit-mode', this._write_rate_limit_mode_row.selected);
+        this._write_rate_limit_ms_row.sensitive = this._write_rate_limit_mode_row.selected !== 0;
+    }
+
+    onWriteRateLimitMsChanged() {
+        this.settings.set_int('write-rate-limit-ms', Math.round(this._write_rate_limit_ms_row.value));
     }
 
     onSleepMultiplierValueChanged() {

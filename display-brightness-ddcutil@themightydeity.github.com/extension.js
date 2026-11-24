@@ -56,6 +56,7 @@ const minBrightness = 1;
 let displays = null;
 let mainMenuButton = null;
 let writeCollection = null;
+let writeRateLimits = null;
 let _reloadMenuWidgetsTimer = null;
 let _reloadExtensionTimer = null;
 let reloadingExtension = false;
@@ -98,6 +99,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     enableBrightnessControl() {
         displays = [];
         writeCollection = {};
+        writeRateLimits = {};
         if (this.settings.get_int('button-location') === 0) {
             brightnessLog(this.settings, 'Adding to panel');
             mainMenuButton = new StatusAreaBrightnessMenu(this.settings);
@@ -161,6 +163,11 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         }
         displays = null;
         writeCollection = null;
+        Object.values(writeRateLimits ?? {}).forEach(limit => {
+            if (limit.timer !== null)
+                GLib.source_remove(limit.timer);
+        });
+        writeRateLimits = null;
         syncing = false;
         pause_sync = false;
     }
@@ -220,7 +227,55 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         brightnessLog(this.settings, `display ${display.name}, current: ${display.current} => ${newValue / 100}, new brightness: ${newBrightness}, new value: ${newValue}`);
         display.current = newValue / 100;
 
-        this.ddcWriteCollector(display.bus, writer);
+        this.rateLimitedWrite(display.bus, writer);
+    }
+
+    /*
+        A slider emits a value for every step of a drag, and on some drivers
+        (notably NVIDIA) each DDC/CI transaction briefly stalls gnome-shell.
+        write-rate-limit-mode decides how a drag turns into writes:
+          0 off      - write every value (default, smoothest on most setups)
+          1 throttle - at most one write per interval while dragging, plus
+                       the final value, so brightness still follows the drag
+          2 debounce - write only once the value has been still for interval
+    */
+    rateLimitedWrite(displayBus, writer) {
+        const mode = this.settings.get_int('write-rate-limit-mode');
+        const interval = this.settings.get_int('write-rate-limit-ms');
+        if (mode === 0 || interval <= 0) {
+            this.ddcWriteCollector(displayBus, writer);
+            return;
+        }
+
+        writeRateLimits[displayBus] ??= {timer: null, last: 0, pending: null};
+        const limit = writeRateLimits[displayBus];
+        limit.pending = writer;
+
+        const flush = () => {
+            limit.timer = null;
+            const pending = limit.pending;
+            limit.pending = null;
+            if (pending !== null && writeCollection !== null) {
+                limit.last = GLib.get_monotonic_time() / 1000;
+                this.ddcWriteCollector(displayBus, pending);
+            }
+            return GLib.SOURCE_REMOVE;
+        };
+
+        if (mode === 2) {
+            if (limit.timer !== null)
+                GLib.source_remove(limit.timer);
+            limit.timer = GLib.timeout_add(GLib.PRIORITY_DEFAULT, interval, flush);
+            return;
+        }
+
+        if (limit.timer !== null)
+            return; // a write is already scheduled and will take the newest value
+        const wait = Math.ceil(limit.last + interval - GLib.get_monotonic_time() / 1000);
+        if (wait <= 0)
+            flush();
+        else
+            limit.timer = GLib.timeout_add(GLib.PRIORITY_DEFAULT, wait, flush);
     }
 
     setInternalBrightness(newValue) {
@@ -686,6 +741,8 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             'vcp-6b': this.settings.get_boolean('vcp-6b'),
             'vcp-10': this.settings.get_boolean('vcp-10'),
             'verbose-debugging': this.settings.get_boolean('verbose-debugging'),
+            'write-rate-limit-mode': this.settings.get_int('write-rate-limit-mode'),
+            'write-rate-limit-ms': this.settings.get_int('write-rate-limit-ms'),
             'ddcutil-sleep-multiplier': this.settings.get_double('ddcutil-sleep-multiplier'),
             'position-system-indicator': this.settings.get_double('position-system-indicator'),
             'position-system-menu': this.settings.get_double('position-system-menu'),

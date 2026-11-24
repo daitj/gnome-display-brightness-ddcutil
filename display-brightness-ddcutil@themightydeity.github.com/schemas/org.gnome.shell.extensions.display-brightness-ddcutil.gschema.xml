@@ -91,6 +91,17 @@
       <default>false</default>
       <summary>Disable display state check</summary>
     </key>
+    <key type="i" name="write-rate-limit-mode">
+      <default>0</default>
+      <range min="0" max="2" />
+      <summary>Limit brightness writes while dragging a slider</summary>
+      <description>0: write every value. 1: throttle, at most one write per interval plus the final value. 2: debounce, write only after the slider has been still for the interval. Helps when dragging a slider makes the desktop stutter (seen with the NVIDIA driver).</description>
+    </key>
+    <key type="i" name="write-rate-limit-ms">
+      <default>250</default>
+      <range min="0" max="2000" />
+      <summary>Interval in ms used by write-rate-limit-mode</summary>
+    </key>
     <key type="b" name="verbose-debugging">
       <default>false</default>
       <summary>Verbose debugging</summary>
