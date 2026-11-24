@@ -27,7 +27,6 @@ const PrefsWidget = GObject.registerClass({
         'step_keyboard_row',
         'ddcutil_binary_path_row',
         'sleep_multiplier_row',
-        'queue_ms_row',
         'vcp_code_list_expander',
         'vcp_code_row_6b',
         'vcp_code_row_10',
@@ -116,7 +115,6 @@ const PrefsWidget = GObject.registerClass({
         this._ddcutil_binary_path_row.set_text(this.settings.get_string('ddcutil-binary-path'));
         this._ddcutil_additional_args_row.set_text(this.settings.get_string('ddcutil-additional-args'));
         this._sleep_multiplier_row.value = this.settings.get_double('ddcutil-sleep-multiplier');
-        this._queue_ms_row.value = this.settings.get_double('ddcutil-queue-ms');
 
         this.settings.bind(
             'vcp-10',
@@ -277,10 +275,6 @@ const PrefsWidget = GObject.registerClass({
 
     onSleepMultiplierValueChanged() {
         this.settings.set_double('ddcutil-sleep-multiplier', this._sleep_multiplier_row.value);
-    }
-
-    onQueueMsValueChanged() {
-        this.settings.set_double('ddcutil-queue-ms', this._queue_ms_row.value);
     }
 }
 );

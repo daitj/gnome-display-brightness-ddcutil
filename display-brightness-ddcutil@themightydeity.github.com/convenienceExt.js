@@ -1,37 +1,45 @@
 import Gio from 'gi://Gio';
 
+export function isNullOrWhitespace(str) {
+    return str === undefined || str === null || str.match(/^\s*$/) !== null;
+}
+
 /**
  * 
  * @param {*} settings 
  * @param {*} str 
  */
-export function brightnessLog(settings, str) {
+export function brightnessLog(settings, ...args) {
     if (settings.get_boolean('verbose-debugging'))
-        console.log(`display-brightness-ddcutil extension:\n${str}`);
+        console.log(`display-brightness-ddcutil extension: `, ...args);
 }
 
-export function spawnWithCallback(settings, argv, callback) {
-    const proc = Gio.Subprocess.new(argv, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
+export async function spawnWithCallback(settings, argv, callback) {
+    brightnessLog(settings, `Calling: ${argv.join(' ')}`);
+    try {
+        const proc = Gio.Subprocess.new(argv, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE);
 
-    proc.communicate_utf8_async(null, null, (proc, res) => {
-        try {
+        await proc.communicate_utf8_async(null, null, async (proc, res)=>{
             const [, stdout, stderr] = proc.communicate_utf8_finish(res);
             if (proc.get_successful()) {
-                callback(stdout);
+                await callback(stdout);
             } else {
                 /*
                     errors from ddcutil (like monitor not found) were actually in stdout
                     only the process return code was 1
                 */
                 if (stderr)
-                    callback(stderr);
+                    await callback(stderr);
                 else if (stdout)
-                    callback(stdout);
+                    await callback(stdout);
+                else 
+                    await callback("");
             }
-        } catch (e) {
-            brightnessLog(settings, e.message);
-        }
-    });
+        });
+        
+    } catch (e) {
+        brightnessLog(settings, e);
+    }
 }
 
 
@@ -81,4 +89,8 @@ export function getHDRStatus(settings, callback) {
         }
         callback(hdrStatus);
     });
+}
+
+export function sliderValuePercentFixed(sliderValue){
+    return Math.round(sliderValue * 100);
 }

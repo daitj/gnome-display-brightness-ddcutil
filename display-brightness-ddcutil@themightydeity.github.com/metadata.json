@@ -5,8 +5,10 @@
     "url": "https://github.com/daitj/gnome-display-brightness-ddcutil",
     "settings-schema": "org.gnome.shell.extensions.display-brightness-ddcutil",
     "gettext-domain": "display-brightness-ddcutil",
-    "version": 56,
+    "version": 60,
     "shell-version": [
-        "45", "46", "47", "48"
+        "49",
+        "50",
+        "51"
     ]
 }
