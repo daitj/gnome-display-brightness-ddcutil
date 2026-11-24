@@ -32,6 +32,7 @@ const PrefsWidget = GObject.registerClass({
         'ddcutil_additional_args_row',
         'allow_zero_brightness_row',
         'disable_display_state_check_row',
+        'serialize_ddc_writes_row',
         'verbose_debugging_row',
     ],
 }, class PrefsWidget extends Adw.PreferencesPage {
@@ -131,6 +132,13 @@ const PrefsWidget = GObject.registerClass({
         this.settings.bind(
             'disable-display-state-check',
             this._disable_display_state_check_row,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+
+        this.settings.bind(
+            'serialize-ddc-writes',
+            this._serialize_ddc_writes_row,
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
