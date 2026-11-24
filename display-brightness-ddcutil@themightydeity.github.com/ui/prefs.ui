@@ -157,6 +157,22 @@
           </object>
         </child>
         <child>
+          <object class="AdwComboRow" id="write_rate_limit_mode_row">
+            <property name="title" translatable="yes">Limit Writes While Dragging</property>
+            <property name="subtitle" translatable="yes">Throttle keeps brightness following the slider, debounce only writes once it stops; might help if the desktop stutters while moving a slider</property>
+            <property name="model">write_rate_limit_mode_model</property>
+            <signal name="notify::selected" handler="onWriteRateLimitModeChanged" swapped="no" />
+          </object>
+        </child>
+        <child>
+          <object class="AdwSpinRow" id="write_rate_limit_ms_row">
+            <property name="title" translatable="yes">Write Limit Interval ms</property>
+            <property name="numeric">True</property>
+            <property name="adjustment">write_rate_limit_ms_adjustment</property>
+            <signal name="changed" handler="onWriteRateLimitMsChanged" swapped="no" />
+          </object>
+        </child>
+        <child>
           <object class="AdwSwitchRow" id="verbose_debugging_row">
             <property name="title" translatable="yes">Verbose debugging</property>
           </object>
@@ -169,6 +185,18 @@
       <item translatable="yes">Top Bar</item>
       <item translatable="yes">System Menu</item>
     </items>
+  </object>
+  <object class="GtkStringList" id="write_rate_limit_mode_model">
+    <items>
+      <item translatable="yes">Off</item>
+      <item translatable="yes">Throttle</item>
+      <item translatable="yes">Debounce</item>
+    </items>
+  </object>
+  <object class="GtkAdjustment" id="write_rate_limit_ms_adjustment">
+    <property name="lower">0</property>
+    <property name="upper">2000</property>
+    <property name="step-increment">50</property>
   </object>
   <object class="GtkAdjustment" id="sleep_multiplier_adjustment">
     <property name="lower">4</property>
