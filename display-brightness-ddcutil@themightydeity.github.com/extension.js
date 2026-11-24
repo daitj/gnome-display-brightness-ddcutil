@@ -56,7 +56,6 @@ const minBrightness = 1;
 let displays = null;
 let mainMenuButton = null;
 let writeCollection = null;
-let ddcWriteQueue = null;
 let _reloadMenuWidgetsTimer = null;
 let _reloadExtensionTimer = null;
 let reloadingExtension = false;
@@ -99,7 +98,6 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     enableBrightnessControl() {
         displays = [];
         writeCollection = {};
-        ddcWriteQueue = Promise.resolve();
         if (this.settings.get_int('button-location') === 0) {
             brightnessLog(this.settings, 'Adding to panel');
             mainMenuButton = new StatusAreaBrightnessMenu(this.settings);
@@ -153,29 +151,21 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         /* clear variables */
         mainMenuButton.destroy();
         mainMenuButton = null;
+
+        /* disconnect signals on the internal display brightness proxies */
+        if (displays !== null) {
+            displays.forEach(display => {
+                if (display.proxy !== undefined && display.proxySignalId !== undefined)
+                    display.proxy.disconnect(display.proxySignalId);
+            });
+        }
         displays = null;
         writeCollection = null;
-        ddcWriteQueue = null;
+        syncing = false;
+        pause_sync = false;
     }
 
-    ddcWriteCollector(displayBus, busWriter) {
-        /*
-            Writes are coalesced per bus below, but different buses used to run
-            concurrently. On some drivers (e.g. NVIDIA) DDC/CI transactions on
-            separate buses are serialized against the display pipeline, so
-            parallel ddcutil processes stall gnome-shell while a slider is
-            dragged. Funnel every bus through a single queue so only one
-            transaction is in flight at a time.
-        */
-        const writer = (ondone) => {
-            ddcWriteQueue = ddcWriteQueue.then(() => new Promise(release => {
-                busWriter(async () => {
-                    release();
-                    if (ondone)
-                        await ondone();
-                });
-            }));
-        };
+    ddcWriteCollector(displayBus, writer) {
         const kickoffNext = (reason) => {
             brightnessLog(this.settings, `kickoffNext called ${reason}`);
             writeCollection[displayBus].current = writeCollection[displayBus].next;
@@ -270,8 +260,10 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         } else if (mode === "experimental") {
             const oldValue = mainMenuButton.getStoredSliders()[0].old_value;
 
-            if (oldValue === newValue)
+            if (oldValue === newValue) {
+                pause_sync = false
                 return;
+            }
             const increased = (newValue > oldValue)
 
             if (increased) {
@@ -393,7 +385,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                     if (error)
                         console.error(error.message);
                     else
-                        display.proxy.connect('g-properties-changed', () => sync());
+                        display.proxySignalId = display.proxy.connect('g-properties-changed', () => sync());
                     sync();
                 });
         }
@@ -784,7 +776,9 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     }
 
     disconnectMonitorSignals() {
-        Main.layoutManager.disconnect(monitorSignals.change);
+        if (monitorSignals !== null && monitorSignals.change !== undefined)
+            Main.layoutManager.disconnect(monitorSignals.change);
+        monitorSignals = null;
     }
 
     async addAllDisplaysToPanel() {
