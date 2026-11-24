@@ -151,6 +151,14 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         /* clear variables */
         mainMenuButton.destroy();
         mainMenuButton = null;
+
+        /* disconnect signals on the internal display brightness proxies */
+        if (displays !== null) {
+            displays.forEach(display => {
+                if (display.proxy !== undefined && display.proxySignalId !== undefined)
+                    display.proxy.disconnect(display.proxySignalId);
+            });
+        }
         displays = null;
         writeCollection = null;
         syncing = false;
@@ -377,7 +385,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
                     if (error)
                         console.error(error.message);
                     else
-                        display.proxy.connect('g-properties-changed', () => sync());
+                        display.proxySignalId = display.proxy.connect('g-properties-changed', () => sync());
                     sync();
                 });
         }
@@ -768,7 +776,9 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     }
 
     disconnectMonitorSignals() {
-        Main.layoutManager.disconnect(monitorSignals.change);
+        if (monitorSignals !== null && monitorSignals.change !== undefined)
+            Main.layoutManager.disconnect(monitorSignals.change);
+        monitorSignals = null;
     }
 
     async addAllDisplaysToPanel() {
