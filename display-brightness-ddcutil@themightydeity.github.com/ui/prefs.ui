@@ -120,6 +120,12 @@
           </object>
         </child>
         <child>
+          <object class="AdwSwitchRow" id="fast_writes_row">
+            <property name="title" translatable="yes">Fast Brightness Changes</property>
+            <property name="subtitle" translatable="yes">Skip `ddcutil` checks and read-back when setting brightness. Requires `ddcutil` 2.2 or newer.</property>
+          </object>
+        </child>
+        <child>
           <object class="AdwSpinRow" id="sleep_multiplier_row">
             <property name="title" translatable="yes">`ddcutil` Sleep Multiplier ms</property>
             <property name="numeric">True</property>

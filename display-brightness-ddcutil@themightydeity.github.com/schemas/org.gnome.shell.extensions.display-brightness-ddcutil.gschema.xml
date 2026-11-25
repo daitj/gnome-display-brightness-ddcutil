@@ -70,6 +70,10 @@
       <default><![CDATA['']]></default>
       <summary>Additional arguments for ddcutil when setting brightness</summary>
     </key>
+    <key type="b" name="ddcutil-fast-writes">
+      <default>true</default>
+      <summary>Skip ddcutil checks and read-back when setting brightness (ddcutil 2.2 or newer), the sleep multiplier is not used when enabled</summary>
+    </key>
     <key type="d" name="ddcutil-sleep-multiplier">
       <range min="4" max="200" />
       <default>40</default>

@@ -221,11 +221,13 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         const ddcutilAdditionalArgs = this.settings.get_string('ddcutil-additional-args');
         const additionalArgs = ddcutilAdditionalArgs.split(" ");
         /* do not pass --noverify next to a user supplied --verify, ddcutil rejects both together */
-        const fastArgs = fastWriteArgs.filter(arg => !additionalArgs.includes(arg) &&
-            !(arg === '--noverify' && additionalArgs.includes('--verify')));
-        const sleepMultiplier = this.settings.get_double('ddcutil-sleep-multiplier') / 40;
+        const fastArgs = this.settings.get_boolean('ddcutil-fast-writes')
+            ? fastWriteArgs.filter(arg => !additionalArgs.includes(arg) &&
+                !(arg === '--noverify' && additionalArgs.includes('--verify')))
+            : [];
+        const sleepMultiplierArgs = this.getSleepMultiplierArgs();
         const writer = async (ondone) => {
-            const cmd = `${ddcutilPath} setvcp ${display.vcp} ${newBrightness} --bus ${display.bus} --sleep-multiplier ${sleepMultiplier} ${fastArgs.join(" ")} ${ddcutilAdditionalArgs}`.split(" ").filter(x => x !== "");
+            const cmd = `${ddcutilPath} setvcp ${display.vcp} ${newBrightness} --bus ${display.bus} ${sleepMultiplierArgs.join(" ")} ${fastArgs.join(" ")} ${ddcutilAdditionalArgs}`.split(" ").filter(x => x !== "");
             brightnessLog(this.settings, `async ${cmd.join(" ")}`);
             await spawnWithCallback(this.settings, cmd, async (result) => {if (ondone) {await ondone();}});
         };
@@ -573,10 +575,17 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         this.reloadMenuWidgets();
     }
 
+    getSleepMultiplierArgs() {
+        /* the sleep multiplier setting is disabled when fast writes are enabled, keep ddcutil's default */
+        if (this.settings.get_boolean('ddcutil-fast-writes'))
+            return [];
+        const sleepMultiplier = this.settings.get_double('ddcutil-sleep-multiplier') / 40;
+        return ['--sleep-multiplier', sleepMultiplier.toString()];
+    }
+
     async ddcutilCommandLine(vcp, displayBus, callback) {
         const ddcutilPath = this.settings.get_string('ddcutil-binary-path');
-        const sleepMultiplier = this.settings.get_double('ddcutil-sleep-multiplier') / 40;
-        const command = [ddcutilPath, 'getvcp', '--brief', vcp, '--bus', displayBus, '--sleep-multiplier', sleepMultiplier.toString()]
+        const command = [ddcutilPath, 'getvcp', '--brief', vcp, '--bus', displayBus, ...this.getSleepMultiplierArgs()]
         await spawnWithCallback(this.settings, command, callback);
     }
 
@@ -698,6 +707,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             'vcp-6b': this.settings.get_boolean('vcp-6b'),
             'vcp-10': this.settings.get_boolean('vcp-10'),
             'verbose-debugging': this.settings.get_boolean('verbose-debugging'),
+            'ddcutil-fast-writes': this.settings.get_boolean('ddcutil-fast-writes'),
             'ddcutil-sleep-multiplier': this.settings.get_double('ddcutil-sleep-multiplier'),
             'position-system-indicator': this.settings.get_double('position-system-indicator'),
             'position-system-menu': this.settings.get_double('position-system-menu'),
