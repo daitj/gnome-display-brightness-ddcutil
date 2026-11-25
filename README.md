@@ -125,7 +125,7 @@ Read more about issues with dock [ddcutil.com FAQ](https://www.ddcutil.com/faq/#
 
 Also some docks use daisy chaining behind the scenes.
 
-If you are daisy chaining the monitors i.e. instead of connecting each monitor to the GPU/Laptop directly, you are connecting monitor to another monitor. Then try to tweak the extension settings `Advanced settings` > `ddcutil Sleep Multipler ms`. Daisy chain doesn't allow running parallel instance of ddcutil.
+If you are daisy chaining the monitors i.e. instead of connecting each monitor to the GPU/Laptop directly, you are connecting monitor to another monitor. Then try to tweak the extension settings `Advanced settings` > `ddcutil Sleep Multipler ms` (turn off `Fast Brightness Changes` first, the sleep multiplier is not used while it is on). Daisy chain doesn't allow running parallel instance of ddcutil.
 
 
 ### Cannot detect display

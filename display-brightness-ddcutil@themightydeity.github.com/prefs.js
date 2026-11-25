@@ -25,6 +25,7 @@ const PrefsWidget = GObject.registerClass({
         'decrease_shortcut_button',
         'step_keyboard_row',
         'ddcutil_binary_path_row',
+        'fast_writes_row',
         'sleep_multiplier_row',
         'vcp_code_list_expander',
         'vcp_code_row_6b',
@@ -107,6 +108,20 @@ const PrefsWidget = GObject.registerClass({
         this._ddcutil_binary_path_row.set_text(this.settings.get_string('ddcutil-binary-path'));
         this._ddcutil_additional_args_row.set_text(this.settings.get_string('ddcutil-additional-args'));
         this._sleep_multiplier_row.value = this.settings.get_double('ddcutil-sleep-multiplier');
+
+        this.settings.bind(
+            'ddcutil-fast-writes',
+            this._fast_writes_row,
+            'active',
+            Gio.SettingsBindFlags.DEFAULT
+        );
+        /* the sleep multiplier is not used with fast writes */
+        this.settings.bind(
+            'ddcutil-fast-writes',
+            this._sleep_multiplier_row,
+            'sensitive',
+            Gio.SettingsBindFlags.GET | Gio.SettingsBindFlags.INVERT_BOOLEAN
+        );
 
         this.settings.bind(
             'vcp-10',
