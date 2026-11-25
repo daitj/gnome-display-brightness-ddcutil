@@ -157,6 +157,12 @@
           </object>
         </child>
         <child>
+          <object class="AdwSwitchRow" id="serialize_ddc_writes_row">
+            <property name="title" translatable="yes">Write to One Display at a Time</property>
+            <property name="subtitle" translatable="yes">Changes brightness on displays one after another instead of all at once, might help if the desktop stutters while moving a slider</property>
+          </object>
+        </child>
+        <child>
           <object class="AdwSwitchRow" id="verbose_debugging_row">
             <property name="title" translatable="yes">Verbose debugging</property>
           </object>

@@ -91,6 +91,11 @@
       <default>false</default>
       <summary>Disable display state check</summary>
     </key>
+    <key type="b" name="serialize-ddc-writes">
+      <default>false</default>
+      <summary>Write to one display at a time</summary>
+      <description>Queue brightness writes so only one ddcutil process runs at a time across all displays. Helps when changing brightness on several displays at once makes the desktop stutter (seen with the NVIDIA driver).</description>
+    </key>
     <key type="b" name="verbose-debugging">
       <default>false</default>
       <summary>Verbose debugging</summary>

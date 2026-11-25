@@ -53,9 +53,11 @@ const {
     this is skipped if allow-zero-brightness is set
 */
 const minBrightness = 1;
+const ddcWriteTimeoutMs = 10000;
 let displays = null;
 let mainMenuButton = null;
 let writeCollection = null;
+let ddcWriteQueue = null;
 let _reloadMenuWidgetsTimer = null;
 let _reloadExtensionTimer = null;
 let reloadingExtension = false;
@@ -98,6 +100,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
     enableBrightnessControl() {
         displays = [];
         writeCollection = {};
+        ddcWriteQueue = Promise.resolve();
         if (this.settings.get_int('button-location') === 0) {
             brightnessLog(this.settings, 'Adding to panel');
             mainMenuButton = new StatusAreaBrightnessMenu(this.settings);
@@ -163,11 +166,22 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
         }
         displays = null;
         writeCollection = null;
+        ddcWriteQueue = null;
         syncing = false;
         pause_sync = false;
     }
 
-    ddcWriteCollector(displayBus, writer) {
+    ddcWriteCollector(displayBus, busWriter) {
+        /*
+            Writes are coalesced per bus below, but separate buses run
+            concurrently. On some drivers (notably NVIDIA) DDC/CI on separate
+            buses contends with the display pipeline, and parallel ddcutil
+            processes stall gnome-shell. When serialize-ddc-writes is set, all
+            buses share one queue so only one transaction is in flight.
+        */
+        const writer = this.settings.get_boolean('serialize-ddc-writes')
+            ? ondone => this.queueDdcWrite(busWriter, ondone)
+            : busWriter;
         const kickoffNext = (reason) => {
             brightnessLog(this.settings, `kickoffNext called ${reason}`);
             writeCollection[displayBus].current = writeCollection[displayBus].next;
@@ -199,6 +213,32 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             current: null
         };
         kickoffNext("on start");
+    }
+
+    queueDdcWrite(busWriter, ondone) {
+        if (ddcWriteQueue === null)
+            return;
+        ddcWriteQueue = ddcWriteQueue.then(() => new Promise(release => {
+            if (writeCollection === null) {
+                // Disabled while waiting in the queue, skip the write.
+                release();
+                return;
+            }
+            /*
+                Never let one write hold the queue forever: if its callback
+                does not fire (e.g. ddcutil failed to spawn), move on.
+            */
+            const guard = setTimeout(() => {
+                brightnessLog(this.settings, 'DDC write did not finish in time, releasing queue');
+                release();
+            }, ddcWriteTimeoutMs);
+            busWriter(async () => {
+                clearTimeout(guard);
+                release();
+                if (ondone)
+                    await ondone();
+            });
+        }));
     }
 
     setBrightness(display, newValue) {
@@ -688,6 +728,7 @@ export default class DDCUtilBrightnessControlExtension extends Extension {
             'vcp-6b': this.settings.get_boolean('vcp-6b'),
             'vcp-10': this.settings.get_boolean('vcp-10'),
             'verbose-debugging': this.settings.get_boolean('verbose-debugging'),
+            'serialize-ddc-writes': this.settings.get_boolean('serialize-ddc-writes'),
             'ddcutil-sleep-multiplier': this.settings.get_double('ddcutil-sleep-multiplier'),
             'position-system-indicator': this.settings.get_double('position-system-indicator'),
             'position-system-menu': this.settings.get_double('position-system-menu'),
